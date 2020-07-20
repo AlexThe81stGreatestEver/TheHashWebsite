@@ -20,10 +20,11 @@
             <a href="/{{kennel_abbreviation}}/basic/stats"  class="list-group-item active"><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Quick Links</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashers2'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">The Hashers</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes2'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">The Events</h4>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/hashingCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hasher Counts</h4></a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/nonHyperharingCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">(True) Haring Counts</h4></a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/hyperharingCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">(Hyper) Haring Counts</h4></a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">(Overall) Haring Counts</h4></a>
+	    <a class="list-group-item" href='/{{kennel_abbreviation}}/hashingCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hasher Counts</h4></a>
+	    {% for hare_type in hare_types %}
+		<a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{ hare_type.HARE_TYPE}}'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ hare_type.HARE_TYPE_NAME }} Haring Counts</h4></a>
+            {% endfor %}
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Overall Haring Counts</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/cautionary/stats'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Cautionary Stats</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/aboutContact'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">About / Contact</h4></a>
           </div>
@@ -123,61 +124,36 @@
           </div></div>
         {% endif %}
 
-        {% if top_true_hares|length == 10 %}
-          <div class="col-lg-3" ><div style="padding:2">
-            <h4><a href="/{{kennel_abbreviation}}/nonHyperharingCounts">All Time Top 10 (True) Hares</a></h4>
-              {% set bgcolor = "#d7bde2" %}
-              {% set headerColor = "#d3d3d3" %}
-              <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
+        {% for top_hare_data in top_hares %}
+          {% set hares = top_hare_data.data %}
+	  {% if hares|length == 10 %}
+	    <div class="col-lg-3" ><div style="padding:2">
+	      <h4><a href="/{{kennel_abbreviation}}/haringCounts/{{ top_hare_data.hare_type }}">All Time Top 10 ({{ top_hare_data.label }}) Hares</a></h4>
+		{% set bgcolor = "#d7bde2" %}
+		{% set headerColor = "#d3d3d3" %}
+		<div class="row">
+		  <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
+		  <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
 
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
-              </div>
+		  <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
+		  <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+		</div>
 
-              {% for item in top_true_hares %}
-                <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                </div>
-              {% endfor %}
-          </div></div>
-        {% endif %}
-
-        {% if top_hyper_hares|length == 10 %}
-          <div class="col-lg-3" ><div style="padding:2">
-            <h4><a href="/{{kennel_abbreviation}}/hyperharingCounts">All Time Top 10 (Hyper) Hares</a></h4>
-              {% set bgcolor = "#d6eaf8" %}
-              {% set headerColor = "#d3d3d3" %}
-              <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Hare</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hare</div>
-              </div>
-
-              {% for item in top_hyper_hares %}
-                <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                </div>
-              {% endfor %}
-          </div></div>
-        {% endif %}
+		{% for item in hares %}
+		  <div class="row">
+		    <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+		    <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		      <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
+		    </div>
+		    <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+		    <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		      <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
+		    </div>
+		  </div>
+		{% endfor %}
+	    </div></div>
+	  {% endif %}
+        {% endfor %}
 
         {% if top_overall_hares|length == 10 %}
           <div class="col-lg-3" ><div style="padding:2">

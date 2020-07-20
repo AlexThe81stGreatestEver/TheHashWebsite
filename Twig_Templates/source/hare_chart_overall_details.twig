@@ -150,9 +150,10 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
       <h1>{{pageTitle}}</h1>
       <h5>
         <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>View Hound Details</a></i> |
-        Overall Hare Details |
-        <i><a href='/{{kennel_abbreviation}}/hares/true/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>True Hare Details</a></i> |
-        <i><a href='/{{kennel_abbreviation}}/hares/hyper/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>Hyper Hare Details</a></i>
+        {% for hare_type in hare_types %}
+	  <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+        {% endfor %}
+        Overall Hare Details
 
       </h5>
 
@@ -173,8 +174,9 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                 {% endif %}
 
                 <dt>Total Haring Count</dt><dd> {{overallHareCount}}</dd>
-                <dt>True Haring Count</dt><dd>{{trueHareCount}}</dd>
-                <dt>Hyper Haring Count</dt><dd>{{hyperHareCount}}</dd>
+	        {% for harings in hareCounts %}
+                  <dt>{{harings.type}} Haring Count</dt><dd>{{harings.total}}</dd>
+                {% endfor %}
               {% endautoescape %}
           </dl>
         </div>
@@ -209,16 +211,19 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                       {{individualValue.THE_VALUE}},
                     {% endfor %}
                   ],
-                  datasets: [{
-                      label: '# of True Harings',
-                      data: [
-                        {% for individualValue in harings_by_year_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
-                        {% endfor %}],
-                        backgroundColor:'rgba(54, 162, 235, 0.2)',
-                        borderColor:'rgba(54, 162, 235, 1)',
-                      borderWidth: 1
-                  },
+                  datasets: [
+		  {% for hare_type in hare_types %}
+		    {
+			label: '# of {{hare_type.HARE_TYPE_NAME}} Harings',
+			data: [
+			  {% for individualValue in harings_by_year_list %}
+                            {{individualValue[hare_type.HARE_TYPE_NAME ~ '_COUNT']}},
+			  {% endfor %}],
+			  backgroundColor:'rgba(54, 162, 235, 0.2)',
+			  borderColor:'rgba(54, 162, 235, 1)',
+			borderWidth: 1
+		    },
+		  {% endfor %}
                   {
                       label: '# of Total Harings',
                       data: [
@@ -263,16 +268,19 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                       "{{individualValue.MONTH_NAME[0:3]}}",
                     {% endfor %}
                   ],
-                  datasets: [{
-                      label: '# of True Harings',
-                      data: [
-                        {% for individualValue in harings_by_month_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
-                        {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
-                      borderWidth: 1
-                  },
+                  datasets: [
+		  {% for hare_type in hare_types %}
+		    {
+			label: '# of {{hare_type.HARE_TYPE_NAME}} Harings',
+			data: [
+			  {% for individualValue in harings_by_month_list %}
+                            {{individualValue[hare_type.HARE_TYPE_NAME ~ '_COUNT']}},
+			  {% endfor %}],
+			  backgroundColor:'rgba(127, 15, 239, 0.2)',
+			  borderColor:'rgba(127, 15, 239, 1)',
+			borderWidth: 1
+		    },
+		  {% endfor %}
                   {
                       label: '# of Total Harings',
                       data: [
@@ -318,16 +326,19 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                       "{{individualValue.THE_VALUE}}",
                     {% endfor %}
                   ],
-                  datasets: [{
-                      label: '# of True Harings',
-                      data: [
-                        {% for individualValue in harings_by_quarter_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
-                        {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
-                      borderWidth: 1
-                  },
+                  datasets: [
+		  {% for hare_type in hare_types %}
+		    {
+			label: '# of {{hare_type.HARE_TYPE_NAME}} Harings',
+			data: [
+			  {% for individualValue in harings_by_quarter_list %}
+                            {{individualValue[hare_type.HARE_TYPE_NAME ~ '_COUNT']}},
+			  {% endfor %}],
+			  backgroundColor:'rgba(127, 15, 239, 0.2)',
+			  borderColor:'rgba(127, 15, 239, 1)',
+			borderWidth: 1
+		    },
+		  {% endfor %}
                   {
                       label: '# of Total Harings',
                       data: [
@@ -371,16 +382,19 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                       "{{individualValue.EVENT_STATE}}",
                     {% endfor %}
                   ],
-                  datasets: [{
-                      label: '# of True Harings',
-                      data: [
-                        {% for individualValue in harings_by_state_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
-                        {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
-                      borderWidth: 1
-                  },
+                  datasets: [
+		  {% for hare_type in hare_types %}
+		    {
+			label: '# of {{hare_type.HARE_TYPE_NAME}} Harings',
+			data: [
+			  {% for individualValue in harings_by_state_list %}
+                            {{individualValue[hare_type.HARE_TYPE_NAME ~ '_COUNT']}},
+			  {% endfor %}],
+			  backgroundColor:'rgba(127, 15, 239, 0.2)',
+			  borderColor:'rgba(127, 15, 239, 1)',
+			borderWidth: 1
+		    },
+		  {% endfor %}
                   {
                       label: '# of Total Harings',
                       data: [
@@ -427,16 +441,19 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                       "{{individualValue.THE_VALUE}}",
                     {% endfor %}
                   ],
-                  datasets: [{
-                      label: '# of True Harings',
-                      data: [
-                        {% for individualValue in harings_by_dayname_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
-                        {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
-                      borderWidth: 1
-                  },
+                  datasets: [
+		  {% for hare_type in hare_types %}
+		    {
+			label: '# of {{hare_type.HARE_TYPE_NAME}} Harings',
+			data: [
+			  {% for individualValue in harings_by_dayname_list %}
+			    {{individualValue[hare_type.HARE_TYPE_NAME ~ '_COUNT']}},
+			  {% endfor %}],
+			  backgroundColor:'rgba(127, 15, 239, 0.2)',
+			  borderColor:'rgba(127, 15, 239, 1)',
+			borderWidth: 1
+		    },
+		  {% endfor %}
                   {
                       label: '# of Total Harings',
                       data: [

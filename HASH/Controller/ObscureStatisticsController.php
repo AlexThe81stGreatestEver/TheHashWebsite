@@ -766,7 +766,7 @@ class ObscureStatisticsController{
 
 
     # Mappings for hasher (non hyper) harings by (year/month/state/etc)
-    public function getHasherNonHyperHaringsByYear(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByYear(Request $request, Application $app, string $kennel_abbreviation, int $hare_type) {
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -775,10 +775,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_YEAR;
+      $theSql = HASHER_HARING_COUNTS_BY_YEAR;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -786,7 +786,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getHasherNonHyperHaringsByQuarter(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByQuarter(Request $request, Application $app, string $kennel_abbreviation, int $hare_type){
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -795,10 +795,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_QUARTER;
+      $theSql = HASHER_HARING_COUNTS_BY_QUARTER;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -806,7 +806,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getHasherNonHyperHaringsByMonth(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByMonth(Request $request, Application $app, string $kennel_abbreviation, $hare_type) {
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -815,10 +815,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_MONTH;
+      $theSql = HASHER_HARING_COUNTS_BY_MONTH;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -826,7 +826,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getHasherNonHyperHaringsByDayName(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByDayName(Request $request, Application $app, string $kennel_abbreviation, $hare_type) {
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -835,10 +835,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_DAYNAME;
+      $theSql = HASHER_HARING_COUNTS_BY_DAYNAME;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -846,7 +846,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getHasherNonHyperHaringsByState(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByState(Request $request, Application $app, string $kennel_abbreviation, $hare_type) {
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -855,10 +855,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_STATE;
+      $theSql = HASHER_HARING_COUNTS_BY_STATE;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -867,7 +867,7 @@ class ObscureStatisticsController{
     }
 
 
-    public function getHasherNonHyperHaringsByCity(Request $request, Application $app, string $kennel_abbreviation){
+    public function getHasherHaringsByCity(Request $request, Application $app, string $kennel_abbreviation, $hare_type) {
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -876,10 +876,10 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = HASHER_NONHYPER_HARING_COUNTS_BY_CITY;
+      $theSql = HASHER_HARING_COUNTS_BY_CITY;
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -887,29 +887,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getHasherHyperHaringsByCity(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HYPER_HARING_COUNTS_BY_CITY;
-
-      #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      #Set the return value
-      $returnValue = $app->json($theResults,200);
-      return $returnValue;
-
-    }
-
-
-
-    public function getCohareCountByHareNonHypers(Request $request, Application $app, string $kennel_abbreviation){
+    public function getCohareCountByHare(Request $request, Application $app, string $kennel_abbreviation, int $hare_type){
 
       #Obtain the post values
       $theHasherKey = $request->request->get('hasher_id');
@@ -925,34 +903,7 @@ class ObscureStatisticsController{
         (int) $kennelKy,
         (int) $theHasherKey,
         (int) $theHasherKey,
-        0,
-        0,));
-
-      #Set the return value
-      $returnValue = $app->json($theResults,200);
-      return $returnValue;
-
-    }
-
-
-    public function getCohareCountByHareOnlyHypers(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = COHARE_COUNT_BY_HARE;
-
-      #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $theHasherKey,
-        (int) $theHasherKey,
-        1,
-        1,));
+        (int) $hare_type));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);
@@ -970,15 +921,13 @@ class ObscureStatisticsController{
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       #Define the sql statement to execute
-      $theSql = COHARE_COUNT_BY_HARE;
+      $theSql = OVERALL_COHARE_COUNT_BY_HARE;
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
         (int) $kennelKy,
         (int) $theHasherKey,
-        (int) $theHasherKey,
-        0,
-        1,));
+        (int) $theHasherKey));
 
       #Set the return value
       $returnValue = $app->json($theResults,200);

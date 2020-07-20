@@ -23,12 +23,12 @@
           <div class="list-group">
             <a href="#2" class="list-group-item active">Counts</a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/hashingCounts'>Hashing Counts </a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/nonHyperharingCounts'>(True) Haring Counts</a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/trueCohareCounts'>(True) Co-Hare Counts</a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/hyperharingCounts'>(Hyper) Haring Counts </a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/hyperCohareCounts'>(Hyper) Co-Hare Counts</a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'>(Overall) Haring Counts</a>
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/allCohareCounts'>(Overall) Co-Hare Counts</a>
+            {% for hare_type in hare_types %}
+	      <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{hare_type.HARE_TYPE}}'>{{hare_type.HARE_TYPE_NAME}} Haring Counts </a>
+              <a class="list-group-item" href='/{{kennel_abbreviation}}/CohareCounts/{{hare_type.HARE_TYPE}}'>{{hare_type.HARE_TYPE_NAME}} Co-Hare Counts</a>
+            {% endfor %}
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'>Overall Haring Counts</a>
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/allCohareCounts'>Overall Co-Hare Counts</a>
           </div>
         </div>
 

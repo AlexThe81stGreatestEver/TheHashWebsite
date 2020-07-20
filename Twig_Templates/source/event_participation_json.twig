@@ -149,8 +149,8 @@ function displayMessage(messageValue){
  }
 
  //Function to add a hare to the event
- function addHare(hasher_key, hash_key){
-  var formData = {hasher_key:hasher_key,hash_key:hash_key};
+ function addHare(hasher_key, hare_type, hash_key){
+  var formData = {hasher_key:hasher_key,hare_type:hare_type,hash_key:hash_key};
   $.ajax({
       url : "/admin/event/addHareToHash",
       type: "POST",
@@ -241,7 +241,11 @@ $(document).ready(function() {
       {
         "data": "THE_KEY",
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> | <a href='javascript:addHare("+oData.THE_KEY+",{{hash_key}});'>+ Hare</a> | " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
+          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> " +
+          {% for hareType in hareTypes %}
+            "| <a href='javascript:addHare("+oData.THE_KEY+"," + {{hareType.HARE_TYPE}} + ",{{hash_key}});'>+ {{hareType.HARE_TYPE_NAME}} Hare</a> " +
+          {% endfor %}
+          "| " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
         }
      }
     ]
