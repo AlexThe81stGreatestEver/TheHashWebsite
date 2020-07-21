@@ -235,8 +235,8 @@ class HashController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-$theSql = "SELECT 1 WHERE 1=0";
-    $theQuickestToXTrueHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,0,0,(int) $kennelKy,0,0));
+    //TODO: fix
+    //$theQuickestToXTrueHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,0,0,(int) $kennelKy,0,0));
 
     #Get the quickest to 5 hyper harings
     $theQuickestToXHyperHaringsNumber = 5;
@@ -244,8 +244,8 @@ $theSql = "SELECT 1 WHERE 1=0";
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-$theSql = "SELECT 1 WHERE 1=0";
-    $theQuickestToXHyperHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,1,1,(int) $kennelKy,1,1));
+    //TODO: fix
+    //$theQuickestToXHyperHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,1,1,(int) $kennelKy,1,1));
 
     #Query for the event tag summary
     $eventTagSql = "SELECT HT.TAG_TEXT, HT.HASHES_TAGS_KY,COUNT(HTJ.HASHES_KY) AS THE_COUNT
