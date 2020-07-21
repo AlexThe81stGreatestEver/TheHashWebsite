@@ -882,12 +882,14 @@ class HashEventController
       $hashKey = $request->request->get('hash_key');
 
       #Define the SQL to execute
-      $hareListSQL = "SELECT HASHER_KY, HASHER_NAME, HARE_TYPE_NAME
+      $hareListSQL = "
+      SELECT HASHER_KY, HASHER_NAME, (
+      SELECT GROUP_CONCAT(HARE_TYPE_NAME)
+        FROM HARE_TYPES
+       WHERE HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE) AS HARE_TYPE_NAMES
         FROM HARINGS
         JOIN HASHERS 
           ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-        JOIN HARE_TYPES
-          ON HARINGS.HARE_TYPE = HARE_TYPES.HARE_TYPE
        WHERE HARINGS.HARINGS_HASH_KY = ? ";
 
       #Obtain the hare list

@@ -44,7 +44,7 @@ function displayMessage(messageValue){
          $('#hare-list').empty();
 
          $.each(data, function(key,row) {
-           $('#hare-list').append('<dt>'+ row.HASHER_NAME + ' (' + row.HARE_TYPE_NAME +')</dt>');
+           $('#hare-list').append('<dt>'+ row.HASHER_NAME + ' (' + row.HARE_TYPE_NAMES +')</dt>');
            var linkOne = "<a href=/admin/hasherDetailsKennelSelection/" +row.HASHER_KY+ ">Details</a>";
            var linkTwo = '<a href="javascript:deleteHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">Delete Hare</a>';
            var linkThree = '<a href="javascript:addHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">Add Hasher</a>';
