@@ -125,8 +125,8 @@ class HashController
   }
 
   private function getHareTypeName($app, $hare_type) {
-    $sql = "SELECT HARE_TYPE_NAME 
-              FROM HARE_TYPES 
+    $sql = "SELECT HARE_TYPE_NAME
+              FROM HARE_TYPES
              WHERE HARE_TYPES.HARE_TYPE = ?";
 
     #Query the database
@@ -139,8 +139,8 @@ class HashController
   private function getHareTypes($app, $kennelKy) {
 
     #Define the SQL to RuntimeException
-    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME 
-              FROM HARE_TYPES 
+    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME
+              FROM HARE_TYPES
               JOIN KENNELS
                 ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
              WHERE KENNELS.KENNEL_KY = ?
@@ -192,7 +192,7 @@ class HashController
     foreach ($hareTypes as &$hareType) {
       $hareResults = $app['db']->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
       array_push($top_hares,
-          array(data => $hareResults, label => $hareType['HARE_TYPE_NAME'], 
+          array(data => $hareResults, label => $hareType['HARE_TYPE_NAME'],
              hare_type => $hareType['HARE_TYPE']));
     }
 
@@ -510,7 +510,7 @@ class HashController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
-    
+
     $args = array(
       $kennelKy,
       (string) $inputSearchValueModified,
@@ -1777,7 +1777,11 @@ class HashController
 
 
     # Make a database call to obtain the hasher information
-    $sql = "SELECT PLACE_ID, EVENT_STATE, COUNTY, EVENT_CITY, EVENT_LOCATION, STREET_NUMBER, ROUTE, FORMATTED_ADDRESS, NEIGHBORHOOD, POSTAL_CODE, COUNTRY, LAT, LNG, KENNEL_EVENT_NUMBER, EVENT_DATE, SPECIAL_EVENT_DESCRIPTION, IS_HYPER, HASH_KY FROM HASHES WHERE HASH_KY = ?";
+    $sql = "SELECT PLACE_ID, EVENT_STATE, COUNTY, EVENT_CITY, EVENT_LOCATION, STREET_NUMBER, ROUTE, FORMATTED_ADDRESS, NEIGHBORHOOD, POSTAL_CODE, COUNTRY, LAT, LNG, KENNEL_EVENT_NUMBER, EVENT_DATE, SPECIAL_EVENT_DESCRIPTION, HASH_KY, HASH_TYPE_NAME
+              FROM HASHES
+              JOIN HASH_TYPES
+                ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
+             WHERE HASH_KY = ?";
     $theHashValue = $app['db']->fetchAssoc($sql, array((int) $hash_id));
 
     $state = $theHashValue['EVENT_STATE'];
@@ -4830,10 +4834,10 @@ private function getStandardHareChartsAction(Request $request, Application $app,
     $sqlHaringsByYear .= "
       SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     array_push($args, (int) $hareType['HARE_TYPE']);
-  } 
+  }
   array_push($args, (int) $hasher_id);
   array_push($args, (int) $kennelKy);
-  
+
   $sqlHaringsByYear .= "
       COUNT(*) AS TOTAL_HARING_COUNT
   FROM
@@ -4853,7 +4857,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
 
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByMonth .= $hareType['HARE_TYPE_NAME']."_COUNT, ";
-  } 
+  }
 
   $sqlHaringsByMonth .= "
         TOTAL_HARING_COUNT,
@@ -5088,8 +5092,8 @@ public function viewHareChartsAction(Request $request, Application $app, int $ha
   $sqlTheHashes = "
     SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE,
            HASHES.HASH_KY, LAT, LNG
-      FROM HARINGS 
-      JOIN HASHES 
+      FROM HARINGS
+      JOIN HASHES
         ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
      WHERE HARINGS.HARINGS_HASHER_KY = ?
        AND KENNEL_KY = ?

@@ -41,14 +41,8 @@
             </div>
 
             <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hyper Hash ?</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">
-                {% if hashValue.IS_HYPER == "0000000000" %}
-                  No, regular hash
-                {% else %}
-                  Yes, hyper hash
-                {% endif %}
-              </div>
+              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hash Type</b></div>
+              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.HASH_TYPE_NAME}}</div>
               <div class="col-xs-12 visible-xs"></br></div>
             </div>
 

@@ -149,6 +149,7 @@ class HashEventController
       'pageTitle' => 'Create an Event!',
       'pageHeader' => 'Page Header',
       'kennelList' => $kennelDropdown,
+      'hashTypes' => $this->getHashTypes($app),
       'geocode_api_value' => GOOGLE_PLACES_API_WEB_SERVICE_KEY
     ));
 
@@ -171,7 +172,7 @@ class HashEventController
       $theKennel = trim(strip_tags($request->request->get('kennelName')));
       $theHashEventNumber = trim(strip_tags($request->request->get('hashEventNumber')));
       $theHashEventDescription = trim(strip_tags($request->request->get('hashEventDescription')));
-      $theHyperIndicator= trim(strip_tags($request->request->get('hyperIndicator')));
+      $theHashType= trim(strip_tags($request->request->get('hashType')));
       $theEventDate= trim(strip_tags($request->request->get('eventDate')));
       $theEventTime= trim(strip_tags($request->request->get('eventTime')));
       $theEventDateAndTime = $theEventDate." ".$theEventTime;
@@ -257,7 +258,7 @@ class HashEventController
             EVENT_CITY,
             EVENT_STATE,
             SPECIAL_EVENT_DESCRIPTION,
-            IS_HYPER,
+            HASH_TYPE,
             STREET_NUMBER,
             ROUTE,
             COUNTY,
@@ -282,7 +283,7 @@ class HashEventController
             $theLocality,
             $theAdministrative_area_level_1,
             $theHashEventDescription,
-            $theHyperIndicator,
+            $theHashType,
             $theStreet_number,
             $theRoute,
             $theAdministrative_area_level_2,
@@ -1024,8 +1025,10 @@ class HashEventController
           KENNEL_KY AS KENNEL_KY,
           DATE_FORMAT(event_date,'%Y/%m/%d') AS EVENT_DATE_FORMATTED,
           DATE_FORMAT(event_date,'%Y/%m/%d %h:%i %p') AS EVENT_DATE_FORMATTED2,
-          IS_HYPER AS IS_HYPER
+          HASH_TYPE_NAME AS HASH_TYPE_NAME
         FROM HASHES
+        JOIN HASH_TYPES
+          ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
         WHERE
           KENNEL_KY = $kennelKy AND
           (
@@ -1090,9 +1093,4 @@ class HashEventController
       #Return the return value
       return $returnValue;
     }
-
-
-
-
-
 }
