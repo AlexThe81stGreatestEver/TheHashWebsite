@@ -6,31 +6,31 @@
   <h3>{{pageSubTitle}}</h3>
   {% for tempList in theListOfLists %}
     {% if tempList %}
-    <div class="table-responsive">
-    <h3>{{tempList[0].THE_YEAR}} (
-      {% for hash_type in hash_types %}
-        {{tempList[0]['THE_YEARS_' ~ hash_type.HASH_TYPE_NAME ~ '_HASH_COUNT']}} {{ hash_type.HASH_TYPE_NAME }} Hashes,
-      {% endfor %}
-      {{tempList[0].THE_YEARS_OVERALL_HASH_COUNT}} Total Hashes
-      )</h3>
-    <table class="table table-condensed table-hover" id="the_main_table">
-      <thead>
-        <tr>
-          <th>{{participant_column_header}} </th>
-          <th>{{number_column_header}}</th>
-          <th>{{percentage_column_header}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in tempList %}
-          <tr>
-            <td><a href='/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}'>{{item.HASHER_NAME}}</a></td>
-            <td>{{item.THE_COUNT}}</td>
-            <td> {{(100 * item.THE_COUNT / item.THE_YEARS_OVERALL_HASH_COUNT) | number_format(2, '.', ',')}}% </td>
-          </tr>
+      <div class="table-responsive">
+      <h3>{{tempList[0].THE_YEAR}} (
+        {% for hash_type in hash_types %}
+          {{tempList[0]['THE_YEARS_' ~ hash_type.HASH_TYPE_NAME ~ '_HASH_COUNT']}} {{ hash_type.HASH_TYPE_NAME }} Hashes,
         {% endfor %}
-    </table>
-    </div>
+        {{tempList[0].THE_YEARS_OVERALL_HASH_COUNT}} Total Hashes
+        )</h3>
+      <table class="table table-condensed table-hover" id="the_main_table">
+        <thead>
+          <tr>
+            <th>{{participant_column_header}} </th>
+            <th>{{number_column_header}}</th>
+            <th>{{percentage_column_header}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in tempList %}
+            <tr>
+              <td><a href='/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}'>{{item.HASHER_NAME}}</a></td>
+              <td>{{item.THE_COUNT}}</td>
+              <td> {{(100 * item.THE_COUNT / item.THE_YEARS_OVERALL_HASH_COUNT) | number_format(2, '.', ',')}}% </td>
+            </tr>
+          {% endfor %}
+      </table>
+      </div>
     {% endif %}
   {% endfor %}
 {% endblock %}
