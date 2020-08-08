@@ -74,14 +74,14 @@
     if(column++ == 0) {
       document.write('<div class="row">');
     }
-    document.write('<div class="col-sm-3" style="background-color:#' + bgcolor + ';">');
+    document.write('<div id=' + id + ' class="col-sm-3" style="background-color:#' + bgcolor + ';">');
     nextBgColor();
     document.write('<h3>' + title + '</h3>');
     document.write('<h5><i>' + subtitle + '</i></h5>');
-    document.write('<a href="#hasherCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>');
+    document.write('<a href="#' + id + '-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>');
     document.write('<dl class="dl-horizontal">');
     document.write('<div data-role="content">');
-    document.write('<ul data-role="listview" id="' + id + '">');
+    document.write('<ul data-role="listview" id="' + id + '-list">');
     document.write('</ul>');
     document.write('</div>');
     document.write('</dl>');
@@ -127,27 +127,27 @@
       <h3>Newbie Details</h3>
       <dl class="dl-horizontal">
           {% autoescape %}
-            <dt>Newbie Hashers</dt><dd><a href="#newbiehasherlist">{{newbie_hashers_count}}</a></dd>
+            <dt>Newbie Hashers</dt><dd><a href="#newbieHashers">{{newbie_hashers_count}}</a></dd>
             {% for hare_type in hare_types %}
-            <dt>Newbie {{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd><a href="#newbie{{ hare_type.HARE_TYPE_NAME }}harelist">{{ newbie_hare_counts[hare_type.HARE_TYPE_NAME] }}</a></dd>
+            <dt>Newbie {{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd><a href="#newbie{{ hare_type.HARE_TYPE_NAME }}Hare">{{ newbie_hare_counts[hare_type.HARE_TYPE_NAME] }}</a></dd>
             {% endfor %}
-            <dt>Newbie Overall Hares</dt><dd><a href="#newbieoverallharelist">{{newbie_overall_hares_count}}</a></dd>
+            <dt>Newbie Overall Hares</dt><dd><a href="#newbieOverallHare">{{newbie_overall_hares_count}}</a></dd>
           {% endautoescape %}
       </dl>
     </div>
   </div>
 
   <script type = "text/javascript" language = "javascript">
-      doList('Hasher Counts', '* {{yearValue}} hashing count listed', 'hasherCounts-list');
+      doList('Hasher Counts', '* {{yearValue}} hashing count listed', 'hasherCounts');
       {% for hare_type in hare_types %}
-        doList('{{ hare_type.HARE_TYPE_NAME }} Haring Counts', '* {{yearValue}} {{ hare_type.HARE_TYPE_NAME }} haring count listed', '{{ hare_type.HARE_TYPE_NAME }}HareCounts-list');
+        doList('{{ hare_type.HARE_TYPE_NAME }} Haring Counts', '* {{yearValue}} {{ hare_type.HARE_TYPE_NAME }} haring count listed', '{{ hare_type.HARE_TYPE_NAME }}HareCounts');
       {% endfor %}
-      doList('Overall Haring Counts', '* {{yearValue}} overall haring count listed', 'totalHareCounts-list');
-      doList('Newbie Hashers', '* All time hashing count listed', 'newbieHashers-list');
+      doList('Overall Haring Counts', '* {{yearValue}} overall haring count listed', 'totalHareCounts');
+      doList('Newbie Hashers', '* All time hashing count listed', 'newbieHashers');
       {% for hare_type in hare_types %}
-        doList('Newbie {{ hare_type.HARE_TYPE_NAME }} Hares', '* All time {{ hare_type.HARE_TYPE_NAME }} haring count listed', 'newbie{{ hare_type.HARE_TYPE_NAME }}Hare-list');
+        doList('Newbie {{ hare_type.HARE_TYPE_NAME }} Hares', '* All time {{ hare_type.HARE_TYPE_NAME }} haring count listed', 'newbie{{ hare_type.HARE_TYPE_NAME }}Hare');
       {% endfor %}
-      doList('Newbie Overall Hares', '* All time overall haring count listed', 'newbieOverallHare-list');
+      doList('Newbie Overall Hares', '* All time overall haring count listed', 'newbieOverallHare');
       endLists();
   </script>
 
