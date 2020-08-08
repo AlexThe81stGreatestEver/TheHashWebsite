@@ -3022,11 +3022,11 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,1, (int) $kennelKy));
+    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
