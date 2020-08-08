@@ -13,8 +13,10 @@
     <div class="list-group">
       <a href="#1" class="list-group-item active">Most Active</a>
       <a class="list-group-item" href='/{{kennel_abbreviation}}/hashers/of/the/years'>Most active hashers by year</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/hares/overall/of/the/years'>Most active (overall) hares by year</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/hares/nonhyper/of/the/years'>Most active (true) hares by year</a>
+      <a class="list-group-item" href='/{{kennel_abbreviation}}/hares/0/of/the/years'>Most active (Overall) hares by year</a>
+      {% for hare_type in hare_types %}
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/of/the/years'>Most active ({{ hare_type.HARE_TYPE_NAME }}) hares by year</a>
+      {% endfor %}
     </div>
   </div>
 

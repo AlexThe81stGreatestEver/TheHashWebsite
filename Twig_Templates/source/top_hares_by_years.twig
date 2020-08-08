@@ -5,8 +5,14 @@
   <h1>{{pageTitle}}</h1>
   <h3>{{pageSubTitle}}</h3>
   {% for tempList in theListOfLists %}
+    {% if tempList %}
     <div class="table-responsive">
-    <h3>{{tempList[0].THE_YEAR}} ({{tempList[0].THE_YEARS_OVERALL_HASH_COUNT}} total hashes, {{tempList[0].THE_YEARS_NON_HYPER_HASH_COUNT}} non-hyper hashes)</h3>
+    <h3>{{tempList[0].THE_YEAR}} (
+      {% for hash_type in hash_types %}
+        {{tempList[0]['THE_YEARS_' ~ hash_type.HASH_TYPE_NAME ~ '_HASH_COUNT']}} {{ hash_type.HASH_TYPE_NAME }} Hashes,
+      {% endfor %}
+      {{tempList[0].THE_YEARS_OVERALL_HASH_COUNT}} Total Hashes
+      )</h3>
     <table class="table table-condensed table-hover" id="the_main_table">
       <thead>
         <tr>
@@ -20,16 +26,11 @@
           <tr>
             <td><a href='/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}'>{{item.HASHER_NAME}}</a></td>
             <td>{{item.THE_COUNT}}</td>
-            <td>
-              {% if overall_boolean == 'TRUE' %}
-                {{(100 * item.THE_COUNT / item.THE_YEARS_OVERALL_HASH_COUNT) | number_format(2, '.', ',')}}%
-              {% else %}
-                {{(100 * item.THE_COUNT / item.THE_YEARS_NON_HYPER_HASH_COUNT) | number_format(2, '.', ',')}}%
-              {% endif %}
-            </td>
+            <td> {{(100 * item.THE_COUNT / item.THE_YEARS_OVERALL_HASH_COUNT) | number_format(2, '.', ',')}}% </td>
           </tr>
         {% endfor %}
     </table>
     </div>
+    {% endif %}
   {% endfor %}
 {% endblock %}

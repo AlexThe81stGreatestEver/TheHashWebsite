@@ -122,7 +122,7 @@ class HashEventController
              ORDER BY SEQ";
 
     #Query the database
-    $hashTypes = $app['db']->fetchAll($sql, array((int) $kennelKy));
+    $hashTypes = $app['db']->fetchAll($sql);
 
     #return the return value
     return $hashTypes;

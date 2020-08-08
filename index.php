@@ -538,8 +538,7 @@ $app->get('/{kennel_abbreviation}/highest/attendedHashes','HASH\Controller\HashC
 $app->get('/{kennel_abbreviation}/lowest/attendedHashes','HASH\Controller\HashController::lowestAttendedHashesAction');
 
 $app->get('/{kennel_abbreviation}/hashers/of/the/years','HASH\Controller\HashController::hashersOfTheYearsAction');
-$app->get('/{kennel_abbreviation}/hares/overall/of/the/years','HASH\Controller\HashController::overallHaresOfTheYearsAction');
-$app->get('/{kennel_abbreviation}/hares/nonhyper/of/the/years','HASH\Controller\HashController::nonHyperHaresOfTheYearsAction');
+$app->get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HASH\Controller\HashController::HaresOfTheYearsAction');
 
 #Establish the mortal kombat head to head matchup functionality
 $app->get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HASH\Controller\HashController::twoPersonComparisonPreAction');

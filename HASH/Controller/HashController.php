@@ -153,6 +153,26 @@ class HashController
     return $hareTypes;
   }
 
+  private function getHashTypes($app, $kennelKy, $hare_type) {
+
+    #Define the SQL to RuntimeException
+    $sql = "SELECT HASH_TYPES.HASH_TYPE, HASH_TYPES.HASH_TYPE_NAME
+	      FROM HASH_TYPES
+	      JOIN KENNELS
+		ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0
+	     WHERE KENNELS.KENNEL_KY = ?".
+	     ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
+	     ORDER BY HASH_TYPES.SEQ";
+
+    #Query the database
+    $args = array((int) $kennelKy);
+    if($hare_type != 0) array_push($args, $hare_type);
+    $hashTypes = $app['db']->fetchAll($sql, $args);
+
+    #return the return value
+    return $hashTypes;
+  }
+
   #Define the action
   public function slashKennelAction2(Request $request, Application $app, string $kennel_abbreviation){
 
@@ -3515,11 +3535,14 @@ public function yearByYearStatsAction(Request $request, Application $app, string
   #Execute the SQL statement; create an array of rows
   $yearValues = $app['db']->fetchAll($sql,array( (int) $kennelKy));
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_year_by_year.twig',array(
     'pageTitle' => 'Year Summary Stats',
     'kennel_abbreviation' => $kennel_abbreviation,
-    'year_values' => $yearValues
+    'year_values' => $yearValues,
+    'hare_types' => $hareTypes
   ));
 
   #Return the return value
@@ -3848,7 +3871,7 @@ public function hashersOfTheYearsAction(Request $request, Application $app, stri
 
 
 
-public function overallHaresOfTheYearsAction(Request $request, Application $app, string $kennel_abbreviation){
+public function HaresOfTheYearsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3864,12 +3887,23 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
   #Execute the SQL statement; create an array of rows
   $yearValues = $app['db']->fetchAll($distinctYearsSql,array( (int) $kennelKy));
 
+  $hashTypes = $this->getHashTypes($app, $kennelKy, $hare_type);
+
   #Define the sql
-  $topHaresSql = "SELECT
-    	HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
-    	(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 1) AS THE_YEARS_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 0) AS THE_YEARS_NON_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? ) AS THE_YEARS_OVERALL_HASH_COUNT
+  $topHaresSql = "SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,";
+  foreach ($hashTypes as &$hashType) {
+    $topHaresSql .=
+      "(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.HASH_TYPE = ?) AS THE_YEARS_".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+    }
+    $topHaresSql .=
+        "(SELECT COUNT(*) AS THE_HASH_COUNT
+            FROM HASHES ".
+         ($hare_type == 0 ? "" : "JOIN KENNELS ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY
+                                  JOIN HASH_TYPES ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0 AND HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE")."
+           WHERE HASHES.KENNEL_KY = ? ".
+         ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
+             AND YEAR(HASHES.EVENT_DATE) = ? )
+              AS THE_YEARS_OVERALL_HASH_COUNT
     FROM
     HASHERS JOIN (
     	SELECT HASHERS.HASHER_KY AS THE_HASHER_KY, COUNT(*) AS THE_COUNT
@@ -3878,14 +3912,14 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
     		JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     	WHERE
     		HASHES.KENNEL_KY = ?
-    		AND YEAR(HASHES.EVENT_DATE) = ?
-            AND HASHES.IS_HYPER in (?,?)
+    		AND YEAR(HASHES.EVENT_DATE) = ? ".
+                ($hare_type == 0 ? "" : "AND HARINGS.HARE_TYPE & ? != 0 ")."
     	GROUP BY HASHERS.HASHER_KY
     	ORDER BY THE_COUNT DESC
     	LIMIT XLIMITX
     ) AS THE_TEMPORARY_TABLE on HASHERS.HASHER_KY = THE_TEMPORARY_TABLE.THE_HASHER_KY";
-  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
 
+  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
 
   #Initialize the array of arrays
   $array = array();
@@ -3896,138 +3930,47 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
     #Establish the year for this loop iteration
     $tempYear = $yearValues[$tempCounter-1]["YEAR"];
 
+    $args = array((int) $tempYear);
+    foreach ($hashTypes as &$hashType) {
+      array_push($args, (int) $kennelKy);
+      array_push($args, (int) $tempYear);
+      array_push($args, (int) $hashType['HASH_TYPE']);
+    }
+    array_push($args, (int) $kennelKy);
+    if($hare_type != 0) array_push($args, $hare_type);
+    array_push($args, (int) $tempYear);
+    array_push($args, (int) $kennelKy);
+    array_push($args, (int) $tempYear);
+    if($hare_type != 0) array_push($args, $hare_type);
+
     #Make a database call passing in this iteration's year value
-    $tempResult = $app['db']->fetchAll($topHaresSql,array(
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) 0,
-      (int) 1));
+    $tempResult = $app['db']->fetchAll($topHaresSql,$args);
 
     #Add the database result set to the array of arrays
     $array[] = $tempResult;
-
   }
 
-
+  if($hare_type != 0) {
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+  }
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('top_hares_by_years.twig',array(
     'theListOfLists' => $array,
-    #'tempList' => $tempResult,
-    'pageTitle' => 'Top Hares Per Year (All harings)',
-    'pageSubTitle' => '(All hashes included)',
+    'pageTitle' => $hare_type == 0 ? 'Top Hares Per Year (All harings)' : 'Top '.$hare_type_name.' Hares Per Year',
+    'pageSubTitle' => $hare_type == 0 ? '(All hashes included)' : '',
     'tableCaption' => '',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of overall harings',
-    'percentage_column_header' => 'Percentage of overall hashes hared',
-    'overall_boolean' => 'TRUE'
+    'number_column_header' => $hare_type == 0 ? 'Number Of Overall Harings' : 'Number Of '.$hare_type_name.' Harings',
+    'percentage_column_header' => $hare_type == 0 ? 'Percentage of overall hashes hared' : 'Percentage of hashes hared',
+    'hash_types' => $hashTypes
   ));
 
   #Return the return value
   return $returnValue;
-
 }
 
-
-public function nonHyperHaresOfTheYearsAction(Request $request, Application $app, string $kennel_abbreviation){
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  #SQL to determine the distinct year values
-  $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-  	KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
-
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $app['db']->fetchAll($distinctYearsSql,array( (int) $kennelKy));
-
-  #Define the sql
-  $topHaresSql = "SELECT
-    	HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
-    	(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 1) AS THE_YEARS_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 0) AS THE_YEARS_NON_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? ) AS THE_YEARS_OVERALL_HASH_COUNT
-    FROM
-    HASHERS JOIN (
-    	SELECT HASHERS.HASHER_KY AS THE_HASHER_KY, COUNT(*) AS THE_COUNT
-    	FROM HARINGS
-    		JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-    		JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-    	WHERE
-    		HASHES.KENNEL_KY = ?
-    		AND YEAR(HASHES.EVENT_DATE) = ?
-            AND HASHES.IS_HYPER in (?,?)
-    	GROUP BY HASHERS.HASHER_KY
-    	ORDER BY THE_COUNT DESC
-    	LIMIT XLIMITX
-    ) AS THE_TEMPORARY_TABLE on HASHERS.HASHER_KY = THE_TEMPORARY_TABLE.THE_HASHER_KY";
-  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
-
-
-  #Initialize the array of arrays
-  $array = array();
-
-  #Loop through the year values
-  for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++){
-
-    #Establish the year for this loop iteration
-    $tempYear = $yearValues[$tempCounter-1]["YEAR"];
-
-    #Make a database call passing in this iteration's year value
-    $tempResult = $app['db']->fetchAll($topHaresSql,array(
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) 0,
-      (int) 0));
-
-    #Add the database result set to the array of arrays
-    $array[] = $tempResult;
-
-  }
-
-
-
-  # Establish and set the return value
-  $returnValue = $app['twig']->render('top_hares_by_years.twig',array(
-    'theListOfLists' => $array,
-    #'tempList' => $tempResult,
-    'pageTitle' => 'Top Hares Per Year (non-hyper harings)',
-    'pageSubTitle' => '(hyper-hashes excluded)',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
-    'overall_boolean' => 'FALSE'
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
 
 public function getHasherAnalversariesAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
 
