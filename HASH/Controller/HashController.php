@@ -395,7 +395,7 @@ class HashController
     $hare_type = $_POST['hare_type'];
     $inputSearchValue = $inputSearch['value'];
 
-    $typeClause = $hare_type=="all" ? "" : "AND b.HARE_TYPE=? AND c.HARE_TYPE=?";
+    $typeClause = $hare_type=="all" ? "" : "AND b.HARE_TYPE & ? != 0 AND c.HARE_TYPE & ? != 0";
 
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
@@ -3053,8 +3053,7 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
   }
 
 
-  public function coharelistByHareNonHypersAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
-
+  public function coharelistByHareAction(Request $request, Application $app, int $hasher_id, int $hare_type, string $kennel_abbreviation){
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3081,11 +3080,11 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,0, (int) $kennelKy));
+    $cohareList = $app['db']->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3093,12 +3092,14 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
     # Make a database call to obtain the hasher information
     $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
 
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've had the shame of haring with $hasherName";
     $returnValue = $app['twig']->render('cohare_list.twig',array(
-      'pageTitle' => 'Cohare List (Non Hyper Hashes)',
-      'pageSubTitle' => 'Non Hyper Hashes Only',
+      'pageTitle' => $hare_type_name . ' Cohare List',
+      'pageSubTitle' => '',
       'tableCaption' => $captionValue,
       'theList' => $cohareList,
       'kennel_abbreviation' => $kennel_abbreviation
@@ -3167,7 +3168,7 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
 
   }
 
-  public function cohareCountByHareNonHypersAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+  public function cohareCountByHareAction(Request $request, Application $app, int $hasher_id, int $hare_type, string $kennel_abbreviation){
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3193,12 +3194,12 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,0, (int) $kennelKy));
+    $hashList = $app['db']->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3206,17 +3207,19 @@ public function haringTypeCountsAction(Request $request, Application $app, strin
     # Make a database call to obtain the hasher information
     $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
 
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've hared with  $hasherName";
     $returnValue = $app['twig']->render('name_number_list.twig',array(
-      'pageTitle' => 'Hare Counts (Hyper Hashes Excluded)',
+      'pageTitle' => $hare_type_name.' Hare Counts',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hare Count',
       'tableCaption' => $captionValue,
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'CoHareListTrueHarings'
+      'pageTracking' => 'CoHareList'.$hare_type_name.'Harings'
     ));
 
     #Return the return value
@@ -3359,13 +3362,10 @@ public function hashAttendanceByHareGrandTotalDistinctHashersAction(Request $req
 
 }
 
-public function hasherCountsByHareAction(Request $request, Application $app, int $hare_id, string $kennel_abbreviation){
+public function hasherCountsByHareAction(Request $request, Application $app, int $hare_id, int $hare_type, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  $hypersOnly = isset($_GET['type']) && $_GET['type']=='hyper';
-  $trueOnly = isset($_GET['type']) && $_GET['type']=='true';
 
   #Define the SQL to execute
   $sql = "SELECT
@@ -3381,13 +3381,12 @@ public function hasherCountsByHareAction(Request $request, Application $app, int
     	HARINGS.HARINGS_HASHER_KY = ?
         AND HASHINGS.HASHER_KY != ?
         AND HASHES.KENNEL_KY = ? " .
-        ($hypersOnly ? "AND HASHES.IS_HYPER = 1 " : "") .
-        ($trueOnly ? "AND HASHES.IS_HYPER = 0 " : "") . "
+        ($hare_type != 0 ? "AND HARINGS.HARE_TYPE & ? != 0 " : "AND HARINGS.HARE_TYPE != ?") . "
     GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
     ORDER BY VALUE DESC, NAME";
 
   #Execute the SQL statement; create an array of rows
-  $hashList = $app['db']->fetchAll($sql,array( (int) $hare_id, (int)$hare_id, (int) $kennelKy));
+  $hashList = $app['db']->fetchAll($sql,array($hare_id, $hare_id, (int) $kennelKy, $hare_type));
 
   # Declare the SQL used to retrieve this information
   $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3395,11 +3394,11 @@ public function hasherCountsByHareAction(Request $request, Application $app, int
   # Make a database call to obtain the hasher information
   $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hare_id));
 
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
   # Establish and set the return value
   $hasherName = $hasher['HASHER_NAME'];
-  $captionValue = "The hashers who've hashed under the " .
-    ($hypersOnly ? "hyper " : "") .
-    ($trueOnly ? "true " : "") . "hare, $hasherName";
+  $captionValue = "The hashers who've hashed under the " . $hare_type_name . " hare, $hasherName";
   $returnValue = $app['twig']->render('name_number_list.twig',array(
     'pageTitle' => 'Hasher Counts',
     'columnOneName' => 'Hasher Name',
@@ -4832,7 +4831,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
 
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByYear .= "
-      SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     array_push($args, (int) $hareType['HARE_TYPE']);
   }
   array_push($args, (int) $hasher_id);
@@ -4880,7 +4879,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
           MONTH(EVENT_DATE) AS THE_VALUE,";
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByMonth .= "
-      SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
   }
     $sqlHaringsByMonth .= "
           COUNT(*) AS TOTAL_HARING_COUNT
@@ -4900,7 +4899,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
         QUARTER(EVENT_DATE) AS THE_VALUE,";
       foreach ($hareTypes as &$hareType) {
 	$sqlHaringsByQuarter .= "
-	  SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
       }
       $sqlHaringsByQuarter .= "
         COUNT(*) AS TOTAL_HARING_COUNT
@@ -4920,7 +4919,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
       HASHES.EVENT_STATE,";
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByState .= "
-	  SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
     $sqlHaringsByState .= "
       COUNT(*) AS TOTAL_HARING_COUNT
@@ -4959,7 +4958,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
         DAYNAME(EVENT_DATE) AS THE_VALUE,";
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByDayName .= "
-	SUM(CASE WHEN HARINGS.HARE_TYPE IN (?)  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+	SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
     $sqlHaringsByDayName .= "
         COUNT(*) AS TOTAL_HARING_COUNT
@@ -5097,7 +5096,7 @@ public function viewHareChartsAction(Request $request, Application $app, int $ha
         ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
      WHERE HARINGS.HARINGS_HASHER_KY = ?
        AND KENNEL_KY = ?
-       AND HARINGS.HARE_TYPE = ?
+       AND HARINGS.HARE_TYPE & ? != 0
        AND LAT IS NOT NULL
        AND LNG IS NOT NULL";
   $theHashes = $app['db']->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy,
@@ -5111,7 +5110,7 @@ public function viewHareChartsAction(Request $request, Application $app, int $ha
         ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
      WHERE HARINGS.HARINGS_HASHER_KY = ?
        AND KENNEL_KY = ?
-       AND HARINGS.HARE_TYPE = ?
+       AND HARINGS.HARE_TYPE & ? != 0
        AND LAT IS NOT NULL
        AND LNG IS NOT NULL";
   $theAverageLatLong = $app['db']->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id,

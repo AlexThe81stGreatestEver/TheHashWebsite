@@ -153,7 +153,11 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
       <h5>
         <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>View Hound Details</a></i> |
         {% for hare_type in hare_types %}
-	  <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+	  {% if hare_type.HARE_TYPE_NAME == hare_type_name %}
+	    <i>{{hare_type.HARE_TYPE_NAME}} Hare Details</i> |
+	  {% else %}
+	    <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+	  {% endif %}
         {% endfor %}
         <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>Overall Hare Details</a></i>
 
@@ -188,10 +192,10 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         <div class="col-sm-7" style="background-color:silver;">
           <h3>Their harings</h3>
           <dl class="dl-horizontal">
-            <a href='/{{kennel_abbreviation}}/coharelist/byhare/nonhypers/{{hasherValue.HASHER_KY}}'>Their True Haring Cohares</a><br>
-            <a href='/{{kennel_abbreviation}}/coharecount/byhare/nonhypers/{{hasherValue.HASHER_KY}}'>Their True Haring Cohare Count </a><br>
+            <a href='/{{kennel_abbreviation}}/coharelist/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohares</a><br>
+            <a href='/{{kennel_abbreviation}}/coharecount/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohare Count </a><br>
             All of their haring analversaries (Not written yet)<br>
-            <a href='/{{kennel_abbreviation}}/getHasherCountsByHare/{{hasherValue.HASHER_KY}}?type=true'>Hounds who have hashed their true harings</a><br>
+            <a href='/{{kennel_abbreviation}}/getHasherCountsByHare/{{hasherValue.HASHER_KY}}/{{hare_type}}'>Hounds who have hashed their {{ hare_type_name }} harings</a><br>
           </dl>
         </div>
 
@@ -216,7 +220,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_year_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
@@ -259,7 +263,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_month_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
@@ -304,7 +308,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_quarter_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
@@ -346,7 +350,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_state_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
@@ -390,7 +394,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_dayname_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
@@ -431,14 +435,14 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
         <div class="col-sm-6 collapse" style="background-color:yellow" id="citylist">
           <dl class="dl-horizontal">
-            <h4>True Harings by city</h4>
+            <h4>{{ hare_type_name }} Harings by city</h4>
             <div data-role="content" id="hasherNonHyperHaringsByCity-list"></div>
           </dl>
         </div>
 
         <div class="col-sm-6 collapse" style="background-color:gold" id="coharelist">
           <dl class="dl-horizontal">
-            <h4>Favorite True CoHares</h4>
+            <h4>Favorite {{ hare_type_name }} CoHares</h4>
             <div data-role="content" id="cohareCountByHareNonHypers-list"></div>
           </dl>
         </div>
@@ -446,13 +450,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
       <div class="row">
         <div id = "div_one" class="col-sm-12" style="width:100%;height:600px">
-          <h4>True Harings By City</h4>
+          <h4>{{ hare_type_name }} Harings By City</h4>
           <canvas id="my_canvas" class="wordcloud"></canvas>
         </div>
       </div>
       <div class="row">
         <div id = "div_two" class="col-sm-12" style="width:100%;height:600px">
-          <h4>Favorite True CoHares</h4>
+          <h4>Favorite {{ hare_type_name }} CoHares</h4>
           <canvas id="my_canvas2" class="wordcloud"></canvas>
         </div>
       </div>
