@@ -29,9 +29,44 @@ class ObscureStatisticsController{
 
     #return the return value
     return $returnValue;
-
   }
 
+  private function getHareTypes($app, $kennelKy) {
+
+    #Define the SQL to RuntimeException
+    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME
+              FROM HARE_TYPES
+              JOIN KENNELS
+                ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+             WHERE KENNELS.KENNEL_KY = ?
+             ORDER BY HARE_TYPES.SEQ";
+
+    #Query the database
+    $hareTypes = $app['db']->fetchAll($sql, array((int) $kennelKy));
+
+    #return the return value
+    return $hareTypes;
+  }
+
+  private function getHashTypes($app, $kennelKy, $hare_type) {
+
+    #Define the SQL to RuntimeException
+    $sql = "SELECT HASH_TYPES.HASH_TYPE, HASH_TYPES.HASH_TYPE_NAME
+	      FROM HASH_TYPES
+	      JOIN KENNELS
+		ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0
+	     WHERE KENNELS.KENNEL_KY = ?".
+	     ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
+	     ORDER BY HASH_TYPES.SEQ";
+
+    #Query the database
+    $args = array((int) $kennelKy);
+    if($hare_type != 0) array_push($args, $hare_type);
+    $hashTypes = $app['db']->fetchAll($sql, $args);
+
+    #return the return value
+    return $hashTypes;
+  }
 
   public function kennelEventsHeatMap(Request $request, Application $app, string $kennel_abbreviation){
 
@@ -141,17 +176,20 @@ class ObscureStatisticsController{
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+      $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
+      $hareTypes = $this->getHareTypes($app, $kennelKy);
+
       #Establish the page title
       $pageTitle = "$year_value: Year in review";
 
       #Obtain number of hashes
       $hashCount = ($app['db']->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
 
-      #Obtain number of hyper hashes
-      $hyperHashCount = ($app['db']->fetchAssoc(PER_KENNEL_HYPER_HASH_COUNTS_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
-
-      #Obtain number of true hashes
-      $trueHashCount = ($app['db']->fetchAssoc(PER_KENNEL_TRUE_HASH_COUNTS_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
+      foreach($hashTypes as &$hashType) {
+        #Obtain number of hashtype hashes
+        $hashCounts[$hashType['HASH_TYPE_NAME']] = ($app['db']->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR . " AND HASHES.HASH_TYPE = ?",
+          array((int)$year_value, (int) $kennelKy, $hashType['HASH_TYPE'])))['THE_COUNT'];
+      }
 
       #Obtain number of hashers
       $hasherCount = ($app['db']->fetchAssoc(PER_KENNEL_HASHERS_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
@@ -159,26 +197,22 @@ class ObscureStatisticsController{
       #Obtain number of overall hares
       $overallHareCount = ($app['db']->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
 
-      #Obtain number of hyper hares
-      $hyperHareCount = ($app['db']->fetchAssoc(PER_KENNEL_HYPER_HARES_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
-
-      #Obtain number of true hares
-      $trueHareCount = ($app['db']->fetchAssoc(PER_KENNEL_TRUE_HARES_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
+      foreach($hareTypes as &$hareType) {
+        $hareCounts[$hareType['HARE_TYPE_NAME']] = ($app['db']->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR . "AND HARINGS.HARE_TYPE & ? != 0",
+          array((int)$year_value, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+      }
 
       # Obtain the number of newbie hashers
       $newHashers = $app['db']->fetchAll(NEW_HASHERS_FOR_THIS_YEAR, array((int) $kennelKy,(int) $kennelKy, (int)$year_value));
       $newHashersCount = count($newHashers);
 
-      # Obtain the number of newbie true hares
-      $newTrueHares = $app['db']->fetchAll(NEW_HARES_FOR_THIS_YEAR, array(0,0,(int) $kennelKy,0,0,(int) $kennelKy, 0,0,(int)$year_value));
-      $newTrueHaresCount = count($newTrueHares);
+      foreach($hareTypes as &$hareType) {
+        $newHareCounts[$hareType['HARE_TYPE_NAME']] = count($app['db']->fetchAll(NEW_HARES_FOR_THIS_YEAR_BY_HARE_TYPE,
+          array($hareType['HARE_TYPE'],(int) $kennelKy,$hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE'],(int)$year_value)));
+      }
 
-      # Obtain the number of newbie hyper hares
-      $newHyperHares = $app['db']->fetchAll(NEW_HARES_FOR_THIS_YEAR, array(1,1,(int) $kennelKy,1,1,(int) $kennelKy, 1,1,(int)$year_value));
-      $newHyperHaresCount = count($newHyperHares);
-
-      # Obtain the number of newbie hyper hares
-      $newOverallHares = $app['db']->fetchAll(NEW_HARES_FOR_THIS_YEAR, array(0,1,(int) $kennelKy,0,1,(int) $kennelKy, 0,1,(int)$year_value));
+      # Obtain the number of new overall hares
+      $newOverallHares = $app['db']->fetchAll(NEW_HARES_FOR_THIS_YEAR, array((int) $kennelKy,(int) $kennelKy,(int)$year_value));
       $newOverallHaresCount = count($newOverallHares);
 
       #Establish the return value
@@ -186,22 +220,20 @@ class ObscureStatisticsController{
         'pageTitle' => $pageTitle,
         'yearValue' => $year_value,
         'kennel_abbreviation' => $kennel_abbreviation,
+        'hash_types' => $hashTypes,
+        'hare_types' => $hareTypes,
         'hash_count' => $hashCount,
-        'hyper_hash_count' => $hyperHashCount,
-        'true_hash_count' => $trueHashCount,
+        'hash_counts' => $hashCounts,
         'hasher_count' => $hasherCount,
         'overall_hare_count' => $overallHareCount,
-        'true_hare_count' => $trueHareCount,
-        'hyper_hare_counts' => $hyperHareCount,
+        'hare_counts' => $hareCounts,
         'newbie_hashers_count' => $newHashersCount,
-        'newbie_true_hares_count' => $newTrueHaresCount,
-        'newbie_hyper_hares_count' => $newHyperHaresCount,
+        'newbie_hare_counts' => $newHareCounts,
         'newbie_overall_hares_count' => $newOverallHaresCount
       ));
 
       #Return the return value
       return $returnValue;
-
     }
 
     #Obtain hashers for an event
@@ -245,8 +277,8 @@ class ObscureStatisticsController{
 
     }
 
-    #Obtain total hare counts per year
-    public function getHyperHareCountsByYear(Request $request, Application $app, string $kennel_abbreviation){
+    #Obtain hare counts per year
+    public function getHareCountsByYear(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -255,31 +287,10 @@ class ObscureStatisticsController{
       $theYear = $request->request->get('year_value');
 
       #Define the SQL to execute
-      $hareCountSQL = HYPER_HARE_COUNTS_BY_YEAR;
+      $hareCountSQL = HARE_COUNTS_BY_YEAR_BY_HARE_TYPE;
 
       #Obtain the hare list
-      $hareCountList = $app['db']->fetchAll($hareCountSQL,array((int)$theYear, (int) $kennelKy));
-
-      #Set the return value
-      $returnValue =  $app->json($hareCountList, 200);
-      return $returnValue;
-
-    }
-
-    #Obtain total hare counts per year
-    public function getNonHyperHareCountsByYear(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
-
-      #Define the SQL to execute
-      $hareCountSQL = NONHYPER_HARE_COUNTS_BY_YEAR;
-
-      #Obtain the hare list
-      $hareCountList = $app['db']->fetchAll($hareCountSQL,array((int)$theYear, (int) $kennelKy));
+      $hareCountList = $app['db']->fetchAll($hareCountSQL,array((int)$theYear, $hare_type, (int) $kennelKy));
 
       #Set the return value
       $returnValue =  $app->json($hareCountList, 200);
@@ -308,7 +319,7 @@ class ObscureStatisticsController{
 
     }
 
-    public function getNewbieTrueHareListByYear(Request $request, Application $app, string $kennel_abbreviation){
+    public function getNewbieHareListByYear(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -317,49 +328,16 @@ class ObscureStatisticsController{
       $theYear = $request->request->get('year_value');
 
       #Define the SQL to execute
-      $hareCountSQL = NEW_HARES_FOR_THIS_YEAR;
+      $hareCountSQL = NEW_HARES_FOR_THIS_YEAR_BY_HARE_TYPE;
 
       #Obtain the hare list
       $hareCountList = $app['db']->fetchAll($hareCountSQL,array(
-        0,0,
-        (int) $kennelKy,
-        0,0,
-        (int) $kennelKy,
-        0,0,
-        (int)$theYear));
+        $hare_type, (int) $kennelKy, $hare_type, (int) $kennelKy, $hare_type, (int)$theYear));
 
       #Set the return value
       $returnValue =  $app->json($hareCountList, 200);
       return $returnValue;
-
     }
-
-    public function getNewbieHyperHareListByYear(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
-
-      #Define the SQL to execute
-      $hareCountSQL = NEW_HARES_FOR_THIS_YEAR;
-
-      #Obtain the hare list
-      $hareCountList = $app['db']->fetchAll($hareCountSQL,array(
-        1,1,
-        (int) $kennelKy,
-        1,1,
-        (int) $kennelKy,
-        1,1,
-        (int)$theYear));
-
-      #Set the return value
-      $returnValue =  $app->json($hareCountList, 200);
-      return $returnValue;
-
-    }
-
 
     public function getNewbieOverallHareListByYear(Request $request, Application $app, string $kennel_abbreviation){
 
@@ -374,12 +352,9 @@ class ObscureStatisticsController{
 
       #Obtain the hare list
       $hareCountList = $app['db']->fetchAll($hareCountSQL,array(
-        0,1,
         (int) $kennelKy,
-        0,1,
         (int) $kennelKy,
-        0,1,
-        (int)$theYear));
+        (int) $theYear));
 
       #Set the return value
       $returnValue =  $app->json($hareCountList, 200);

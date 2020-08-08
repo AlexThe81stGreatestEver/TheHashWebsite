@@ -447,11 +447,9 @@ $app->get('/admin/eventBudget/{hash_id}','HASH\Controller\AdminController::event
 $app->get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'HASH\Controller\ObscureStatisticsController::getYearInReviewAction');
 $app->post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'HASH\Controller\ObscureStatisticsController::getHasherCountsByYear');
 $app->post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'HASH\Controller\ObscureStatisticsController::getTotalHareCountsByYear');
-$app->post('/{kennel_abbreviation}/statistics/getHyperHareCountsByYear',                  'HASH\Controller\ObscureStatisticsController::getHyperHareCountsByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNonHyperHareCountsByYear',               'HASH\Controller\ObscureStatisticsController::getNonHyperHareCountsByYear');
+$app->post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'HASH\Controller\ObscureStatisticsController::getHareCountsByYear');
 $app->post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'HASH\Controller\ObscureStatisticsController::getNewbieHasherListByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNewbieTrueHareListByYear',               'HASH\Controller\ObscureStatisticsController::getNewbieTrueHareListByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNewbieHyperHareListByYear',              'HASH\Controller\ObscureStatisticsController::getNewbieHyperHareListByYear');
+$app->post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'HASH\Controller\ObscureStatisticsController::getNewbieHareListByYear');
 $app->post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'HASH\Controller\ObscureStatisticsController::getNewbieOverallHareListByYear');
 
 

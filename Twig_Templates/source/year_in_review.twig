@@ -21,8 +21,6 @@
          $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
          $(div_value).append('</thead>');
 
-
-
          $.each(data, function(key,row) {
            $(div_value).append('<tr>');
            $(div_value).append('<td><b>'+ row.HASHER_NAME + '</b></td>');
@@ -48,25 +46,53 @@
 
 //This function loads when the pages loads
  $(document).ready(function() {
-
-
     getListData("/{{kennel_abbreviation}}/statistics/getHasherCountsByYear","#hasherCounts-list","Hasher","Count",{{yearValue}});
+    {% for hare_type in hare_types %}
+      getListData("/{{kennel_abbreviation}}/statistics/getHareCountsByYear/{{hare_type.HARE_TYPE}}","#{{hare_type.HARE_TYPE_NAME}}HareCounts-list","Hasher","Count",{{yearValue}});
+    {% endfor %}
     getListData("/{{kennel_abbreviation}}/statistics/getTotalHareCountsByYear","#totalHareCounts-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getHyperHareCountsByYear","#hyperHareCounts-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNonHyperHareCountsByYear","#nonHyperHareCounts-list","Hasher","Count",{{yearValue}});
-
     getListData("/{{kennel_abbreviation}}/statistics/getNewbieHasherListByYear","#newbieHashers-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieTrueHareListByYear","#newbieTrueHare-list","Hare","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieHyperHareListByYear","#newbieHyperHare-list","Hare","Count",{{yearValue}});
+    {% for hare_type in hare_types %}
+      getListData("/{{kennel_abbreviation}}/statistics/getNewbieHareListByYear/{{hare_type.HARE_TYPE}}","#newbie{{hare_type.HARE_TYPE_NAME}}Hare-list","Hare","Count",{{yearValue}});
+    {% endfor %}
     getListData("/{{kennel_abbreviation}}/statistics/getNewbieOverallHareListByYear","#newbieOverallHare-list","Hare","Count",{{yearValue}});
-
   });
 
+  var column=0;
+  var bgcolor='35A1A5';
+
+  function nextBgColor() {
+    bgcolor = (bgcolor=='35A1A5' ? '81459E' : '35A1A5');
+  }
+
+  function doList(title, subtitle, id) {
+    if(column == 4) {
+      document.write('</div>');
+      column = 0;
+      nextBgColor();
+    }
+    if(column++ == 0) {
+      document.write('<div class="row">');
+    }
+    document.write('<div class="col-sm-3" style="background-color:#' + bgcolor + ';">');
+    nextBgColor();
+    document.write('<h3>' + title + '</h3>');
+    document.write('<h5><i>' + subtitle + '</i></h5>');
+    document.write('<a href="#hasherCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>');
+    document.write('<dl class="dl-horizontal">');
+    document.write('<div data-role="content">');
+    document.write('<ul data-role="listview" id="' + id + '">');
+    document.write('</ul>');
+    document.write('</div>');
+    document.write('</dl>');
+    document.write('</div>');
+  }
+  function endLists() {
+    document.write('</div>');
+    column = 0;
+  }
 
   </script>
-
-
-
 
 <div class="container">
   <h1>{{pageTitle}}</h1>
@@ -77,8 +103,9 @@
       <dl class="dl-horizontal">
           {% autoescape %}
             <dt>Hashes</dt><dd>{{hash_count}}</dd>
-            <dt>Hyper Hashes </dt><dd>{{hyper_hash_count}} </dd>
-            <dt>True Hashes</dt><dd>{{true_hash_count}}</dd>
+            {% for hash_type in hash_types %}
+              <dt>{{ hash_type.HASH_TYPE_NAME }} Hashes </dt><dd>{{ hash_counts[hash_type.HASH_TYPE_NAME] }}</dd>
+            {% endfor %}
           {% endautoescape %}
       </dl>
     </div>
@@ -88,8 +115,9 @@
       <dl class="dl-horizontal">
           {% autoescape %}
             <dt>Hashers</dt><dd>{{hasher_count}}</dd>
-            <dt>True Hares </dt><dd>{{true_hare_count}}</dd>
-            <dt>Hyper Hares</dt><dd>{{hyper_hare_counts}}</dd>
+            {% for hare_type in hare_types %}
+              <dt>{{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd>{{ hare_counts[hare_type.HARE_TYPE_NAME] }}</dd>
+            {% endfor %}
             <dt>Overall Hares</dt><dd>{{overall_hare_count}}</dd>
           {% endautoescape %}
       </dl>
@@ -100,120 +128,29 @@
       <dl class="dl-horizontal">
           {% autoescape %}
             <dt>Newbie Hashers</dt><dd><a href="#newbiehasherlist">{{newbie_hashers_count}}</a></dd>
-            <dt>Newbie True Hares </dt><dd><a href="#newbietrueharelist">{{newbie_true_hares_count}}</a></dd>
-            <dt>Newbie Hyper Hares</dt><dd><a href="#newbiehyperharelist">{{newbie_hyper_hares_count}}</a></dd>
+            {% for hare_type in hare_types %}
+            <dt>Newbie {{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd><a href="#newbie{{ hare_type.HARE_TYPE_NAME }}harelist">{{ newbie_hare_counts[hare_type.HARE_TYPE_NAME] }}</a></dd>
+            {% endfor %}
             <dt>Newbie Overall Hares</dt><dd><a href="#newbieoverallharelist">{{newbie_overall_hares_count}}</a></dd>
           {% endautoescape %}
       </dl>
     </div>
-
-
   </div>
 
-  <div class="row">
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Hasher Counts</h3>
-      <h5><i>* {{yearValue}} hashing count listed</i></h5>
-      <a href="#hasherCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="hasherCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
+  <script type = "text/javascript" language = "javascript">
+      doList('Hasher Counts', '* {{yearValue}} hashing count listed', 'hasherCounts-list');
+      {% for hare_type in hare_types %}
+        doList('{{ hare_type.HARE_TYPE_NAME }} Haring Counts', '* {{yearValue}} {{ hare_type.HARE_TYPE_NAME }} haring count listed', '{{ hare_type.HARE_TYPE_NAME }}HareCounts-list');
+      {% endfor %}
+      doList('Overall Haring Counts', '* {{yearValue}} overall haring count listed', 'totalHareCounts-list');
+      doList('Newbie Hashers', '* All time hashing count listed', 'newbieHashers-list');
+      {% for hare_type in hare_types %}
+        doList('Newbie {{ hare_type.HARE_TYPE_NAME }} Hares', '* All time {{ hare_type.HARE_TYPE_NAME }} haring count listed', 'newbie{{ hare_type.HARE_TYPE_NAME }}Hare-list');
+      {% endfor %}
+      doList('Newbie Overall Hares', '* All time overall haring count listed', 'newbieOverallHare-list');
+      endLists();
+  </script>
 
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>True Haring Counts</h3>
-      <h5><i>* {{yearValue}} true haring count listed</i></h5>
-      <a href="#nonHyperHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="nonHyperHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Hyper Haring Counts</h3>
-      <h5><i>* {{yearValue}} hyper haring count listed</i></h5>
-      <a href="#hyperHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="hyperHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Overall Haring Counts</h3>
-      <h5><i>* {{yearValue}} overall haring count listed</i></h5>
-      <a href="#totalHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="totalHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Newbie Hashers</h3>
-      <h5><i>* All time hashing count listed</i></h5>
-      <a href="#newbieHashers-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbiehasherlist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieHashers-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Newbie True Hares</h3>
-      <h5><i>* All time true haring count listed</i></h5>
-      <a href="#newbieTrueHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbietrueharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieTrueHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Newbie Hyper Hares</h3>
-      <h5><i>* All time hyper haring count listed</i></h5>
-      <a href="#newbieHyperHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbiehyperharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieHyperHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Newbie Overall Hares</h3>
-      <h5><i>* All time overall haring count listed</i></h5>
-      <a href="#newbieOverallHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbieoverallharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieOverallHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-  </div>
 </div>
 
 {% endblock %}
