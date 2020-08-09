@@ -3555,10 +3555,13 @@ public function kennelRecordsStatsAction(Request $request, Application $app, str
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_kennel_records.twig',array(
     'pageTitle' => 'Kennel Records',
-    'kennel_abbreviation' => $kennel_abbreviation
+    'kennel_abbreviation' => $kennel_abbreviation,
+    'hare_types' => $hareTypes
   ));
 
   #Return the return value

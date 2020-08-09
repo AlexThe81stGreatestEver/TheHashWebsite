@@ -529,8 +529,8 @@ $app->get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','HASH
 
 $app->get('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenAllHaringsAction');
 $app->get('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenAllHaringsAction');
-$app->get('/{kennel_abbreviation}/highest/nonhyperharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenNonHyperHaringsAction');
-$app->get('/{kennel_abbreviation}/lowest/nonhyperharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenNonHyperHaringsAction');
+$app->get('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenHaringsAction');
+$app->get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenHaringsAction');
 
 $app->get('/{kennel_abbreviation}/highest/attendedHashes','HASH\Controller\HashController::highestAttendedHashesAction');
 $app->get('/{kennel_abbreviation}/lowest/attendedHashes','HASH\Controller\HashController::lowestAttendedHashesAction');

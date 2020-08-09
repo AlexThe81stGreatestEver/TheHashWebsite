@@ -12,18 +12,22 @@
   <div class="col-lg-4">
     <div class="list-group">
       <a href="#1" class="list-group-item active">Highest Time Between Events</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/averageDaysBetweenHashes'>Days between hashings</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/allharings/averageDaysBetweenHarings'>Days between (overall) harings</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/nonhyperharings/averageDaysBetweenHarings'>Days between (true) harings</a>
+      <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/averageDaysBetweenHashes'>Days Between Hashings</a>
+      <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/allharings/averageDaysBetweenHarings'>Days Between (Overall) Harings</a>
+      {% for hare_type in hare_types %}
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/highest/{{ hare_type.HARE_TYPE }}/averageDaysBetweenHarings'>Days Between ({{ hare_type.HARE_TYPE_NAME }}) Harings</a>
+      {% endfor %}
     </div>
   </div>
 
   <div class="col-lg-4">
     <div class="list-group">
       <a href="#2" class="list-group-item active">Smallest Time Between Events</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/averageDaysBetweenHashes'>Days between hashes</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/allharings/averageDaysBetweenHarings'>Days between (overall) harings</a>
-      <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/nonhyperharings/averageDaysBetweenHarings'>Days between (true) harings</a>
+      <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/averageDaysBetweenHashes'>Days Between Hashes</a>
+      <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/allharings/averageDaysBetweenHarings'>Days Between (Overall) Harings</a>
+      {% for hare_type in hare_types %}
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/lowest/{{ hare_type.HARE_TYPE }}/averageDaysBetweenHarings'>Days Between ({{ hare_type.HARE_TYPE_NAME }}) Harings</a>
+      {% endfor %}
     </div>
   </div>
 

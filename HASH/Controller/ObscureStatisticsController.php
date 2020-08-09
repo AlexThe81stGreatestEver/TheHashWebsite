@@ -31,6 +31,18 @@ class ObscureStatisticsController{
     return $returnValue;
   }
 
+  private function getHareTypeName($app, $hare_type) {
+    $sql = "SELECT HARE_TYPE_NAME
+              FROM HARE_TYPES
+             WHERE HARE_TYPES.HARE_TYPE = ?";
+
+    #Query the database
+    $result = $app['db']->fetchAssoc($sql, array((int) $hare_type));
+
+    #return the return value
+    return $result['HARE_TYPE_NAME'];
+  }
+
   private function getHareTypes($app, $kennelKy) {
 
     #Define the SQL to RuntimeException
@@ -1319,15 +1331,9 @@ class ObscureStatisticsController{
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
-        (int)$minHaringCount
+        (int) $minHaringCount
       ));
 
       #Define the page sub title
@@ -1366,15 +1372,9 @@ class ObscureStatisticsController{
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
         (int) $kennelKy,
-        (int) 0,
-        (int) 1,
-        (int)$minHaringCount
+        (int) $minHaringCount
       ));
 
       #Define the page sub title
@@ -1399,13 +1399,15 @@ class ObscureStatisticsController{
 
 
 
-    public function lowestAverageDaysBetweenNonHyperHaringsAction(Request $request, Application $app, string $kennel_abbreviation){
+    public function lowestAverageDaysBetweenHaringsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+      $hareTypeName = $this->getHareTypeName($app, $hare_type);
+
       #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS;
+      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS_BY_TYPE;
       $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
       $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
 
@@ -1415,19 +1417,16 @@ class ObscureStatisticsController{
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
+        (int) $hare_type,
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
+        (int) $hare_type,
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
-        (int)$minHaringCount
+        (int) $hare_type,
+        (int) $minHaringCount
       ));
 
       #Define the page sub title
-      $pageSubTitle = "Days between first and last harings (non-hyper hashes only)";
+      $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
 
       #Define the table caption
       $tableCaption = "Minimum haring count: $minHaringCount";
@@ -1438,7 +1437,8 @@ class ObscureStatisticsController{
         'pageSubTitle' => $pageSubTitle,
         'tableCaption' => $tableCaption,
         'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation
+        'kennel_abbreviation' => $kennel_abbreviation,
+        'hare_type_name' => $hareTypeName
       ));
 
       #Return the return value
@@ -1447,13 +1447,15 @@ class ObscureStatisticsController{
     }
 
 
-    public function highestAverageDaysBetweenNonHyperHaringsAction(Request $request, Application $app, string $kennel_abbreviation){
+    public function highestAverageDaysBetweenHaringsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+      $hareTypeName = $this->getHareTypeName($app, $hare_type);
+
       #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS;
+      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS_BY_TYPE;
       $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
       $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
 
@@ -1463,19 +1465,16 @@ class ObscureStatisticsController{
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
+        (int) $hare_type,
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
+        (int) $hare_type,
         (int) $kennelKy,
-        (int) 0,
-        (int) 0,
-        (int)$minHaringCount
+        (int) $hare_type,
+        (int) $minHaringCount
       ));
 
       #Define the page sub title
-      $pageSubTitle = "Days between first and last harings (non-hyper hashes only)";
+      $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
 
       #Define the table caption
       $tableCaption = "Minimum haring count: $minHaringCount";
@@ -1486,7 +1485,8 @@ class ObscureStatisticsController{
         'pageSubTitle' => $pageSubTitle,
         'tableCaption' => $tableCaption,
         'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation
+        'kennel_abbreviation' => $kennel_abbreviation,
+        'hare_type_name' => $hareTypeName
       ));
 
       #Return the return value
