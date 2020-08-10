@@ -6,11 +6,9 @@
       <caption>{{tableCaption}}</caption>
       <thead>
         <tr>
-          <th>{{columnOneName}}</th>
-          <th>{{columnTwoName}}</th>
-          <th>{{columnThreeName}}</th>
-          <th>{{columnFourName}}</th>
-          <th>{{columnFiveName}}</th>
+          {% for columnName in columnNames %}
+            <th>{{columnName}}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
@@ -18,9 +16,10 @@
           <tr>
             <td><a href='/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}'>{{item.HASHER_NAME}}</a></td>
             <td><a href='/{{kennel_abbreviation}}/listhashes/byhare/{{item.HASHER_KY}}'>{{item.ALL_HARING_COUNT}}</a></td>
-            <td><a href='/{{kennel_abbreviation}}/listhashes/byhare/{{item.HASHER_KY}}'>{{item.HYPER_HARING_COUNT}}</a></td>
-            <td>{{item.HYPER_HARINGS_PERCENTAGE}}</td>
-            <td>{{item.NON_HYPER_HARINGS_PERCENTAGE}}</td>
+            {% for hareType in hareTypes %}
+              <td><a href='/{{kennel_abbreviation}}/listhashes/byhare/{{item.HASHER_KY}}'>{{item[hareType.HARE_TYPE_NAME ~ '_HARING_COUNT']}}</a></td>
+              <td>{{item[hareType.HARE_TYPE_NAME ~ '_HARINGS_PERCENTAGE']}}</td>
+            {% endfor %}
           </tr>
         {% endfor %}
       </tbody>

@@ -2893,29 +2893,63 @@ public function haringPercentageAction(Request $request, Application $app, int $
 
 
 
-public function percentageHaringsHypersVsNonHypers(Request $request, Application $app, string $kennel_abbreviation){
-
-  # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGES_HYPERS_VS_ALL;
+public function percentageHarings(Request $request, Application $app, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy));
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
 
+  $args = array($kennelKy);
+  $columnNames = array('Hasher Name', 'Haring Count (All)');
+
+  # Declare the SQL used to retrieve this information
+  $sql = "
+    SELECT ";
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .=
+      $hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,
+      (('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT / ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT) * 100) AS '.$hareType['HARE_TYPE_NAME'].'_HARINGS_PERCENTAGE,';
+  }
+  $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT 
+      FROM HASHERS
+      JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
+              FROM HARINGS
+	      JOIN HASHES
+	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+	     WHERE HASHES.KENNEL_KY = ?
+             GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE 
+        ON (HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
+  foreach ($hareTypes as &$hareType) {
+    $sql .="
+      JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT
+	      FROM HARINGS
+	      JOIN HASHES
+	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+	     WHERE HARINGS.HARE_TYPE & ? != 0
+	       AND HASHES.KENNEL_KY = ?
+             GROUP BY HARINGS.HARINGS_HASHER_KY) ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE
+	ON (HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
+    array_push($args, $hareType['HARE_TYPE']);
+    array_push($args, $kennelKy);
+    array_push($columnNames, 'Haring Count ('.$hareType['HARE_TYPE_NAME'].')');
+    array_push($columnNames, $hareType['HARE_TYPE_NAME'].' Haring Percentage');
+  }
+  $sql .="
+     ORDER BY HASHERS.HASHER_NAME";
+
+  #Execute the SQL statement; create an array of rows
+  $hasherList = $app['db']->fetchAll($sql, $args);
 
   # Establish the return value
   $returnValue = $app['twig']->render('percentage_list_multiple_values.twig',array(
-    'pageTitle' => 'Hyper Haring Percentages',
-    'tableCaption' => 'This shows the percentage of hyper hashes that make up each hare\'s haring list. The hyper haring percentage shows the percentage of harings people have done that were hyper hashes.',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Haring Count (All)',
-    'columnThreeName' => 'Haring Count (Hyper Hashes)',
-    'columnFourName' => 'Hyper Haring Percentage',
-    'columnFiveName' => 'Non-Hyper Haring Percentage',
+    'pageTitle' => 'Haring Percentages',
+    'tableCaption' => 'This shows the percentage of haring types for each hasher.',
+    'columnNames' => $columnNames,
     'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation
+    'kennel_abbreviation' => $kennel_abbreviation,
+    'hareTypes' => $hareTypes
   ));
 
   #Return the return value
