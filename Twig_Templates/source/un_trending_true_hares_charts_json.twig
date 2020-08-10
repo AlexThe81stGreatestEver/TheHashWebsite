@@ -12,7 +12,7 @@
     function createTheChart(day_count,min_hash_count,max_percentage, row_limit, div_value){
 
        $.ajax({
-           url : "/{{kennel_abbreviation}}/unTrendingTrueHaresJsonPost/" + day_count + "/" + min_hash_count + "/" + max_percentage + "/" + row_limit,
+           url : "/{{kennel_abbreviation}}/unTrendingHaresJsonPost/{{ hare_type }}/" + day_count + "/" + min_hash_count + "/" + max_percentage + "/" + row_limit,
            type: "GET",
            dataType : 'json',
            success: function(data, textStatus, jqXHR){
@@ -51,22 +51,22 @@
                hashCountList.push(temp);
              }
 
-             // Obtain the list of true haring counts
-             var trueHaringCountList = [];
+             // Obtain the list of haring counts
+             var haringCountList = [];
              for (var i = 0; i < dataResultList.length; i++) {
-               var temp= dataResultList[i].NON_HYPER_HARE_COUNT;
-               trueHaringCountList.push(temp);
+               var temp= dataResultList[i].HARE_COUNT;
+               haringCountList.push(temp);
              }
 
-             // Obtain the list of true haring percentages
-             var trueHaringPercentageList = [];
+             // Obtain the list of haring percentages
+             var haringPercentageList = [];
              for (var i = 0; i < dataResultList.length; i++) {
-               var temp= dataResultList[i].NON_HYPER_HARING_TO_HASHING_PERCENTAGE;
-               trueHaringPercentageList.push(temp);
+               var temp= dataResultList[i].HARING_TO_HASHING_PERCENTAGE;
+               haringPercentageList.push(temp);
              }
-             //alert(JSON.stringify(trueHaringPercentageList, null, 4));
+             //alert(JSON.stringify(haringPercentageList, null, 4));
              updateTheDivs(day_count,min_hash_count,max_percentage_value,number_of_rows);
-             printTheChart(hasherList, hashCountList, trueHaringCountList,trueHaringPercentageList,div_value);
+             printTheChart(hasherList, hashCountList, haringCountList,haringPercentageList,div_value);
 
 
            },
@@ -81,11 +81,11 @@
 
     function updateTheDivs (day_cnt, min_hash_cnt,max_pct,row_limit_cnt) {
       $('#header_row_count_id').html("The Top " + row_limit_cnt);
-      $('#header_other_values_id').html("Minimum of " + min_hash_cnt + " hashes; Max Haring Percentag of " + max_pct + "; Last " + day_cnt + " days");
+      $('#header_other_values_id').html("Minimum of " + min_hash_cnt + " hashes; Max Haring Percentage of " + max_pct + "; Last " + day_cnt + " days");
     }
 
     var myChart;
-    function printTheChart (labels, hashesCount,trueHaringCount,trueHaringPercentageList,div_value) {
+    function printTheChart (labels, hashesCount,haringCount,haringPercentageList,div_value) {
 
         // If the myChart value exists, destroy it! Otherwise, the chart flickers when mousing over...
         if(myChart){
@@ -107,20 +107,20 @@
                                 data: hashesCount
                             },
                             {
-                                label: 'Number of Non-Hyper Harings',
+                                label: 'Number of {{ hare_type_name }} Harings',
                                 fillColor:'rgba(75, 192, 192, 0.2)',
                                 backgroundColor:'rgba(255, 99, 132, 0.2)',
                                 borderColor:'rgba(255, 99, 132, 1)',
                                 borderWidth: 1,
-                                data: trueHaringCount
+                                data: haringCount
                             },
                             {
-                                label: 'Non-Hyper Haring Percentage',
+                                label: '{{ hare_type_name }} Haring Percentage',
                                 fillColor:'rgba(75, 192, 192, 0.2)',
                                 backgroundColor:'rgba(153, 102, 255, 0.2)',
                                 borderColor:'rgba(153, 102, 255, 1)',
                                 borderWidth: 1,
-                                data: trueHaringPercentageList
+                                data: haringPercentageList
                             }
                         ]
                     };
@@ -221,7 +221,7 @@
           <div class="col-xs-10">
             <input class="form-control input-sm" type="number" value="{{max_percentage}}" id="max_percentage_id">
             <p id="max_percentage_id_help_block" class="form-text text-muted">
-                The true haring percentage (hashes done vs true hypers hared) cut off. If the cut off is 10%, then everyone with percentages higher than this are excluded.
+                The haring percentage (hashes done vs hashes hared) cut off. If the cut off is 10%, then everyone with percentages higher than this are excluded.
             </p>
           </div>
         </div>

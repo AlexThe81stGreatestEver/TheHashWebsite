@@ -3611,6 +3611,8 @@ public function kennelGeneralInfoStatsAction(Request $request, Application $app,
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   #Obtain the first hash
   $firstHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
   $firstHashValue = $app['db']->fetchAssoc($firstHashSQL, array((int) $kennelKy));
@@ -3625,6 +3627,7 @@ public function kennelGeneralInfoStatsAction(Request $request, Application $app,
     'kennel_abbreviation' => $kennel_abbreviation,
     'first_hash' => $firstHashValue,
     'latest_hash' => $mostRecentHashValue,
+    'hare_types' => $hareTypes
   ));
 
   #Return the return value

@@ -318,11 +318,11 @@ $app->get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',             
 $app->get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HASH\Controller\HashController::consolidatedEventAnalversariesAction');
 
 $app->get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'HASH\Controller\ObscureStatisticsController::trendingHashersAction');
-$app->get('/{kennel_abbreviation}/trendingTrueHares/{day_count}',                       'HASH\Controller\ObscureStatisticsController::trendingTrueHaresAction');
+$app->get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'HASH\Controller\ObscureStatisticsController::trendingHaresAction');
 
 #Ajax version of untrending hares graphs
-$app->get('/{kennel_abbreviation}/unTrendingTrueHaresJsonPre/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingTrueHaresJsonPreAction');
-$app->get('/{kennel_abbreviation}/unTrendingTrueHaresJsonPost/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingTrueHaresJsonPostAction');
+$app->get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingHaresJsonPreAction');
+$app->get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingHaresJsonPostAction');
 
 
 

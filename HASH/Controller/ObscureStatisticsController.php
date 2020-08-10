@@ -1907,35 +1907,33 @@ class ObscureStatisticsController{
 
     }
 
-    public function trendingTrueHaresAction(Request $request, Application $app, string $kennel_abbreviation, int $day_count){
+    public function trendingHaresAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation, int $day_count){
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+      $hareTypeName = $this->getHareTypeName($app, $hare_type);
 
       #Establish the row limit
       $rowLimit = 15;
 
       # Obtain the average event attendance per year
-      $sqlTrendingTrueHares = "SELECT
-      	HASHERS.HASHER_NAME AS THE_VALUE,
-      	COUNT(*) AS THE_COUNT
-      FROM
-      	HASHERS
-      	JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-      	JOIN HASHES on HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-      WHERE HASHES.KENNEL_KY = ?
-        AND HASHES.IS_HYPER = 0
-        AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)
-      GROUP BY HASHERS.HASHER_NAME
-      ORDER BY THE_COUNT DESC
-      LIMIT $rowLimit";
-      $trendingTrueHaresList = $app['db']->fetchAll($sqlTrendingTrueHares, array((int) $kennelKy, (int) $day_count));
+      $sqlTrendingTrueHares = "
+        SELECT HASHERS.HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
+          FROM HASHERS
+          JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+         WHERE HASHES.KENNEL_KY = ?
+           AND HARINGS.HARE_TYPE & ? != 0
+           AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)
+         GROUP BY HASHERS.HASHER_NAME
+         ORDER BY THE_COUNT DESC
+         LIMIT $rowLimit";
+      $trendingTrueHaresList = $app['db']->fetchAll($sqlTrendingTrueHares, array((int) $kennelKy, $hare_type, (int) $day_count));
 
       # Establish and set the return value
       $returnValue = $app['twig']->render('trending_true_hares_charts.twig',array(
-        'pageTitle' => 'Trending True Hares',
-        'firstHeader' => 'FIRST HEADER',
-        'secondHeader' => 'SECOND HEADER',
+        'pageTitle' => 'Trending '.$hareTypeName.' Hares',
         'kennel_abbreviation' => $kennel_abbreviation,
         'trending_true_hares_list' => $trendingTrueHaresList,
         'day_count' => $day_count,
@@ -1944,18 +1942,20 @@ class ObscureStatisticsController{
 
       # Return the return value
       return $returnValue;
-
     }
 
 
     #Define the action
-    public function unTrendingTrueHaresJsonPreAction(Request $request,
+    public function unTrendingHaresJsonPreAction(Request $request,
           Application $app,
           string $kennel_abbreviation,
+          int $hare_type,
           int $day_count,
           int $min_hash_count,
           int $max_percentage,
           int $row_limit){
+
+      $hareTypeName = $this->getHareTypeName($app, $hare_type);
 
       # Establish and set the return value
       $returnValue = $app['twig']->render('un_trending_true_hares_charts_json.twig',array(
@@ -1965,77 +1965,71 @@ class ObscureStatisticsController{
         'day_count' => $day_count,
         'row_limit' => $row_limit,
         'min_hash_count' => $min_hash_count,
-        'max_percentage' => $max_percentage
+        'max_percentage' => $max_percentage,
+        'hare_type' => $hare_type,
+        "hare_type_name" => $hareTypeName
       ));
 
       #Return the return value
       return $returnValue;
-
     }
 
 
 
-    public function unTrendingTrueHaresJsonPostAction(
+    public function unTrendingHaresJsonPostAction(
       Request $request,
       Application $app,
       string $kennel_abbreviation,
+      int $hare_type,
       int $day_count,
       int $min_hash_count,
       int $max_percentage,
-      int $row_limit){
+      int $row_limit) {
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
       # Obtain the average event attendance per year
-      $sqlUnTrendingTrueHares = "SELECT
-            HASHER_NAME,
-            ((NON_HYPER_HARE_COUNT/HASH_COUNT)*100) AS NON_HYPER_HARING_TO_HASHING_PERCENTAGE,
-            HASH_COUNT,
-            NON_HYPER_HARE_COUNT,
-            HASHER_KY
-        FROM
-          (
-          SELECT
-            HASHERS.*,
-            HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-            (
-              SELECT COUNT(*)
-              FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-              WHERE
-              HASHINGS.HASHER_KY = OUTER_HASHER_KY
-                      AND HASHES.KENNEL_KY = ?
-                      AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)) AS HASH_COUNT,
-            (
-              SELECT COUNT(*)
-              FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-              WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-              AND HASHES.KENNEL_KY = ?
-              AND HASHES.IS_HYPER = 0
-                  AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)) AS NON_HYPER_HARE_COUNT
-          FROM
-            HASHERS
-        )
-        MAIN_TABLE
-        WHERE HASH_COUNT > ?
-        AND ((NON_HYPER_HARE_COUNT/HASH_COUNT)*100) < $max_percentage
-        ORDER BY NON_HYPER_HARING_TO_HASHING_PERCENTAGE ,HASH_COUNT DESC
-      LIMIT $row_limit";
+      $sqlUnTrendingTrueHares = "
+        SELECT HASHER_NAME,
+               ((HARE_COUNT/HASH_COUNT)*100) AS HARING_TO_HASHING_PERCENTAGE,
+               HASH_COUNT, HARE_COUNT, HASHER_KY
+          FROM (SELECT HASHERS.*, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                       SELECT COUNT(*)
+                         FROM HASHINGS
+                         JOIN HASHES
+                           ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                          AND HASHES.KENNEL_KY = ?
+                          AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)) AS HASH_COUNT, (
+                       SELECT COUNT(*)
+                         FROM HARINGS
+                         JOIN HASHES
+                           ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                          AND HASHES.KENNEL_KY = ?
+                          AND HARINGS.HARE_TYPE & ? != 0
+                          AND EVENT_DATE >= (CURRENT_DATE - INTERVAL ? DAY)) AS HARE_COUNT
+                  FROM HASHERS) MAIN_TABLE
+         WHERE HASH_COUNT > ?
+           AND ((HARE_COUNT/HASH_COUNT)*100) < ?
+         ORDER BY HARING_TO_HASHING_PERCENTAGE, HASH_COUNT DESC
+         LIMIT $row_limit";
+
       $unTrendingTrueHaresList = $app['db']->fetchAll(
         $sqlUnTrendingTrueHares,
         array(
           (int) $kennelKy,
           (int) $day_count,
           (int) $kennelKy,
+          $hare_type,
           (int) $day_count,
-          (int) $min_hash_count
+          (int) $min_hash_count,
+          $max_percentage
         ));
-
-
 
         #Establish the output
         $output = array(
-          "sEcho" => "foo",
           "day_count" => $day_count,
           "row_limit" => $row_limit,
           "min_hash_count" => $min_hash_count,
@@ -2048,7 +2042,6 @@ class ObscureStatisticsController{
 
         #Return the return value
         return $returnValue;
-
     }
 
 
