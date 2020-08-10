@@ -2859,10 +2859,12 @@ public function haringPercentageAllHashesAction(Request $request, Application $a
 }
 
 
-public function haringPercentageNonHypersAction(Request $request, Application $app, string $kennel_abbreviation){
+public function haringPercentageAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGE_NON_HYPER_HASHES;
+  $sql = HARING_PERCENTAGE_BY_HARE_TYPE;
+
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2871,12 +2873,12 @@ public function haringPercentageNonHypersAction(Request $request, Application $a
   $minHashCount = 0;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy,(int) $minHashCount));
+  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy, $hare_type, (int) $minHashCount));
 
   # Establish the return value
   $returnValue = $app['twig']->render('percentage_list.twig',array(
-    'pageTitle' => '(Non Hyper Hash) Haring Percentage List',
-    'tableCaption' => 'Percentage of non hyper harings per hashings for each hasher',
+    'pageTitle' => $hare_type_name . ' Haring Percentage List',
+    'tableCaption' => 'Percentage Of ' . $hare_type_name . ' Harings Per Hashings For Each Hasher',
     'columnOneName' => 'Hasher Name',
     'columnTwoName' => 'Hashing Count',
     'columnThreeName' => 'Haring Count',

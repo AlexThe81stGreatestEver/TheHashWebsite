@@ -331,7 +331,7 @@ $app->get('/{kennel_abbreviation}/predictedHasherAnalversaries',                
 $app->get('/{kennel_abbreviation}/predictedCenturions',                                 'HASH\Controller\HashController::predictedCenturionsAction');
 $app->get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HASH\Controller\HashController::pendingHareAnalversariesAction');
 $app->get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HASH\Controller\HashController::haringPercentageAllHashesAction');
-$app->get('/{kennel_abbreviation}/haringPercentageNonHypers',                           'HASH\Controller\HashController::haringPercentageNonHypersAction');
+$app->get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HASH\Controller\HashController::haringPercentageAction');
 $app->get('/{kennel_abbreviation}/hashingCounts',                                       'HASH\Controller\HashController::hashingCountsAction');
 $app->get('/{kennel_abbreviation}/haringCounts',                                        'HASH\Controller\HashController::haringCountsAction');
 $app->get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HASH\Controller\HashController::haringTypeCountsAction');
