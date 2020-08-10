@@ -364,16 +364,18 @@ class HashController
   }
 
   #Define the action
-  public function listVirginHaringsPreActionJson(Request $request, Application $app, string $kennel_abbreviation){
+  public function listVirginHaringsPreActionJson(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
+
+    $hareTypeName = $this->getHareTypeName($app, $hare_type);
 
     # Establish and set the return value
     $returnValue = $app['twig']->render('virgin_haring_list_json.twig',array(
-      'pageTitle' => 'The List of Virgin (True) Harings',
+      'pageTitle' => 'The List of Virgin ('.$hareTypeName.') Harings',
       'pageSubTitle' => '',
-      #'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation,
       'pageCaption' => "",
-      'tableCaption' => ""
+      'tableCaption' => "",
+      'hare_type' => $hare_type
     ));
 
     #Return the return value
@@ -835,7 +837,7 @@ class HashController
   }
 
 
-  public function getVirginHaringsListJson(Request $request, Application $app, string $kennel_abbreviation){
+  public function getVirginHaringsListJson(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
     #$app['monolog']->addDebug("Entering the function------------------------");
 
@@ -896,78 +898,66 @@ class HashController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-		    HASHERS.HASHER_NAME AS HASHER_NAME,
-        FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
-		    HASHERS.HASHER_KY AS HASHER_KY,
-		    FIRST_HARING_EVENT_TABLE.FIRST_HASH_KEY AS FIRST_HARING_KEY
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))
-      WHERE HASHERS.HASHER_NAME LIKE ?
-      ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-      LIMIT $inputStart,$inputLength";
-      #$app['monolog']->addDebug("sql: $sql");
+    $sql = "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+                   FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
+                   HASHERS.HASHER_KY AS HASHER_KY,
+                   FIRST_HARING_EVENT_TABLE.FIRST_HASH_KEY AS FIRST_HARING_KEY
+          FROM HASHERS
+          JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                       MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
+                       MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+                 FROM HARINGS
+                 JOIN HASHES
+                   ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                WHERE HASHES.KENNEL_KY = ?
+                  AND HARINGS.HARE_TYPE & ? != 0
+                GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+            ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
+         WHERE HASHERS.HASHER_NAME LIKE ?
+         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+         LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT
-		    COUNT(*) AS THE_COUNT
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))
-      WHERE HASHERS.HASHER_NAME LIKE ?";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
+                     MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+               FROM HARINGS
+               JOIN HASHES
+                 ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+              WHERE HASHES.KENNEL_KY = ?
+                AND HARINGS.HARE_TYPE & ? != 0
+              GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+          ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
+       WHERE HASHERS.HASHER_NAME LIKE ?";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount = "SELECT
-		    COUNT(*) AS THE_COUNT
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))";
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
+                     MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+                FROM HARINGS
+                JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+                 AND HARINGS.HARE_TYPE & ? != 0
+               GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+          ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY))";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
     #Perform the filtered search
-    $theResults = $app['db']->fetchAll($sql,array($kennelKy,(string) $inputSearchValueModified));
+    $theResults = $app['db']->fetchAll($sql,array($kennelKy, $hare_type, (string) $inputSearchValueModified));
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy, $hare_type)))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array($kennelKy,(string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array($kennelKy, $hare_type, (string) $inputSearchValueModified)))['THE_COUNT'];
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
@@ -2912,14 +2902,14 @@ public function percentageHarings(Request $request, Application $app, string $ke
       $hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,
       (('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT / ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT) * 100) AS '.$hareType['HARE_TYPE_NAME'].'_HARINGS_PERCENTAGE,';
   }
-  $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT 
+  $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT
       FROM HASHERS
       JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
               FROM HARINGS
 	      JOIN HASHES
 	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
 	     WHERE HASHES.KENNEL_KY = ?
-             GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE 
+             GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE
         ON (HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
   foreach ($hareTypes as &$hareType) {
     $sql .="

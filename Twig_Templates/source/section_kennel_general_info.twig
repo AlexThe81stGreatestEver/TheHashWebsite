@@ -71,11 +71,14 @@
       <a class="list-group-item" href="/{{kennel_abbreviation}}/everyones/first/hashes/5">Everyone's first hash (by date)</a>
       <a class="list-group-item" href="/{{kennel_abbreviation}}/firstTimersStatistics/5">First Timers Charts</a>
       <a class="list-group-item" href="/{{kennel_abbreviation}}/lastTimersStatistics/5/6">Last Timers Charts</a>
-      <a class="list-group-item" href="/{{kennel_abbreviation}}/listvirginharings">Virgin Harings List</a>
-      <a class="list-group-item" href="/{{kennel_abbreviation}}/virginHaringsStatistics">Virgin Haring Charts</a>
+      {% for hare_type in hare_types %}
+        <a class="list-group-item" href="/{{kennel_abbreviation}}/listvirginharings/{{hare_type.HARE_TYPE}}">Virgin {{ hare_type.HARE_TYPE_NAME }} Harings List</a>
+        <a class="list-group-item" href="/{{kennel_abbreviation}}/virginHaringsStatistics/{{hare_type.HARE_TYPE}}">Virgin {{ hare_type.HARE_TYPE_NAME }} Haring Charts</a>
+      {% endfor %}
       <a class="list-group-item" href="/{{kennel_abbreviation}}/distinctHasherStatistics">Distinct Hasher Charts</a>
-      <a class="list-group-item" href="/{{kennel_abbreviation}}/distinctTrueHareStatistics">Distinct True Hare Charts</a>
-      <a class="list-group-item" href="/{{kennel_abbreviation}}/distinctHyperHareStatistics">Distinct Hyper Hare Charts</a>
+      {% for hare_type in hare_types %}
+        <a class="list-group-item" href="/{{kennel_abbreviation}}/distinctHareStatistics/{{hare_type.HARE_TYPE}}">Distinct {{ hare_type.HARE_TYPE_NAME }} Hare Charts</a>
+      {% endfor %}
     </div>
   </div>
 </div>

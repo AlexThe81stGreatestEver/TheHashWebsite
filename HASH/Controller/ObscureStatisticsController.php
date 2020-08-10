@@ -1629,33 +1629,32 @@ class ObscureStatisticsController{
 
 
 
-        public function virginHaringsChartsAction(Request $request, Application $app, string $kennel_abbreviation){
+        public function virginHaringsChartsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
           #Obtain the kennel key
           $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+          $hareTypeName = $this->getHareTypeName($app, $hare_type);
+
           # Obtain the average event attendance per year
           $sqlByYear = VIRGIN_HARINGS_BY_YEAR;
-          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,0,0));
+          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/month)
           $sqlByYearQuarter = VIRGIN_HARINGS_BY_YEAR_QUARTER;
-          $listByYearQuarter = $app['db']->fetchAll($sqlByYearQuarter, array((int) $kennelKy,0,0));
+          $listByYearQuarter = $app['db']->fetchAll($sqlByYearQuarter, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/quarter)
           $sqlByYearMonth = VIRGIN_HARINGS_BY_YEAR_MONTH;
-          $listByYearMonth = $app['db']->fetchAll($sqlByYearMonth, array((int) $kennelKy,0,0));
-
+          $listByYearMonth = $app['db']->fetchAll($sqlByYearMonth, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/month)
           $sqlByMonth = VIRGIN_HARINGS_BY_MONTH;
-          $listByMonth = $app['db']->fetchAll($sqlByMonth, array((int) $kennelKy,0,0));
+          $listByMonth = $app['db']->fetchAll($sqlByMonth, array((int) $kennelKy,$hare_type));
 
           # Establish and set the return value
           $returnValue = $app['twig']->render('generic_charts_template.twig',array(
-            'pageTitle' => 'Virgin (True) Harings Statistics',
-            'firstHeader' => 'FIRST HEADER',
-            'secondHeader' => 'SECOND HEADER',
+            'pageTitle' => 'Virgin ('.$hareTypeName.') Harings Statistics',
             'kennel_abbreviation' => $kennel_abbreviation,
             'List_By_Year_List' => $listByYear,
             'List_By_YearMonth_List' => $listByYearMonth,
@@ -1726,102 +1725,51 @@ class ObscureStatisticsController{
     }
 
 
-        public function distinctTrueHaresChartsAction(Request $request, Application $app, string $kennel_abbreviation){
+        public function distinctHaresChartsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
           #Obtain the kennel key
           $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+          $hareTypeName = $this->getHareTypeName($app, $hare_type);
+
           # Obtain the average event attendance per year
           $sqlByYear = DISTINCT_HARES_BY_YEAR;
-          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,0,0));
+          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/month)
           $sqlByYearQuarter = DISTINCT_HARES_BY_YEAR_QUARTER;
-          $listByYearQuarter = $app['db']->fetchAll($sqlByYearQuarter, array((int) $kennelKy,0,0));
+          $listByYearQuarter = $app['db']->fetchAll($sqlByYearQuarter, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/quarter)
           $sqlByYearMonth = DISTINCT_HARES_BY_YEAR_MONTH;
-          $listByYearMonth = $app['db']->fetchAll($sqlByYearMonth, array((int) $kennelKy,0,0));
-
+          $listByYearMonth = $app['db']->fetchAll($sqlByYearMonth, array((int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/month)
           $sqlByMonth = DISTINCT_HARES_BY_MONTH;
-          $listByMonth = $app['db']->fetchAll($sqlByMonth, array((int) $kennelKy,0,0));
+          $listByMonth = $app['db']->fetchAll($sqlByMonth, array((int) $kennelKy,$hare_type));
 
           # Establish and set the return value
           $returnValue = $app['twig']->render('generic_charts_template.twig',array(
-            'pageTitle' => 'Distinct True Hare Statistics',
-            'firstHeader' => 'FIRST HEADER',
-            'secondHeader' => 'SECOND HEADER',
+            'pageTitle' => 'Distinct '.$hareTypeName.' Hare Statistics',
             'kennel_abbreviation' => $kennel_abbreviation,
             'List_By_Year_List' => $listByYear,
             'List_By_YearMonth_List' => $listByYearMonth,
             'List_By_YearQuarter_List' => $listByYearQuarter,
             'List_By_Month_List' => $listByMonth,
-            'BY_YEAR_BAR_LABEL' => 'Number of Unique True Hares',
-            'BY_YEAR_TITLE' => 'Distinct True Hares Per Year',
-            'BY_MONTH_BAR_LABEL' => 'Number of Unique True Hares',
-            'BY_MONTH_TITLE' => 'Distinct True Hares Per Month',
-            'BY_YEAR_QUARTER_BAR_LABEL' => 'Number of Unique True Hares',
-            'BY_YEAR_QUARTER_TITLE' => 'Distinct True Hares Per Year/Quarter',
-            'BY_YEAR_MONTH_BAR_LABEL' => 'Number of Unique True Hares',
-            'BY_YEAR_MONTH_TITLE' => 'Distinct True Hares Per Year/Month',
+            'BY_YEAR_BAR_LABEL' => 'Number of Unique '.$hareTypeName.' Hares',
+            'BY_YEAR_TITLE' => 'Distinct '.$hareTypeName.' Hares Per Year',
+            'BY_MONTH_BAR_LABEL' => 'Number of Unique '.$hareTypeName.' Hares',
+            'BY_MONTH_TITLE' => 'Distinct '.$hareTypeName.' Hares Per Month',
+            'BY_YEAR_QUARTER_BAR_LABEL' => 'Number of Unique '.$hareTypeName.' Hares',
+            'BY_YEAR_QUARTER_TITLE' => 'Distinct '.$hareTypeName.' Hares Per Year/Quarter',
+            'BY_YEAR_MONTH_BAR_LABEL' => 'Number of Unique '.$hareTypeName.' Hares',
+            'BY_YEAR_MONTH_TITLE' => 'Distinct '.$hareTypeName.' Hares Per Year/Month',
           ));
 
           # Return the return value
           return $returnValue;
 
         }
-
-
-
-
-                public function distinctHyperHaresChartsAction(Request $request, Application $app, string $kennel_abbreviation){
-
-                  #Obtain the kennel key
-                  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-                  # Obtain the average event attendance per year
-                  $sqlByYear = DISTINCT_HARES_BY_YEAR;
-                  $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,1,1));
-
-                  # Obtain the average event attendance per (year/month)
-                  $sqlByYearQuarter = DISTINCT_HARES_BY_YEAR_QUARTER;
-                  $listByYearQuarter = $app['db']->fetchAll($sqlByYearQuarter, array((int) $kennelKy,1,1));
-
-                  # Obtain the average event attendance per (year/quarter)
-                  $sqlByYearMonth = DISTINCT_HARES_BY_YEAR_MONTH;
-                  $listByYearMonth = $app['db']->fetchAll($sqlByYearMonth, array((int) $kennelKy,1,1));
-
-
-                  # Obtain the average event attendance per (year/month)
-                  $sqlByMonth = DISTINCT_HARES_BY_MONTH;
-                  $listByMonth = $app['db']->fetchAll($sqlByMonth, array((int) $kennelKy,1,1));
-
-                  # Establish and set the return value
-                  $returnValue = $app['twig']->render('generic_charts_template.twig',array(
-                    'pageTitle' => 'Distinct Hyper Hare Statistics',
-                    'firstHeader' => 'FIRST HEADER',
-                    'secondHeader' => 'SECOND HEADER',
-                    'kennel_abbreviation' => $kennel_abbreviation,
-                    'List_By_Year_List' => $listByYear,
-                    'List_By_YearMonth_List' => $listByYearMonth,
-                    'List_By_YearQuarter_List' => $listByYearQuarter,
-                    'List_By_Month_List' => $listByMonth,
-                    'BY_YEAR_BAR_LABEL' => 'Number of Unique Hyper Hares',
-                    'BY_YEAR_TITLE' => 'Distinct Hyper Hares Per Year',
-                    'BY_MONTH_BAR_LABEL' => 'Number of Unique Hyper Hares',
-                    'BY_MONTH_TITLE' => 'Distinct Hyper Hares Per Month',
-                    'BY_YEAR_QUARTER_BAR_LABEL' => 'Number of Unique Hyper Hares',
-                    'BY_YEAR_QUARTER_TITLE' => 'Distinct Hyper Hares Per Year/Quarter',
-                    'BY_YEAR_MONTH_BAR_LABEL' => 'Number of Unique Hyper Hares',
-                    'BY_YEAR_MONTH_TITLE' => 'Distinct Hyper Hares Per Year/Month',
-                  ));
-
-                  # Return the return value
-                  return $returnValue;
-
-                }
 
 
     public function viewLastTimersChartsAction(Request $request, Application $app, string $kennel_abbreviation, int $min_hash_count, int $month_count){
