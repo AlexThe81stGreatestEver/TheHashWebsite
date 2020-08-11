@@ -1869,9 +1869,6 @@ class HashController
 
       # Make a database call to obtain the hasher information
       $houndAnalversaryList = $app['db']->fetchAll(HOUND_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $overallHareAnalversaryList = $app['db']->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $trueHareAnalversaryList = $app['db']->fetchAll(TRUE_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $hyperHareAnalversaryList = $app['db']->fetchAll(HYPER_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
       $consolidatedHareAnalversaryList = $app['db']->fetchAll(CONSOLIDATED_HARE_ANALVERSARIES_FOR_EVENT, array(
         (int) $hash_id,(int) $kennelKy, (int) $hash_id,
         (int) $hash_id,(int) $kennelKy, (int) $hash_id,
@@ -2018,9 +2015,6 @@ class HashController
         'pageTitle' => 'Consolidated Analversaries',
         'pageSubTitle' => $pageSubtitle,
         'houndAnalversaryList' => $houndAnalversaryList,
-        'overalHareAnalversaryList' => $overallHareAnalversaryList,
-        'trueHareAnalversaryList' => $trueHareAnalversaryList,
-        'hyperHareAnalversaryList' => $hyperHareAnalversaryList,
         'consolidatedHareAnalversaryList' => $consolidatedHareAnalversaryList,
         'kennel_abbreviation' => $kennel_abbreviation,
         'geolocationHoundAnalversaryList' => $geolocationHoundAnalversaryList,
