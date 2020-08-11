@@ -664,7 +664,7 @@ class HashController
     #Define the SQL to execute
     $sql = "
       SELECT THE_KEY, NAME, HASHER_ABBREVIATION,
-             GROUP_CONCAT(HARE_TYPE_NAME) AS HARE_TYPE_NAME
+             GROUP_CONCAT(HARE_TYPE_NAME SEPARATOR ', ') AS HARE_TYPE_NAME
         FROM (
       SELECT HASHERS.HASHER_KY AS THE_KEY,
              HASHERS.HASHER_NAME AS NAME,
