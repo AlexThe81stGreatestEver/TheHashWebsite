@@ -2260,6 +2260,8 @@ class ObscureStatisticsController{
         #Obtain the kennel key
         $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+        $hareTypes = $this->getHareTypes($app, $kennelKy);
+
         #Obtain the kennel value
         $kennelValueSql = "SELECT KENNELS.* FROM KENNELS WHERE KENNEL_KY = ?";
         $kennelValue = $app['db']->fetchAssoc($kennelValueSql, array((int) $kennelKy));
@@ -2285,18 +2287,16 @@ class ObscureStatisticsController{
         $distinctHasherCountValueForKennel = $app['db']->fetchAssoc(KENNEL_NUM_OF_DISTINCT_HASHERS, array((int) $kennelKy));
         $distinctHasherCountForKennel = $distinctHasherCountValueForKennel['THE_COUNT'];
 
-        #Obtain the number of distinct hashers
+        #Obtain the number of distinct overall hares
         $distinctOverallHareCountValueForKennel = $app['db']->fetchAssoc(KENNEL_NUM_OF_DISTINCT_OVERALL_HARES, array((int) $kennelKy));
         $distinctOverallHareCountForKennel = $distinctOverallHareCountValueForKennel['THE_COUNT'];
 
-        #Obtain the number of distinct hashers
-        $distinctTrueHareCountValueForKennel = $app['db']->fetchAssoc(KENNEL_NUM_OF_DISTINCT_TRUE_HARES, array((int) $kennelKy));
-        $distinctTrueHareCountForKennel = $distinctTrueHareCountValueForKennel['THE_COUNT'];
-
-        #Obtain the number of distinct hashers
-        $distinctHyperHareCountValueForKennel = $app['db']->fetchAssoc(KENNEL_NUM_OF_DISTINCT_HYPER_HARES, array((int) $kennelKy));
-        $distinctHyperHareCountForKennel = $distinctHyperHareCountValueForKennel['THE_COUNT'];
-
+        #Obtain the number of distinct hares by type
+        $distinctHareCounts = array();
+        foreach($hareTypes as &$hareType) {
+          $distinctHareCountValueForKennel = $app['db']->fetchAssoc(KENNEL_NUM_OF_DISTINCT_HARES, array((int) $kennelKy, $hareType['HARE_TYPE']));
+          $distinctHareCounts[$hareType['HARE_TYPE_NAME']] = $distinctHareCountValueForKennel['THE_COUNT'];
+        }
 
         # Obtain the number of hashings
         #$hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
@@ -2396,11 +2396,10 @@ class ObscureStatisticsController{
           'avg_lng' => $avgLng,
           'hash_count' => $hashCountForKennel,
           'distinct_hasher_count' => $distinctHasherCountForKennel,
-          'distinct_true_hare_count' => $distinctTrueHareCountForKennel,
-          'distinct_hyper_hare_count' => $distinctHyperHareCountForKennel,
-          'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel
+          'distinct_hare_counts' => $distinctHareCounts,
+          'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel,
+          'hareTypes' => $hareTypes
         ));
-
 
         # Return the return value
         return $returnValue;
