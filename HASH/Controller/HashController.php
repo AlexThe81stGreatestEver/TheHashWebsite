@@ -662,11 +662,22 @@ class HashController
 
 
     #Define the SQL to execute
-    $sql = "SELECT
-      HASHERS.HASHER_KY AS THE_KEY,
-      HASHERS.HASHER_NAME AS NAME ,
-      HASHERS.HASHER_ABBREVIATION
-      FROM HASHERS JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY WHERE HARINGS.HARINGS_HASH_KY = ?";
+    $sql = "
+      SELECT THE_KEY, NAME, HASHER_ABBREVIATION,
+             GROUP_CONCAT(HARE_TYPE_NAME) AS HARE_TYPE_NAME
+        FROM (
+      SELECT HASHERS.HASHER_KY AS THE_KEY,
+             HASHERS.HASHER_NAME AS NAME,
+             HASHERS.HASHER_ABBREVIATION,
+             HARE_TYPES.HARE_TYPE_NAME
+        FROM HASHERS
+        JOIN HARINGS
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+       WHERE HARINGS.HARINGS_HASH_KY = ?
+       ORDER BY HASHERS.HASHER_NAME, HARE_TYPES.SEQ) THE_TABLE
+       GROUP BY THE_KEY, NAME, HASHER_ABBREVIATION";
 
     #Execute the SQL statement; create an array of rows
     $hasherList = $app['db']->fetchAll($sql,array((int) $hash_id));
@@ -683,7 +694,7 @@ class HashController
     $theSubTitle = "Hares at Hash Number $theHashEventNumber ($theHashEventLocation) ";
 
     # Establish and set the return value
-    $returnValue = $app['twig']->render('hasher_list.twig',array(
+    $returnValue = $app['twig']->render('hare_list.twig',array(
       'pageTitle' => 'The List of Hares',
       'pageSubTitle' => $theSubTitle,
       'theList' => $hasherList,

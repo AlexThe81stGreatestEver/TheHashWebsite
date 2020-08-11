@@ -480,7 +480,7 @@ $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/dayname',   
 $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/state',                     'HASH\Controller\ObscureStatisticsController::getHasherAllHaringsByState');
 $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'HASH\Controller\ObscureStatisticsController::getHasherAllHaringsByCity');
 
-# Mappings for hasher (non hyper) harings by (year/month/state/etc)
+# Mappings for hasher harings by (year/month/state/etc) by hare type
 $app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',                      'HASH\Controller\ObscureStatisticsController::getHasherHaringsByYear');
 $app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'HASH\Controller\ObscureStatisticsController::getHasherHaringsByQuarter');
 $app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'HASH\Controller\ObscureStatisticsController::getHasherHaringsByMonth');
