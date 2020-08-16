@@ -187,61 +187,36 @@
 
 
 
-        {% if the_quickest_to_x_hyper_harings_results|length == 10 %}
-          <div class="col-lg-3" ><div style="padding:2">
-            <h4>Quickest To {{the_quickest_to_x_hyper_harings_number}} Hyper Harings</a></h4>
-              {% set bgcolor = "#f4ecf7" %}
-              {% set headerColor = "#d3d3d3" %}
-              <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
-              </div>
-
-              {% for item in the_quickest_to_x_hyper_harings_results %}
+        {% for quickest_hare_data in quickest_hares %}
+          {% set hares = quickest_hare_data.data %}
+          {% if hares|length == 10 %}
+            <div class="col-lg-3" ><div style="padding:2">
+              <h4>Quickest To {{the_quickest_to_x_harings_number}} {{ quickest_hare_data.label }} Harings</a></h4>
+                {% set bgcolor = "#fad7a0" %}
+                {% set headerColor = "#d3d3d3" %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
+                  <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
+                  <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
+
+                  <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
+                  <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
                 </div>
-              {% endfor %}
-          </div></div>
-        {% endif %}
 
-        {% if the_quickest_to_x_true_harings_results|length == 10 %}
-          <div class="col-lg-3" ><div style="padding:2">
-            <h4>Quickest To {{the_quickest_to_x_true_harings_number}} True Harings</a></h4>
-              {% set bgcolor = "#fad7a0" %}
-              {% set headerColor = "#d3d3d3" %}
-              <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
-              </div>
-
-              {% for item in the_quickest_to_x_true_harings_results %}
-                <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
+                {% for item in hares %}
+                  <div class="row">
+                    <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                    <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
+                    </div>
+                    <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                    <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
+                    </div>
                   </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
-                </div>
-              {% endfor %}
-          </div></div>
-        {% endif %}
+                {% endfor %}
+            </div></div>
+          {% endif %}
+        {% endfor %}
 
         {% if the_slowest_to_x_results|length == 10 %}
           <div class="col-lg-3" ><div style="padding:2">

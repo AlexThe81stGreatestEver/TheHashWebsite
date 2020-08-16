@@ -248,24 +248,19 @@ class HashController
     $theSql = "$theSql LIMIT 10";
     $theSlowestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
 
+    $quickest_hares = array();
+    $theQuickestToXHaringsNumber = 5;
+    $theSql = str_replace("XLIMITX",$theQuickestToXHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
+    $theSql = str_replace("XORDERX","ASC",$theSql);
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
+    $theSql = "$theSql LIMIT 10";
 
+    foreach ($hareTypes as &$hareType) {
     #Get the quickest to 5 true harings
-    $theQuickestToXTrueHaringsNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXTrueHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
-    $theSql = str_replace("XORDERX","ASC",$theSql);
-    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
-    $theSql = "$theSql LIMIT 10";
-    //TODO: fix
-    //$theQuickestToXTrueHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,0,0,(int) $kennelKy,0,0));
-
-    #Get the quickest to 5 hyper harings
-    $theQuickestToXHyperHaringsNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXHyperHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
-    $theSql = str_replace("XORDERX","ASC",$theSql);
-    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
-    $theSql = "$theSql LIMIT 10";
-    //TODO: fix
-    //$theQuickestToXHyperHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,1,1,(int) $kennelKy,1,1));
+      $theQuickestToXHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
+      array_push($quickest_hares,
+        array(data => $theQuickestToXHaringsResults, label => $hareType['HARE_TYPE_NAME'], hare_type => $hareType['HARE_TYPE']));
+    }
 
     #Query for the event tag summary
     $eventTagSql = "SELECT HT.TAG_TEXT, HT.HASHES_TAGS_KY,COUNT(HTJ.HASHES_KY) AS THE_COUNT
@@ -298,10 +293,8 @@ class HashController
       'the_quickest_to_y_results' => $theQuickestToYResults,
       'the_slowest_to_x_number' => $theSlowestToXNumber,
       'the_slowest_to_x_results' => $theSlowestToXResults,
-      'the_quickest_to_x_true_harings_number' => $theQuickestToXTrueHaringsNumber,
-      'the_quickest_to_x_true_harings_results' => $theQuickestToXTrueHaringsResults,
-      'the_quickest_to_x_hyper_harings_number' => $theQuickestToXHyperHaringsNumber,
-      'the_quickest_to_x_hyper_harings_results' => $theQuickestToXHyperHaringsResults,
+      'the_quickest_to_x_harings_number' => $theQuickestToXHaringsNumber,
+      'quickest_hares' => $quickest_hares,
       'top_hashers_this_year' => $topHashersThisYear,
       'top_hashers_last_year' => $topHashersLastYear,
       'top_hares_this_year' => $topHaresThisYear,
