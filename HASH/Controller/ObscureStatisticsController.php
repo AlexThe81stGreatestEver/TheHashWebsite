@@ -46,7 +46,7 @@ class ObscureStatisticsController{
   private function getHareTypes($app, $kennelKy) {
 
     #Define the SQL to RuntimeException
-    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME
+    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
               FROM HARE_TYPES
               JOIN KENNELS
                 ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE

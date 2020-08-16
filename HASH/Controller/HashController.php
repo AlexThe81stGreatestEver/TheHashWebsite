@@ -139,7 +139,7 @@ class HashController
   private function getHareTypes($app, $kennelKy) {
 
     #Define the SQL to RuntimeException
-    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME
+    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
               FROM HARE_TYPES
               JOIN KENNELS
                 ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
@@ -5099,6 +5099,13 @@ public function viewHareChartsAction(Request $request, Application $app, int $ha
 
   $hare_type_name = $this->getHareTypeName($app, $hare_type);
 
+  foreach ($hareTypes as &$hareType) {
+    if($hareType['HARE_TYPE'] == $hare_type) {
+      $chart_color = $hareType['CHART_COLOR'];
+      break;
+    }
+  }
+
   $customValues = array(
     'pageTitle' => $hare_type_name.' Hare Charts and Details',
     'hare_types' => $hareTypes,
@@ -5113,7 +5120,8 @@ public function viewHareChartsAction(Request $request, Application $app, int $ha
     'avg_lat' => $avgLat,
     'avg_lng' => $avgLng,
     'hare_type' => $hare_type,
-    'hare_type_name' => $hare_type_name
+    'hare_type_name' => $hare_type_name,
+    'chart_color' => $chart_color
   );
   $finalArray = array_merge($commonValues,$customValues);
   $returnValue = $app['twig']->render('hare_chart_details.twig',$finalArray);

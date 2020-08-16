@@ -225,8 +225,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         {% for individualValue in harings_by_year_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(54, 162, 235, 0.2)',
-                        borderColor:'rgba(54, 162, 235, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -268,8 +268,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         {% for individualValue in harings_by_month_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, .2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -313,8 +313,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         {% for individualValue in harings_by_quarter_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -355,8 +355,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         {% for individualValue in harings_by_state_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -399,8 +399,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         {% for individualValue in harings_by_dayname_list %}
                           {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
