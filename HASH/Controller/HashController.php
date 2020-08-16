@@ -4203,8 +4203,6 @@ public function getProjectedHasherAnalversariesAction(Request $request, Applicat
     'tableCaption' => 'The projected analversaries are based on how many hashes this hasher has done, and how frequently this hasher has hashed them. It applies their days between hashes average and projects out when they might hit certain analversaries.',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
     'overall_boolean' => 'FALSE',
     'firstHashKey' => $hasherStatsObject['FIRST_HASH_KEY'],
     'firstKennelEventNumber' => $hasherStatsObject['FIRST_KENNEL_EVENT_NUMBER'],
