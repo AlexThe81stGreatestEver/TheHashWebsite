@@ -5264,6 +5264,8 @@ private function createComparisonObjectWithStatsAsDates(string $stat1, string $s
 
 private function twoPersonComparisonDataFetch(Request $request, Application $app, int $kennelKy, int $hasher_id1, int $hasher_id2){
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   #Establish the reurn value array
   $returnValue = array();
 
@@ -5282,37 +5284,35 @@ private function twoPersonComparisonDataFetch(Request $request, Application $app
   $returnValue[] = $statObject;
 
   #Obtain the overall haring count
-  $hareCountOverallH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 0, (int) 1)))['THE_COUNT'];
-  $hareCountOverallH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 0, (int) 1)))['THE_COUNT'];
+  $hareCountOverallH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
+  $hareCountOverallH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hareCountOverallH1, $hareCountOverallH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring Count");
   $returnValue[] = $statObject;
 
-  #Obtain the true haring count
-  $hareCountTrueH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 0, (int) 0)))['THE_COUNT'];
-  $hareCountTrueH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 0, (int) 0)))['THE_COUNT'];
-  $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountTrueH1, $hareCountTrueH2, $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring Count");
-  $returnValue[] = $statObject;
-
-  #Obtain the hyper haring count
-  $hareCountHyperH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 1, (int) 1)))['THE_COUNT'];
-  $hareCountHyperH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 1, (int) 1)))['THE_COUNT'];
-  $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountHyperH1, $hareCountHyperH2, $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hyper Haring Count");
-  $returnValue[] = $statObject;
+  #Obtain the haring counts
+  foreach ($hareTypes as &$hareType) {
+    $hareCountH1[$hareType['HARE_TYPE']] = ($app['db']->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id1, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $hareCountH2[$hareType['HARE_TYPE']] = ($app['db']->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id2, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountH1[$hareType['HARE_TYPE']], $hareCountH2[$hareType['HARE_TYPE']], $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring Count");
+    $returnValue[] = $statObject;
+  }
 
   #Obtain the overall haring percentage
   $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountOverallH1/$hashingCountH1),
-    ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring/Hashing %");
+    ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring / Hashing %");
   $returnValue[] = $statObject;
 
-  #Obtain the true haring percentage
-  $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountTrueH1/$hashingCountH1),
-    ($hashingCountH2 == 0 ? 0 : $hareCountTrueH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring/Hashing %");
-  $returnValue[] = $statObject;
+  foreach ($hareTypes as &$hareType) {
+    #Obtain the haring percentage
+    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hashingCountH1),
+      ($hashingCountH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / Hashing %");
+    $returnValue[] = $statObject;
 
-  #Obtain the true haring / all haring percentage
-  $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountTrueH1/$hareCountOverallH1),
-    ($hareCountOverallH2 == 0 ? 0 : $hareCountTrueH2/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring / All Haring %");
-  $returnValue[] = $statObject;
+    #Obtain the haring / all haring percentage
+    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hareCountOverallH1),
+      ($hareCountOverallH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / All Haring %");
+    $returnValue[] = $statObject;
+  }
 
   #Obtain the virgin hash dates
   $virginHashH1 = $app['db']->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id1, (int) $kennelKy));
