@@ -4046,8 +4046,6 @@ public function getHasherAnalversariesAction(Request $request, Application $app,
     'tableCaption' => '',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
     'overall_boolean' => 'FALSE'
   ));
 
