@@ -4229,6 +4229,9 @@ public function jumboCountsTablePreActionJson(Request $request, Application $app
   #Establish the subTitle
   $minimumHashCount = JUMBO_COUNTS_MINIMUM_HASH_COUNT;
   $subTitle = "Minimum of $minimumHashCount hashes";
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('jumbo_counts_list_json.twig',array(
@@ -4237,7 +4240,9 @@ public function jumboCountsTablePreActionJson(Request $request, Application $app
     #'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
-    'tableCaption' => ""
+    'tableCaption' => "",
+    "hareTypes" => $hareTypes,
+    "hashTypes" => $hashTypes
   ));
 
   #Return the return value
@@ -4255,6 +4260,9 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
 
   #Obtain the post parameters
   #$inputDraw = $_POST['draw'] ;
@@ -4314,62 +4322,87 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   $sql = "SELECT
       HASHER_NAME,
       HASH_COUNT,
-      HARE_COUNT,
-      NON_HYPER_HARE_COUNT,
-      HYPER_HARE_COUNT,
+      HARE_COUNT,";
+
+  foreach ($hashTypes as &$hashType) {
+    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  $args = array($kennelKy, $kennelKy);
+
+  $sql .= "
       LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HASH_COUNT) AS NON_HYPER_HARING_TO_HASHING_PERCENTAGE,
-      (HYPER_HARE_COUNT/HARE_COUNT) AS HYPER_TO_OVERALL_HARING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HARE_COUNT) AS NON_HYPER_TO_OVERALL_HARING_PERCENTAGE,
       FIRST_HASH_KEY,
-  	  FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
+      FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
       FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE,
       LATEST_HASH_KEY,
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       OUTER_HASHER_KY AS HASHER_KY
   FROM
-  	(
-  	SELECT
-  		HASHERS.HASHER_NAME,
-  		HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-  		(
-  			SELECT COUNT(*)
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+        (
+        SELECT
+                HASHERS.HASHER_NAME,
+                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+  foreach ($hareTypes as &$hareType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hareType['HARE_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  foreach ($hashTypes as &$hashType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hashType['HASH_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  array_push($args, $kennelKy);
+  array_push($args, $kennelKy);
+  array_push($args, $minimumHashCount);
+  array_push($args, $inputSearchValueModified);
+
+  $sql .= "
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-  	FROM
-  		HASHERS
+        FROM
+                HASHERS
   )
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > $minimumHashCount AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$app['monolog']->addDebug("sql: $sql");
@@ -4379,7 +4412,7 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   FROM
     (
     SELECT
-      HASHERS.HASHER_NAME,
+      HASHERS.HASHER_NAME AS HASHER_NAME,
       HASHERS.HASHER_KY AS OUTER_HASHER_KY,
       (
         SELECT COUNT(*)
@@ -4389,53 +4422,23 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > $minimumHashCount AND (
-        HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT > ? AND HASHER_NAME LIKE ?";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
   FROM
       (
       SELECT
-        HASHERS.HASHER_NAME,
         HASHERS.HASHER_KY AS OUTER_HASHER_KY,
         (
           SELECT COUNT(*)
           FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
       FROM
         HASHERS
     )
     MAIN_TABLE
-    JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-    JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-    WHERE HASH_COUNT > $minimumHashCount";
+    WHERE HASH_COUNT > ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4443,30 +4446,20 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   #$app['monolog']->addDebug("Point A");
 
   #Perform the filtered search
-  $theResults = $app['db']->fetchAll($sql,array(
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (string) $inputSearchValueModified));
+  $theResults = $app['db']->fetchAll($sql,$args);
   #$app['monolog']->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array(
     (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
+    $minimumHashCount
   )))['THE_COUNT'];
   #$app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array(
     (int) $kennelKy,
+    $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$app['monolog']->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------
@@ -4504,6 +4497,9 @@ public function jumboPercentagesTablePreActionJson(Request $request, Application
   #Establish the sub title
   $minimumHashCount = JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT;
   $subTitle = "Minimum of $minimumHashCount hashes";
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('jumbo_percentages_list_json.twig',array(
@@ -4512,7 +4508,9 @@ public function jumboPercentagesTablePreActionJson(Request $request, Application
     #'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
-    'tableCaption' => ""
+    'tableCaption' => "",
+    "hareTypes" => $hareTypes,
+    'hashTypes' => $hashTypes
   ));
 
   #Return the return value
@@ -4527,6 +4525,9 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, $hare_type);
 
   #Define the minimum hash count
   $minimumHashCount = JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT;
@@ -4588,14 +4589,23 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
   #Define the sql that performs the filtering
   $sql = "SELECT
       HASHER_NAME,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HASH_COUNT) AS NON_HYPER_HARING_TO_HASHING_PERCENTAGE,
-      (HYPER_HARE_COUNT/HARE_COUNT) AS HYPER_TO_OVERALL_HARING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HARE_COUNT) AS NON_HYPER_TO_OVERALL_HARING_PERCENTAGE,
       HASH_COUNT,
       HARE_COUNT,
-      HYPER_HARE_COUNT,
-      NON_HYPER_HARE_COUNT,
+      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+  foreach ($hashTypes as &$hashType) {
+    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+  }
+
+  $args = array($kennelKy, $kennelKy);
+
+  $sql .= "
       LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
       FIRST_HASH_KEY,
       FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
@@ -4604,47 +4614,66 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       OUTER_HASHER_KY AS HASHER_KY
   FROM
-  	(
-  	SELECT
-  		HASHERS.HASHER_NAME,
-  		HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-  		(
-  			SELECT COUNT(*)
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+        (
+        SELECT
+                HASHERS.HASHER_NAME,
+                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+  foreach ($hareTypes as &$hareType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hareType['HARE_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  foreach ($hashTypes as &$hashType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hashType['HASH_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  array_push($args, $kennelKy);
+  array_push($args, $kennelKy);
+  array_push($args, $minimumHashCount);
+  array_push($args, $inputSearchValueModified);
+
+  $sql .= "
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-  	FROM
-  		HASHERS
+        FROM
+                HASHERS
   )
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > $minimumHashCount AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$app['monolog']->addDebug("sql: $sql");
@@ -4664,53 +4693,23 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > $minimumHashCount AND (
-        HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT > ? AND ( HASHER_NAME LIKE ? )";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
   FROM
       (
       SELECT
-        HASHERS.HASHER_NAME,
         HASHERS.HASHER_KY AS OUTER_HASHER_KY,
         (
           SELECT COUNT(*)
           FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
       FROM
         HASHERS
     )
     MAIN_TABLE
-    JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-    JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-    WHERE HASH_COUNT > $minimumHashCount";
+    WHERE HASH_COUNT > ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4718,30 +4717,20 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
   #$app['monolog']->addDebug("Point A");
 
   #Perform the filtered search
-  $theResults = $app['db']->fetchAll($sql,array(
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (string) $inputSearchValueModified));
+  $theResults = $app['db']->fetchAll($sql, $args);
   #$app['monolog']->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array(
     (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
+    $minimumHashCount,
   )))['THE_COUNT'];
   #$app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array(
     (int) $kennelKy,
+    $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$app['monolog']->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------

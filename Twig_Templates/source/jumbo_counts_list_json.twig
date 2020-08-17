@@ -32,9 +32,13 @@
 
        },
         { "data": "HASH_COUNT" },
+        {% for hashType in hashTypes %}
+          { "data": "{{ hashType.HASH_TYPE_NAME }}_HASH_COUNT" },
+        {% endfor %}
         { "data": "HARE_COUNT" },
-        { "data": "NON_HYPER_HARE_COUNT" },
-        { "data": "HYPER_HARE_COUNT" },
+        {% for hareType in hareTypes %}
+          { "data": "{{ hareType.HARE_TYPE_NAME }}_HARE_COUNT" },
+        {% endfor %}
         {
           "data": "LATEST_EVENT_DATE",
           "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
@@ -58,9 +62,13 @@
         <tr>
           <th>Hasher Name</th>
           <td>Hash Count</td>
+          {% for hashType in hashTypes %}
+            <td>{{ hashType.HASH_TYPE_NAME }} Hash Count</td>
+          {% endfor %}
           <td>Haring Count</td>
-          <td>Non Hyper Haring Count</td>
-          <td>Hyper Hare Count</td>
+          {% for hareType in hareTypes %}
+            <td>{{ hareType.HARE_TYPE_NAME }} Hare Count</td>
+          {% endfor %}
           <td>Latest Hash</td>
         </tr>
       </thead>
