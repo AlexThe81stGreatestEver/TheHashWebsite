@@ -212,8 +212,8 @@ class HashController
     foreach ($hareTypes as &$hareType) {
       $hareResults = $app['db']->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
       array_push($top_hares,
-          array(data => $hareResults, label => $hareType['HARE_TYPE_NAME'],
-             hare_type => $hareType['HARE_TYPE']));
+          array('data' => $hareResults, 'label' => $hareType['HARE_TYPE_NAME'],
+             'hare_type' => $hareType['HARE_TYPE']));
     }
 
     #Execute the SQL statement; create an array of rows
@@ -259,7 +259,7 @@ class HashController
     #Get the quickest to 5 true harings
       $theQuickestToXHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
       array_push($quickest_hares,
-        array(data => $theQuickestToXHaringsResults, label => $hareType['HARE_TYPE_NAME'], hare_type => $hareType['HARE_TYPE']));
+        array('data' => $theQuickestToXHaringsResults, 'label' => $hareType['HARE_TYPE_NAME'], 'hare_type' => $hareType['HARE_TYPE']));
     }
 
     #Query for the event tag summary
