@@ -707,13 +707,13 @@ class HashEventController
         $tempHasherName = $data['HASHER_NAME'];
 
         #Ensure the entry does not already exist
-        $existsSql = "SELECT HASHER_NAME
+        $existsSql = "SELECT 1 AS IGNORED
           FROM HARINGS
           JOIN HASHERS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-          WHERE HASHERS.HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ?;";
+          WHERE HASHERS.HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ? AND HARINGS.HARE_TYPE = ?;";
 
         #Retrieve the existing record
-        $hareToAdd = $app['db']->fetchAll($existsSql,array((int)$hasherKey,(int)$hashKey));
+        $hareToAdd = $app['db']->fetchAll($existsSql,array((int)$hasherKey, (int)$hashKey, (int)$hareType));
         if(count($hareToAdd) < 1){
 
           #Define the sql insert statement
