@@ -931,7 +931,7 @@ class HashEventController
       # Establish and set the return value
       $returnValue = $app['twig']->render('hash_list_json.twig',array(
         'pageTitle' => 'The List of Hashes',
-        'pageSubTitle' => '*Brown = Hyper Hash',
+        'pageSubTitle' => '',
         #'theList' => $hasherList,
         'kennel_abbreviation' => $kennel_abbreviation,
         'pageCaption' => "",
