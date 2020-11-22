@@ -20,7 +20,19 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 class TagController
 {
 
+  private function getHashTypes($app) {
 
+    #Define the SQL to RuntimeException
+    $sql = "SELECT HASH_TYPE, HASH_TYPE_NAME
+              FROM HASH_TYPES
+             ORDER BY SEQ";
+
+    #Query the database
+    $hashTypes = $app['db']->fetchAll($sql);
+
+    #return the return value
+    return $hashTypes;
+  }
 
     private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
 
@@ -231,7 +243,8 @@ public function addNewEventTag(Request $request, Application $app){
         'pageHeader' => '(really)',
         'hashValue' => $hashValue,
         'hashKey' => $hash_id,
-        'tagList' => $eventTagList
+        'tagList' => $eventTagList,
+        'hashTypes' => $this->getHashTypes($app)
       ));
 
       #Return the return value
