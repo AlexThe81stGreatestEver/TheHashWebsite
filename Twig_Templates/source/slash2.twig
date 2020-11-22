@@ -98,7 +98,7 @@
       <div class="row marketing">
         {% if top_alltime_hashers|length == 10 %}
           <div class="col-lg-3"><div style="padding:2">
-            <h4><a href="/{{kennel_abbreviation}}/hashingCounts">All Time Top 10 Hounds</a></h4>
+            <h4><a href="/{{kennel_abbreviation}}/hashingCounts">Top 10 Hounds</a></h4>
               {% set bgcolor = "#d1f2eb" %}
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
@@ -128,7 +128,7 @@
           {% set hares = top_hare_data.data %}
 	  {% if hares|length == 10 %}
 	    <div class="col-lg-3" ><div style="padding:2">
-	      <h4><a href="/{{kennel_abbreviation}}/haringCounts/{{ top_hare_data.hare_type }}">All Time Top 10 ({{ top_hare_data.label }}) Hares</a></h4>
+	      <h4><a href="/{{kennel_abbreviation}}/haringCounts/{{ top_hare_data.hare_type }}">Top 10 ({{ top_hare_data.label }}) Hares</a></h4>
 		{% set bgcolor = "#d7bde2" %}
 		{% set headerColor = "#d3d3d3" %}
 		<div class="row">
@@ -157,7 +157,7 @@
 
         {% if top_overall_hares|length == 10 %}
           <div class="col-lg-3" ><div style="padding:2">
-            <h4><a href="/{{kennel_abbreviation}}/haringCounts">All Time Top 10 (Overall) Hares</a></h4>
+            <h4><a href="/{{kennel_abbreviation}}/haringCounts">Top 10 (Overall) Hares</a></h4>
               {% set bgcolor = "#eaeded" %}
               {% set headerColor = "#d3d3d3" %}
               <div class="row">
