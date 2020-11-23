@@ -461,9 +461,10 @@ public function addNewEventTag(Request $request, Application $app){
             EVENT_CITY,
             EVENT_STATE,
             SPECIAL_EVENT_DESCRIPTION,
-            IS_HYPER
+            HASH_TYPE_NAME
       FROM
         HASHES JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+        JOIN HASH_TYPES ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
       WHERE
         HASHES_TAGS_KY = ? AND KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE DESC";
