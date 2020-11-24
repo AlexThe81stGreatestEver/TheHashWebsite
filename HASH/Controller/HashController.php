@@ -3678,7 +3678,7 @@ public function cautionaryStatsAction(Request $request, Application $app, string
 
   #Establish an array of ridiculous statistics
   $arrayOfRidiculousness = array(
-    "Hashes where VD was contrated",
+    "Hashes where VD was contracted",
     "Hashes where someone got pregnant",
     "Hashes where someone coveted their neighbor's wife",
     "Hashes where hashers were mocked for their Kentucky heritage",
