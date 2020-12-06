@@ -2651,7 +2651,7 @@ class HashController extends BaseController
 public function pendingHasherAnalversariesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PENDING_HASHER_ANALVERSARIES;
+  $sql = $this->getPendingHasherAnalversariesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2704,7 +2704,7 @@ public function pendingHasherAnalversariesAction(Request $request, Application $
 public function predictedHasherAnalversariesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PREDICTED_HASHER_ANALVERSARIES;
+  $sql = $this->getPredictedHasherAnalversariesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2735,7 +2735,7 @@ public function predictedHasherAnalversariesAction(Request $request, Application
 public function predictedCenturionsAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PREDICTED_CENTURIONS;
+  $sql = $this->getPredictedCenturionsQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);

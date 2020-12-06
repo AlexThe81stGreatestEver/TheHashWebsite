@@ -112,4 +112,118 @@ class BaseController {
                AND MAX_HASH_KY = ?
              ORDER BY THE_COUNT DESC";
   }
+
+  protected function getPendingHasherAnalversariesQuery() {
+    return
+      "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+              COUNT(0) + ? + ".$this->getLegacyHashingsCountSubquery().
+              " AS THE_COUNT_INCREMENTED,
+              TIMESTAMPDIFF(YEAR, MAX(HASHES.EVENT_DATE), CURDATE()) AS YEARS_ABSENCE
+         FROM ((HASHERS
+         JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
+         JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        WHERE (HASHERS.DECEASED = 0)
+          AND HASHES.KENNEL_KY = ?
+        GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+       HAVING ((((THE_COUNT_INCREMENTED % 5) = 0)
+           OR ((THE_COUNT_INCREMENTED % 69) = 0)
+           OR ((THE_COUNT_INCREMENTED % 666) = 0)
+           OR (((THE_COUNT_INCREMENTED - 69) % 100) = 0))
+          AND (YEARS_ABSENCE < ?))
+        ORDER BY THE_COUNT_INCREMENTED DESC";
+  }
+
+  protected function getPredictedHasherAnalversariesQuery() {
+    return
+      "SELECT HASHER_NAME, HASHER_KEY, TOTAL_HASH_COUNT, NEXT_MILESTONE,
+              CURDATE() + INTERVAL ROUND(DAYS_BETWEEN_HASHES * (NEXT_MILESTONE - TOTAL_HASH_COUNT)) DAY AS PREDICTED_MILESTONE_DATE
+         FROM (SELECT HASHER_NAME, OUTER_HASHER_KY AS HASHER_KEY, TOTAL_HASH_COUNT,
+                      ((DATEDIFF(CURDATE(),RECENT_FIRST_HASH.EVENT_DATE)) / RECENT_HASH_COUNT) AS DAYS_BETWEEN_HASHES, (
+                      SELECT MIN(MILESTONE)
+                        FROM (SELECT 25 AS MILESTONE
+                               UNION
+                              SELECT 50
+                               UNION
+                              SELECT 69
+                               UNION
+                              SELECT THE_NUMBER FROM (
+                                     SELECT @NUMBERX:=@NUMBERX+100 AS THE_NUMBER
+                                       FROM (SELECT null FROM HASHINGS LIMIT 10) AS CART1,
+                                            (SELECT null FROM HASHINGS LIMIT 10) AS CART2,
+                                            (SELECT @NUMBERX:=0) NUMBERX) DERIVEDX) DERIVEDY
+                               WHERE MILESTONE > TOTAL_HASH_COUNT
+                                 AND KENNEL_KY=?) AS NEXT_MILESTONE
+                 FROM (SELECT HASHERS.*, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                              SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery()."
+                                FROM HASHINGS
+                                JOIN HASHES
+                                  ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                               WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                 AND HASHES.KENNEL_KY = ?
+                      ) AS TOTAL_HASH_COUNT, (
+                              SELECT COUNT(*)
+                                FROM HASHINGS
+                                JOIN HASHES
+                                  ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                               WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                 AND HASHES.KENNEL_KY = ?
+                                 AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)) AS RECENT_HASH_COUNT, (
+                                     SELECT HASHES.HASH_KY
+                                       FROM HASHINGS
+                                       JOIN HASHES
+                                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                        AND HASHES.KENNEL_KY = ?
+                                        AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)
+                                      ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS RECENT_FIRST_HASH_KEY
+                         FROM HASHERS) AS MAIN_TABLE
+                 JOIN HASHES RECENT_FIRST_HASH ON RECENT_FIRST_HASH.HASH_KY = RECENT_FIRST_HASH_KEY
+                WHERE RECENT_HASH_COUNT > 1) AS OUTER1
+        ORDER BY PREDICTED_MILESTONE_DATE";
+  }
+
+  protected function getPredictedCenturionsQuery() {
+    return
+      "SELECT HASHER_NAME, HASHER_KEY, TOTAL_HASH_COUNT, NEXT_MILESTONE,
+              CURDATE() + INTERVAL ROUND(DAYS_BETWEEN_HASHES * (NEXT_MILESTONE - TOTAL_HASH_COUNT)) DAY AS PREDICTED_MILESTONE_DATE
+         FROM (SELECT HASHER_NAME, OUTER_HASHER_KY AS HASHER_KEY, TOTAL_HASH_COUNT,
+                      ((DATEDIFF(CURDATE(),RECENT_FIRST_HASH.EVENT_DATE)) / RECENT_HASH_COUNT) AS DAYS_BETWEEN_HASHES,
+                      (SELECT MIN(MILESTONE)
+                         FROM (SELECT 100 AS MILESTONE
+                                UNION
+                               SELECT THE_NUMBER
+                                 FROM (SELECT @NUMBERX:=@NUMBERX+100 AS THE_NUMBER
+                                         FROM (SELECT null FROM HASHINGS LIMIT 10) AS CART1,
+                                              (SELECT null FROM HASHINGS LIMIT 10) AS CART2,
+                                              (SELECT @NUMBERX:=0) NUMBERX
+                                      ) DERIVEDX) DERIVEDY
+                                WHERE MILESTONE > TOTAL_HASH_COUNT
+                                  AND KENNEL_KY=?) AS NEXT_MILESTONE
+                 FROM (SELECT HASHERS.*, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                              SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery()."
+                                FROM HASHINGS JOIN HASHES
+                                  ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                               WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                 AND HASHES.KENNEL_KY = ?
+                              ) AS TOTAL_HASH_COUNT, (
+                              SELECT COUNT(*)
+                                FROM HASHINGS JOIN HASHES
+                                  ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                               WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                 AND HASHES.KENNEL_KY = ?
+                                 AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)) AS RECENT_HASH_COUNT, (
+                                     SELECT HASHES.HASH_KY
+                                       FROM HASHINGS
+                                       JOIN HASHES
+                                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                                        AND HASHES.KENNEL_KY = ?
+                                        AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)
+                                      ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS RECENT_FIRST_HASH_KEY
+                         FROM HASHERS) AS MAIN_TABLE
+                 JOIN HASHES RECENT_FIRST_HASH
+                   ON RECENT_FIRST_HASH.HASH_KY = RECENT_FIRST_HASH_KEY
+                WHERE RECENT_HASH_COUNT > 1) AS OUTER1
+        ORDER BY PREDICTED_MILESTONE_DATE";
+  }
 }
