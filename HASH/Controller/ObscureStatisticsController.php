@@ -3,6 +3,7 @@
 namespace HASH\Controller;
 
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
+require_once "BaseController.php";
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +14,7 @@ use Wamania\Snowball\English;
 
 
 
-class ObscureStatisticsController{
+class ObscureStatisticsController extends BaseController {
 
 
   private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
@@ -2299,7 +2300,7 @@ class ObscureStatisticsController{
         }
 
         # Obtain the number of hashings
-        #$hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+        #$hashCountValue = $app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
 
         # Obtain the hashes by month (name)
         $theHashesByMonthNameList = $app['db']->fetchAll(KENNEL_HASH_COUNTS_BY_MONTH_NAME, array((int) $kennelKy));

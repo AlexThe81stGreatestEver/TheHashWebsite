@@ -3,6 +3,7 @@
 namespace HASH\Controller;
 
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
+require_once "BaseController.php";
 use Silex\Application;
 #use HASH\Utils;
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
@@ -10,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Datetime;
 
-class HashController
+class HashController extends BaseController
 {
 
 
@@ -185,7 +186,7 @@ class HashController
     $pageTitle = "$kennel_abbreviation Stats";
 
     #Get hound counts
-    $baseSql = HASHING_COUNTS;
+    $baseSql = $this->getHashingCountsQuery();
     $sql = "$baseSql  LIMIT 10";
 
     $baseSql = HARE_TYPE_HARING_COUNTS;
@@ -762,7 +763,7 @@ class HashController
     $sql = "SELECT
       HASHER_NAME AS NAME,
       HASHER_ABBREVIATION,
-      COUNT(HASHINGS.HASHER_KY) AS THE_COUNT,
+      COUNT(HASHINGS.HASHER_KY) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
       HASHINGS.HASHER_KY AS THE_KEY
       FROM HASHERS
       JOIN HASHINGS
@@ -1601,7 +1602,7 @@ class HashController
     $avgLng = $theAverageLatLong['THE_LNG'];
 
     # Obtain the number of hashings
-    $hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+    $hashCountValue = $app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
 
     # Obtain the number of harings
     $hareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, (int) $kennelKy));
@@ -1861,7 +1862,7 @@ class HashController
 
 
       # Make a database call to obtain the hasher information
-      $houndAnalversaryList = $app['db']->fetchAll(HOUND_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+      $houndAnalversaryList = $app['db']->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
       $consolidatedHareAnalversaryList = $app['db']->fetchAll(CONSOLIDATED_HARE_ANALVERSARIES_FOR_EVENT, array(
         (int) $hash_id,(int) $kennelKy, (int) $hash_id,
         (int) $hash_id,(int) $kennelKy, (int) $hash_id));
@@ -1875,7 +1876,8 @@ class HashController
       $sqlHoundAnalversaryTemplate = "SELECT * FROM (
         SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+        AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
         'AAA' AS ANV_TYPE,
         (SELECT XXX FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
@@ -1888,7 +1890,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.XXX = (SELECT XXX FROM HASHES WHERE HASH_KY = ?)
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -1899,7 +1901,8 @@ class HashController
 
     $sqlHoundAnalversaryDateBasedTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+        AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
 		    'AAA' AS ANV_TYPE,
         (SELECT XXX(HASHES.EVENT_DATE) FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
@@ -1912,7 +1915,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         XXX(HASHES.EVENT_DATE) = (SELECT XXX(EVENT_DATE) FROM HASHES WHERE HASH_KY = ?)
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -2029,7 +2032,7 @@ class HashController
 
 
     # Make a database call to obtain the hasher information
-    $analversaryListHounds = $app['db']->fetchAll(HOUND_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+    $analversaryListHounds = $app['db']->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
     $analversaryListHares = $app['db']->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
 
     # Declare the SQL used to retrieve this information
@@ -2087,7 +2090,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sqlHoundAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2098,7 +2101,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -2108,7 +2111,7 @@ class HashController
 
     $sqlHoundAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2119,7 +2122,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -2130,7 +2133,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sqlHareAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2141,7 +2144,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -2151,7 +2154,7 @@ class HashController
 
     $sqlHareAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2162,7 +2165,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
@@ -2272,7 +2275,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2282,7 +2285,7 @@ class HashController
         (HASHERS.DECEASED = 0) AND
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2336,7 +2339,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2347,7 +2350,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.COUNTY = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2395,7 +2398,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2406,7 +2409,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.POSTAL_CODE = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2455,7 +2458,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2466,7 +2469,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_STATE = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2515,7 +2518,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2526,7 +2529,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.NEIGHBORHOOD = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2571,7 +2574,7 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
         MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
     FROM
         ((HASHERS
@@ -2582,7 +2585,7 @@ class HashController
         HASHES.HASH_KY <= ? AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_CITY = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING (
           (THE_COUNT % 1) = 0
       )
@@ -2815,7 +2818,7 @@ public function pendingHareAnalversariesAction(Request $request, Application $ap
 public function haringPercentageAllHashesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGE_ALL_HASHES;
+  $sql = $this->getHaringPercentageAllHashesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2847,7 +2850,7 @@ public function haringPercentageAllHashesAction(Request $request, Application $a
 public function haringPercentageAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGE_BY_HARE_TYPE;
+  $sql = $this->getHaringPercentageByHareTypeQuery();
 
   $hare_type_name = $this->getHareTypeName($app, $hare_type);
 
@@ -2956,7 +2959,7 @@ function addRankToQuery(string $query, string $selectClause, string $countColumn
 public function hashingCountsAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(HASHING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery($this->getHashingCountsQuery(), "THE_KEY, NAME, VALUE", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3523,7 +3526,7 @@ public function analversariesStatsAction(Request $request, Application $app, str
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
   #Determine the number of hashes already held for this kennel
-  $sql2 = HASHING_COUNTS;
+  $sql2 = $this->getHashingCountsQuery();
   $sql2 = "$sql2 LIMIT 1";
   $theCount2 = $app['db']->fetchAssoc($sql2, array((int) $kennelKy));
   $theCount2 = $theCount2['VALUE'];
@@ -4348,7 +4351,7 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
                 HASHERS.HASHER_NAME,
                 HASHERS.HASHER_KY AS OUTER_HASHER_KY,
                 (
-                        SELECT COUNT(*)
+                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
                         FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
                         WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
                 (
@@ -4619,7 +4622,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
                 HASHERS.HASHER_NAME,
                 HASHERS.HASHER_KY AS OUTER_HASHER_KY,
                 (
-                        SELECT COUNT(*)
+                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
                         FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
                         WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
                 (
@@ -5256,8 +5259,8 @@ private function twoPersonComparisonDataFetch(Request $request, Application $app
 
 
   #Obtain the overall hashing count
-  $hashingCountH1 = ($app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
-  $hashingCountH2 = ($app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
+  $hashingCountH1 = ($app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
+  $hashingCountH2 = ($app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hashingCountH1, $hashingCountH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hashing Count");
   $returnValue[] = $statObject;
 

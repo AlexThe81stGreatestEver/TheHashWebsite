@@ -29,5 +29,9 @@ define("DEFAULT_KENNEL_ABBREVIATION", "SCH4");
 // Establish the contact email for the local administrator
 define("ADMINISTRATOR_EMAIL","foo@gmail.com");
 
+// Set to true if you need legacy hash counts
+// Don't turn this on if you don't need it
+define("HAS_LEGACY_HASH_COUNTS","false");
+
 // Optional banner html
 //define("SITE_BANNER", "<div style=\"width:100%; background-color:yellow; color:black; font-weight:bold; text-align: center\">LOCALHOST TEST INSTANCE</div>");

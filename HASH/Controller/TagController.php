@@ -2,6 +2,8 @@
 
 namespace HASH\Controller;
 
+require_once "BaseController.php";
+
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -17,7 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 
 
-class TagController
+class TagController extends BaseController
 {
 
   private function getHashTypes($app) {
@@ -531,7 +533,7 @@ public function addNewEventTag(Request $request, Application $app){
       $avgLng = $theAverageLatLong['THE_LNG'];
 
       # Obtain the number of hashings
-      #$hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+      #$hashCountValue = $app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
 
       # Obtain the number of harings
       #$hareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 1));
