@@ -24,7 +24,7 @@
 	    {% for hare_type in hare_types %}
 		<a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{ hare_type.HARE_TYPE}}'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ hare_type.HARE_TYPE_NAME }} Haring Counts</h4></a>
             {% endfor %}
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Overall Haring Counts</h4></a>
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{overall_haring_counts_title}}</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/cautionary/stats'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Cautionary Stats</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/aboutContact'><h4 class="list-group-item-heading" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">About / Contact</h4></a>
           </div>

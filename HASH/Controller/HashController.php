@@ -286,7 +286,7 @@ class HashController extends BaseController
       'subTitle3' => 'Hare Statistics',
       'subTitle4' => 'Other Statistics',
       'kennel_abbreviation' => $kennel_abbreviation,
-      'hare_types' => $hareTypes,
+      'hare_types' => count($hareTypes) == 1 ? array() : $hareTypes,
       'top_alltime_hashers' =>$topHashersList,
       'top_hares' => $top_hares,
       'top_overall_hares' => $topOverallHareList,
@@ -304,7 +304,9 @@ class HashController extends BaseController
       'top_hares_last_year' => $topHaresLastYear,
       'event_tag_summaries' => $eventTagSummaries,
       'overall_hares_title' =>
-        count($hareTypes) > 1 ? "Top 10 (Overall) Hares" : "Top 10 Hares"
+        count($hareTypes) > 1 ? "Top 10 (Overall) Hares" : "Top 10 Hares",
+      'overall_haring_counts_title' =>
+        count($hareTypes) > 1 ? "Overall Haring Counts" : "Haring Counts"
     ));
 
     #Return the return value
