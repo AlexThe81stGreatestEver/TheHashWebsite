@@ -302,7 +302,9 @@ class HashController extends BaseController
       'top_hashers_last_year' => $topHashersLastYear,
       'top_hares_this_year' => $topHaresThisYear,
       'top_hares_last_year' => $topHaresLastYear,
-      'event_tag_summaries' => $eventTagSummaries
+      'event_tag_summaries' => $eventTagSummaries,
+      'overall_hares_title' =>
+        count($hareTypes) > 1 ? "Top 10 (Overall) Hares" : "Top 10 Hares"
     ));
 
     #Return the return value
