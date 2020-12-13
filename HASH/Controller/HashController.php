@@ -210,11 +210,13 @@ class HashController extends BaseController
 
     $top_hares = array();
 
-    foreach ($hareTypes as &$hareType) {
-      $hareResults = $app['db']->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
-      array_push($top_hares,
-          array('data' => $hareResults, 'label' => $hareType['HARE_TYPE_NAME'],
-             'hare_type' => $hareType['HARE_TYPE']));
+    if(count($hareTypes) > 1) {
+      foreach ($hareTypes as &$hareType) {
+        $hareResults = $app['db']->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
+          array_push($top_hares, array('data' => $hareResults,
+            'label' => $hareType['HARE_TYPE_NAME'],
+            'hare_type' => $hareType['HARE_TYPE']));
+      }
     }
 
     #Execute the SQL statement; create an array of rows
