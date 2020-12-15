@@ -1740,7 +1740,9 @@ class HashController extends BaseController
 
     # Establish and set the return value
     $returnValue = $app['twig']->render('hasher_chart_details.twig',array(
-      'hare_types' => $hareTypes,
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
+      'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
+        "Hare Details",
       'sunburst_formatted_data' => $sunburstFormattedData,
       'quarter_month_formatted_data' => $quarterMonthFormattedData,
       'pageTitle' => 'Hasher Charts and Details',
