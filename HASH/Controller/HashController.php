@@ -3575,7 +3575,8 @@ public function yearByYearStatsAction(Request $request, Application $app, string
     'pageTitle' => 'Year Summary Stats',
     'kennel_abbreviation' => $kennel_abbreviation,
     'year_values' => $yearValues,
-    'hare_types' => $hareTypes
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
+    'overall' => count($hareTypes) > 1 ? " (Overall)" : ""
   ));
 
   #Return the return value
