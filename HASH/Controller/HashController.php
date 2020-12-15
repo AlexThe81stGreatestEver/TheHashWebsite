@@ -3518,7 +3518,8 @@ public function peopleStatsAction(Request $request, Application $app, string $ke
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_people.twig',array(
     'pageTitle' => 'People Stats',
-    'hare_types' => $hareTypes,
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+    'overall' => count($hareTypes) > 1 ? "Overall " : "",
     'kennel_abbreviation' => $kennel_abbreviation
   ));
 
