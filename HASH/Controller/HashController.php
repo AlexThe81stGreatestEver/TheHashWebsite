@@ -5002,8 +5002,11 @@ public function viewOverallHareChartsAction(Request $request, Application $app, 
   $hareTypes = $this->getHareTypes($app, $kennelKy);
 
   $customValues = array(
-    'pageTitle' => 'Overall Hare Charts and Details',
-    'hare_types' => $hareTypes,
+    'pageTitle' => (count($hareTypes) > 1 ? 'Overall ' : '').
+      'Hare Charts and Details',
+    'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
+      "Hare Details",
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
     'firstHeader' => 'Basic Details',
     'secondHeader' => 'Statistics',
     'city_haring_count_list' => $cityHaringCountList,

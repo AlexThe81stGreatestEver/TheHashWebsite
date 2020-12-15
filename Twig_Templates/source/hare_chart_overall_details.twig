@@ -153,7 +153,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         {% for hare_type in hare_types %}
 	  <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
         {% endfor %}
-        Overall Hare Details
+        {{overall_hare_details}}
 
       </h5>
 
