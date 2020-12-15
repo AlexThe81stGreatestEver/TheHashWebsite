@@ -4529,8 +4529,8 @@ public function jumboPercentagesTablePreActionJson(Request $request, Application
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
     'tableCaption' => "",
-    "hareTypes" => $hareTypes,
-    'hashTypes' => $hashTypes
+    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
+    'hashTypes' => count($hashTypes) > 1 ? $hashTypes : array()
   ));
 
   #Return the return value
@@ -4548,6 +4548,14 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
 
   $hareTypes = $this->getHareTypes($app, $kennelKy);
   $hashTypes = $this->getHashTypes($app, $kennelKy, $hare_type);
+
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
+
+  if(count($hashTypes) == 1) {
+    $hashTypes = array();
+  }
 
   #Define the minimum hash count
   $minimumHashCount = JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT;
