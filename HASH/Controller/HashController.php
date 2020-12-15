@@ -5258,6 +5258,9 @@ private function createComparisonObjectWithStatsAsDates(string $stat1, string $s
 private function twoPersonComparisonDataFetch(Request $request, Application $app, int $kennelKy, int $hasher_id1, int $hasher_id2){
 
   $hareTypes = $this->getHareTypes($app, $kennelKy);
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
 
   #Establish the reurn value array
   $returnValue = array();
