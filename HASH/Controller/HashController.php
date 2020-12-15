@@ -4253,8 +4253,8 @@ public function jumboCountsTablePreActionJson(Request $request, Application $app
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
     'tableCaption' => "",
-    "hareTypes" => $hareTypes,
-    "hashTypes" => $hashTypes
+    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
+    "hashTypes" => count($hashTypes) > 1 ? $hashTypes : array()
   ));
 
   #Return the return value
@@ -4275,6 +4275,14 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
 
   $hareTypes = $this->getHareTypes($app, $kennelKy);
   $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
+
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
+
+  if(count($hashTypes) == 1) {
+    $hashTypes = array();
+  }
 
   #Obtain the post parameters
   #$inputDraw = $_POST['draw'] ;
