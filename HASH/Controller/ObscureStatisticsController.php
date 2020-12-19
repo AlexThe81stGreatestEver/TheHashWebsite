@@ -2331,7 +2331,7 @@ class ObscureStatisticsController extends BaseController {
           'distinct_hasher_count' => $distinctHasherCountForKennel,
           'distinct_hare_counts' => $distinctHareCounts,
           'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel,
-          'hareTypes' => $hareTypes
+          'hareTypes' => count($hareTypes) > 1 ? $hareTypes : array()
         ));
 
         # Return the return value
