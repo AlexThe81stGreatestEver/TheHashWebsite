@@ -66,6 +66,7 @@
 
             </div>
 
+	    {% if event_tag_summaries is not empty %}
             <div class="panel panel-primary">
               <div class="panel-heading">
                 Event Tags
@@ -78,22 +79,12 @@
                   <span class="badge"> {{event_tag_summary.THE_COUNT}}</span>
                 {% endfor %}
               </div>
-
             </div>
-
-
-
-
-
-
-
+            {% endif %}
 
         </div>
 
-
-
       </div>
-
 
       <div class="row marketing">
         {% if top_alltime_hashers|length == 10 %}
