@@ -166,7 +166,7 @@ class ObscureStatisticsController extends BaseController {
         'yearValue' => $year_value,
         'kennel_abbreviation' => $kennel_abbreviation,
         'hash_types' => $hashTypes,
-        'hare_types' => $hareTypes,
+        'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
         'hash_count' => $hashCount,
         'hash_counts' => $hashCounts,
         'hasher_count' => $hasherCount,
