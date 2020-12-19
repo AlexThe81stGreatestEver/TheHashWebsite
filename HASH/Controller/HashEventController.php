@@ -2,6 +2,8 @@
 
 namespace HASH\Controller;
 
+require_once "BaseController.php";
+
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -15,10 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
-
-
-class HashEventController
-{
+class HashEventController extends BaseController {
 
   public static $stateDropdownArray = array(
       'Ohio' => 'OH',
@@ -74,27 +73,7 @@ class HashEventController
       'Wyoming' => 'WY'
   );
 
-
-
-
-
-  private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT * FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
-
-    #Query the database
-    $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-    #Obtain the kennel ky from the returned object
-    $returnValue = $kennelValue['KENNEL_KY'];
-
-    #return the return value
-    return $returnValue;
-
-  }
-  
-  private function getHareTypes($app, $kennelKy, $hashType) {
+  protected function getHareTypes($app, $kennelKy, $hashType) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
@@ -114,7 +93,7 @@ class HashEventController
     return $hareTypes;
   }
 
-  private function getHashTypes($app) {
+  protected function getHashTypes($app) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT HASH_TYPE, HASH_TYPE_NAME 

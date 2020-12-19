@@ -5,7 +5,6 @@ namespace HASH\Controller;
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
 require_once "BaseController.php";
 use Silex\Application;
-#use HASH\Utils;
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
@@ -13,24 +12,6 @@ use \Datetime;
 
 class HashController extends BaseController
 {
-
-
-  private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT KENNEL_KY FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
-
-    #Query the database
-    $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-    #Obtain the kennel ky from the returned object
-    $returnValue = $kennelValue['KENNEL_KY'];
-
-    #return the return value
-    return $returnValue;
-
-  }
-
   #Define the action
   public function logonScreenAction(Request $request, Application $app){
 
@@ -58,11 +39,6 @@ class HashController extends BaseController
     # Return the return value;
     return $returnValue;
   }
-
-
-
-
-
 
   public function logoutAction(Request $request, Application $app){
 
@@ -123,55 +99,6 @@ class HashController extends BaseController
     #Return the return value
     return $returnValue;
 
-  }
-
-  private function getHareTypeName($app, $hare_type) {
-    $sql = "SELECT HARE_TYPE_NAME
-              FROM HARE_TYPES
-             WHERE HARE_TYPES.HARE_TYPE = ?";
-
-    #Query the database
-    $result = $app['db']->fetchAssoc($sql, array((int) $hare_type));
-
-    #return the return value
-    return $result['HARE_TYPE_NAME'];
-  }
-
-  private function getHareTypes($app, $kennelKy) {
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
-              FROM HARE_TYPES
-              JOIN KENNELS
-                ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-             WHERE KENNELS.KENNEL_KY = ?
-             ORDER BY SEQ";
-
-    #Query the database
-    $hareTypes = $app['db']->fetchAll($sql, array((int) $kennelKy));
-
-    #return the return value
-    return $hareTypes;
-  }
-
-  private function getHashTypes($app, $kennelKy, $hare_type) {
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT HASH_TYPES.HASH_TYPE, HASH_TYPES.HASH_TYPE_NAME
-	      FROM HASH_TYPES
-	      JOIN KENNELS
-		ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0
-	     WHERE KENNELS.KENNEL_KY = ?".
-	     ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
-	     ORDER BY HASH_TYPES.SEQ";
-
-    #Query the database
-    $args = array((int) $kennelKy);
-    if($hare_type != 0) array_push($args, $hare_type);
-    $hashTypes = $app['db']->fetchAll($sql, $args);
-
-    #return the return value
-    return $hashTypes;
   }
 
   #Define the action

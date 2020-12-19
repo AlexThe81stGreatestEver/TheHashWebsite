@@ -17,45 +17,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
-
-
 class TagController extends BaseController
 {
-
-  private function getHashTypes($app) {
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT HASH_TYPE, HASH_TYPE_NAME
-              FROM HASH_TYPES
-             ORDER BY SEQ";
-
-    #Query the database
-    $hashTypes = $app['db']->fetchAll($sql);
-
-    #return the return value
-    return $hashTypes;
-  }
-
-    private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Define the SQL to RuntimeException
-      $sql = "SELECT * FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
-
-      #Query the database
-      $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-      #Obtain the kennel ky from the returned object
-      $returnValue = $kennelValue['KENNEL_KY'];
-
-      #return the return value
-      return $returnValue;
-
-    }
-
-
     public function manageEventTagsPreAction(Request $request, Application $app){
-
-
       #Define the SQL to execute
       $eventTagListSQL = "SELECT TAG_TEXT, COUNT(HTJ.HASHES_KY) AS THE_COUNT
         FROM  HASHES_TAGS HT LEFT JOIN HASHES_TAG_JUNCTION HTJ ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
@@ -76,11 +40,7 @@ class TagController extends BaseController
 
       #Return the return value
       return $returnValue;
-
     }
-
-
-
 
 public function getEventTagsWithCountsJsonAction(Request $request, Application $app){
 
@@ -239,14 +199,13 @@ public function addNewEventTag(Request $request, Application $app){
       # Make a database call to obtain the hasher information
       $hashValue = $app['db']->fetchAssoc($sql, array((int) $hash_id));
 
-
       $returnValue = $app['twig']->render('show_hash_for_tagging.twig', array(
         'pageTitle' => 'Tag this hash event!',
         'pageHeader' => '(really)',
         'hashValue' => $hashValue,
         'hashKey' => $hash_id,
         'tagList' => $eventTagList,
-        'hashTypes' => $this->getHashTypes($app)
+        'hashTypes' => $this->getHashTypes($app, $hashValue['KENNEL_KY'], 0)
       ));
 
       #Return the return value
