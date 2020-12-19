@@ -56,8 +56,8 @@
     <div class="list-group">
       <a href="#5" class="list-group-item active">Trending Hares & Hounds</a>
       {% for hare_type in hare_types %}
-        <a class="list-group-item" href="/{{kennel_abbreviation}}/trendingHares/{{ hare_type.HARE_TYPE }}/180">Trending ({{ hare_type.HARE_TYPE_NAME }}) Hares!</a>
-        <a class="list-group-item" href="/{{kennel_abbreviation}}/unTrendingHaresJsonPre/{{ hare_type.HARE_TYPE }}/180/6/10/15">Un-Trending ({{ hare_type.HARE_TYPE_NAME }}) Hares!</a>
+        <a class="list-group-item" href="/{{kennel_abbreviation}}/trendingHares/{{ hare_type.HARE_TYPE }}/180">Trending {{ hare_type.HARE_TYPE_NAME }} Hares!</a>
+        <a class="list-group-item" href="/{{kennel_abbreviation}}/unTrendingHaresJsonPre/{{ hare_type.HARE_TYPE }}/180/6/10/15">Un-Trending {{ hare_type.HARE_TYPE_NAME }} Hares!</a>
       {% endfor %}
       <a class="list-group-item" href="/{{kennel_abbreviation}}/trendingHashers/180">Trending Hashers!</a>
     </div>
