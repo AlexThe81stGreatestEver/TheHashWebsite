@@ -3595,7 +3595,7 @@ public function kennelRecordsStatsAction(Request $request, Application $app, str
   $returnValue = $app['twig']->render('section_kennel_records.twig',array(
     'pageTitle' => 'Kennel Records',
     'kennel_abbreviation' => $kennel_abbreviation,
-    'hare_types' => $hareTypes
+    "hare_types" => count($hareTypes) > 1 ? $hareTypes : array()
   ));
 
   #Return the return value
