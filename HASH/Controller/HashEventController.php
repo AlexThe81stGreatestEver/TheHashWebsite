@@ -73,7 +73,7 @@ class HashEventController extends BaseController {
       'Wyoming' => 'WY'
   );
 
-  protected function getHareTypes($app, $kennelKy, $hashType) {
+  protected function getHareTypesForHashType($app, $kennelKy, $hashType) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
@@ -93,7 +93,7 @@ class HashEventController extends BaseController {
     return $hareTypes;
   }
 
-  protected function getHashTypes($app) {
+  protected function getAllHashTypes($app) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT HASH_TYPE, HASH_TYPE_NAME 
@@ -128,7 +128,7 @@ class HashEventController extends BaseController {
       'pageTitle' => 'Create an Event!',
       'pageHeader' => 'Page Header',
       'kennelList' => $kennelDropdown,
-      'hashTypes' => $this->getHashTypes($app),
+      'hashTypes' => $this->getAllHashTypes($app),
       'geocode_api_value' => GOOGLE_PLACES_API_WEB_SERVICE_KEY
     ));
 
@@ -345,7 +345,7 @@ class HashEventController extends BaseController {
       $returnValue = $app['twig']->render('edit_hash_form_ajax.twig', array(
         'pageTitle' => 'Modify an Event!',
         'pageHeader' => 'Page Header',
-        'hashTypes' => $this->getHashTypes($app),
+        'hashTypes' => $this->getAllHashTypes($app),
         'kennelList' => $kennelDropdown,
         'geocode_api_value' => GOOGLE_PLACES_API_WEB_SERVICE_KEY,
         'hashValue' => $hashValue,
@@ -558,7 +558,7 @@ class HashEventController extends BaseController {
         'pageHeader' => 'Why is this so complicated ?',
         'hasherList' => $hasherList,
         'hareList' => $hareList,
-        'hareTypes' => $this->getHareTypes($app, $kennelKy, $hashEvent['HASH_TYPE']),
+        'hareTypes' => $this->getHareTypesForHashType($app, $kennelKy, $hashEvent['HASH_TYPE']),
         'hash_key'=> $hash_id,
         'kennel_abbreviation' => $kennelAbbreviation,
         'kennel_event_number' => $kennelEventNumber
