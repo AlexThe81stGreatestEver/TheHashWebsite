@@ -870,13 +870,12 @@ class ObscureStatisticsController extends BaseController {
             $modifiedAnalversaryNumber = $analversary_number -1;
 
             #Define the sql statement to execute
-            #$theSql = FASTEST_HASHERS_TO_ANALVERSARIES;
             $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
             $theSql = str_replace("XORDERX","ASC",$theSql);
             $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
 
             #Query the database
-            $theResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+            $theResults = $app['db']->fetchAll($theSql, array((int) $kenneyKy, (int) $kennelKy,(int) $kennelKy));
 
             #Define the page title
             $pageTitle = "Quickest to reach $analversary_number hashes";
@@ -908,13 +907,12 @@ class ObscureStatisticsController extends BaseController {
                   $modifiedAnalversaryNumber = $analversary_number -1;
 
                   #Define the sql statement to execute
-                  #$theSql = FASTEST_HASHERS_TO_ANALVERSARIES;
                   $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
                   $theSql = str_replace("XORDERX","ASC",$theSql);
                   $theSql = str_replace("XORDERCOLUMNX","ANALVERSARY_DATE",$theSql);
 
                   #Query the database
-                  $theResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+                  $theResults = $app['db']->fetchAll($theSql, array((int) $kenneyKy, (int) $kennelKy,(int) $kennelKy));
 
                   #Define the page title
                   $pageTitle = "Chronological order of analversaries";
@@ -949,13 +947,12 @@ class ObscureStatisticsController extends BaseController {
       $modifiedAnalversaryNumber = $analversary_number -1;
 
       #Define the sql statement to execute
-      #$theSql = FASTEST_HASHERS_TO_ANALVERSARIES;
       $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
       $theSql = str_replace("XORDERX","DESC",$theSql);
       $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
 
       #Query the database
-      $theResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+      $theResults = $app['db']->fetchAll($theSql, array((int) $kenneyKy, (int) $kennelKy,(int) $kennelKy));
 
       #Define the page title
       $pageTitle = "Slowest to reach $analversary_number hashes";
@@ -1027,6 +1024,8 @@ class ObscureStatisticsController extends BaseController {
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int)$minHashingCount
       ));
 
@@ -1074,6 +1073,8 @@ class ObscureStatisticsController extends BaseController {
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $min_hash_count
       ));
 
@@ -1116,6 +1117,8 @@ class ObscureStatisticsController extends BaseController {
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
@@ -1167,6 +1170,8 @@ class ObscureStatisticsController extends BaseController {
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int)$minHashingCount
       ));
 
@@ -1213,6 +1218,8 @@ class ObscureStatisticsController extends BaseController {
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
@@ -1266,6 +1273,8 @@ class ObscureStatisticsController extends BaseController {
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $minHaringCount
       ));
 
@@ -1304,6 +1313,8 @@ class ObscureStatisticsController extends BaseController {
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
         (int) $kennelKy,
@@ -1349,6 +1360,8 @@ class ObscureStatisticsController extends BaseController {
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $kennelKy,
         (int) $hare_type,
         (int) $kennelKy,
@@ -1397,6 +1410,8 @@ class ObscureStatisticsController extends BaseController {
 
       #Query the database
       $theResults = $app['db']->fetchAll($theSql, array(
+        (int) $kennelKy,
+        (int) $kennelKy,
         (int) $kennelKy,
         (int) $hare_type,
         (int) $kennelKy,
@@ -1526,7 +1541,7 @@ class ObscureStatisticsController extends BaseController {
 
       # Obtain the average event attendance per year
       $sqlNewComersByYear = NEWCOMERS_BY_YEAR;
-      $newComersByYear = $app['db']->fetchAll($sqlNewComersByYear, array((int) $kennelKy,(int) $kennelKy, $min_hash_count));
+      $newComersByYear = $app['db']->fetchAll($sqlNewComersByYear, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy, $min_hash_count));
 
       # Obtain the average event attendance per (year/month)
       $sqlNewComersByYearQuarter = NEWCOMERS_BY_YEAR_QUARTER;
@@ -1571,7 +1586,7 @@ class ObscureStatisticsController extends BaseController {
 
           # Obtain the average event attendance per year
           $sqlByYear = VIRGIN_HARINGS_BY_YEAR;
-          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy,$hare_type));
+          $listByYear = $app['db']->fetchAll($sqlByYear, array((int) $kennelKy, (int) $kennelKy,$hare_type));
 
           # Obtain the average event attendance per (year/month)
           $sqlByYearQuarter = VIRGIN_HARINGS_BY_YEAR_QUARTER;

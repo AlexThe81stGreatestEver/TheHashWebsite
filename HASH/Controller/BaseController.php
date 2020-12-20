@@ -166,19 +166,19 @@ class BaseController {
     return "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
                    (COUNT(*)) + ".$this->getLegacyHashingsCountSubquery().
                    " AS THE_COUNT,
-                   MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+                   MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
               FROM ((HASHERS
               JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
               JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
              WHERE (HASHERS.DECEASED = 0) AND
-                   HASHES.HASH_KY <= ? AND
+                   HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASHES.HASH_KY = ?) AND
                    HASHES.KENNEL_KY = ?
              GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
             HAVING ((((THE_COUNT % 5) = 0)
                 OR ((THE_COUNT % 69) = 0)
                 OR ((THE_COUNT % 666) = 0)
                 OR (((THE_COUNT - 69) % 100) = 0)))
-               AND MAX_HASH_KY = ?
+	       AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASHES.HASH_KY = ?)
              ORDER BY THE_COUNT DESC";
   }
 

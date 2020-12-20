@@ -160,7 +160,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theQuickestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
     #Get the quickest to 100 hashes
     $theQuickestToYNumber = 100;
@@ -168,7 +168,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToYResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theQuickestToYResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
     #Get the slowest to 5 hashes
     $theSlowestToXNumber = 5;
@@ -176,7 +176,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","DESC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theSlowestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theSlowestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
     $quickest_hares = array();
     $theQuickestToXHaringsNumber = 5;
@@ -187,7 +187,7 @@ class HashController extends BaseController
 
     foreach ($hareTypes as &$hareType) {
     #Get the quickest to 5 true harings
-      $theQuickestToXHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
+      $theQuickestToXHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
       array_push($quickest_hares,
         array('data' => $theQuickestToXHaringsResults, 'label' => $hareType['HARE_TYPE_NAME'], 'hare_type' => $hareType['HARE_TYPE']));
     }
@@ -839,11 +839,13 @@ class HashController extends BaseController
     $sql = "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
                    FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
                    HASHERS.HASHER_KY AS HASHER_KY,
-                   FIRST_HARING_EVENT_TABLE.FIRST_HASH_KEY AS FIRST_HARING_KEY
+		   (SELECT HASH_KY FROM HASHES
+		     WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
+		       AND HASHES.KENNEL_KY = ?)
+		        AS FIRST_HARING_KEY
           FROM HASHERS
           JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                       MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-                       MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+                       MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
                  FROM HARINGS
                  JOIN HASHES
                    ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
@@ -860,8 +862,7 @@ class HashController extends BaseController
       SELECT COUNT(*) AS THE_COUNT
         FROM HASHERS
         JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-                     MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
                FROM HARINGS
                JOIN HASHES
                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
@@ -876,8 +877,7 @@ class HashController extends BaseController
       SELECT COUNT(*) AS THE_COUNT
         FROM HASHERS
         JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-                     MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
                 FROM HARINGS
                 JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
                WHERE HASHES.KENNEL_KY = ?
@@ -889,7 +889,7 @@ class HashController extends BaseController
 
     #-------------- Begin: Query the database   --------------------------------
     #Perform the filtered search
-    $theResults = $app['db']->fetchAll($sql,array($kennelKy, $hare_type, (string) $inputSearchValueModified));
+    $theResults = $app['db']->fetchAll($sql,array($kennelKy, $kennelKy, $hare_type, (string) $inputSearchValueModified));
 
     #Perform the untiltered count
     $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy, $hare_type)))['THE_COUNT'];
@@ -1114,7 +1114,7 @@ class HashController extends BaseController
     $sql =
 	    "SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
 	       DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
-        SELECT MAX(HASH_KY)
+        SELECT HASH_KY
           FROM HASHES
          WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
            AND KENNEL_KY = $kennelKy) AS HASH_KY,
@@ -1813,16 +1813,16 @@ class HashController extends BaseController
         HASHERS.HASHER_NAME AS HASHER_NAME,
 	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
         AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
         'AAA' AS ANV_TYPE,
         (SELECT XXX FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.XXX = (SELECT XXX FROM HASHES WHERE HASH_KY = ?)
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -1830,7 +1830,7 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC)
     DERIVED_TABLE WHERE ANV_VALUE !=''";
 
@@ -1838,16 +1838,16 @@ class HashController extends BaseController
         HASHERS.HASHER_NAME AS HASHER_NAME,
 	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
         AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
-		    'AAA' AS ANV_TYPE,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
+        'AAA' AS ANV_TYPE,
         (SELECT XXX(HASHES.EVENT_DATE) FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         XXX(HASHES.EVENT_DATE) = (SELECT XXX(EVENT_DATE) FROM HASHES WHERE HASH_KY = ?)
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -1855,7 +1855,7 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
       #Obtain the state analversaries (hound)
@@ -2026,14 +2026,14 @@ class HashController extends BaseController
     $sqlHoundAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -2041,20 +2041,20 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     $sqlHoundAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -2062,21 +2062,21 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Declare the SQL used to retrieve this information
     $sqlHareAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-        JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -2084,20 +2084,20 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     $sqlHareAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-        JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
@@ -2105,7 +2105,7 @@ class HashController extends BaseController
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Derive the various SQL statements
@@ -2211,20 +2211,19 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2275,21 +2274,20 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.COUNTY = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2334,21 +2332,20 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.POSTAL_CODE = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2394,21 +2391,20 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_STATE = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2454,21 +2450,20 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.NEIGHBORHOOD = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2510,21 +2505,20 @@ class HashController extends BaseController
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
         COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_CITY = ?
     GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2603,16 +2597,14 @@ public function pendingHasherAnalversariesAction(Request $request, Application $
   # Declare the SQL to get the most recent hash
   $sqlMostRecentHash = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION
     FROM HASHES
-    JOIN (
-        SELECT MAX(HASHINGS.HASH_KY) AS HASH_KY
-        FROM HASHINGS
-        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-      ) AS TEMPTABLE
-    ON HASHES.HASH_KY = TEMPTABLE.HASH_KY";
+    WHERE HASHES.EVENT_DATE = (
+        SELECT MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+        FROM HASHES
+        WHERE HASHES.KENNEL_KY = ?)
+    AND HASHES.KENNEL_KY = ?";
 
   # Execute the SQL to get the most recent hash
-  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy));
+  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy,(int) $kennelKy));
 
   $tableCaption = "The most recent hash was: $theMostRecentHashValue[KENNEL_EVENT_NUMBER]
   at $theMostRecentHashValue[EVENT_LOCATION]";
@@ -2718,17 +2710,14 @@ public function pendingHareAnalversariesAction(Request $request, Application $ap
   # Declare the SQL to get the most recent hash
   $sqlMostRecentHash = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION
     FROM HASHES
-    JOIN
-		(
-			SELECT MAX(harings_hash_ky) as HASH_KY
-            FROM HARINGS
-            JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-            WHERE HASHES.KENNEL_KY = ?
-		) AS TEMPTABLE
-    ON HASHES.HASH_KY = TEMPTABLE.HASH_KY";
+    WHERE HASHES.EVENT_DATE = (
+        SELECT MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+        FROM HASHES
+        WHERE HASHES.KENNEL_KY = ?)
+    AND HASHES.KENNEL_KY = ?";
 
   # Execute the SQL to get the most recent hash
-  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy));
+  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy, (int) $kennelKy));
 
   $tableCaption = "The most recent hash was: $theMostRecentHashValue[KENNEL_EVENT_NUMBER]
   at $theMostRecentHashValue[EVENT_LOCATION]";
