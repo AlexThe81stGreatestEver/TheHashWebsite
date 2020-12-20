@@ -3390,6 +3390,8 @@ public function basicStatsAction(Request $request, Application $app, string $ken
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   #SQL to determine the distinct year values
   $sql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
   FROM HASHES
@@ -3415,7 +3417,9 @@ public function basicStatsAction(Request $request, Application $app, string $ken
     'kennel_abbreviation' => $kennel_abbreviation,
     'first_hash' => $firstHashValue,
     'latest_hash' => $mostRecentHashValue,
-    'theYearValues' => $yearValues
+    'theYearValues' => $yearValues,
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+    'overall' => count($hareTypes) > 1 ? "Overall " : "",
   ));
 
   #Return the return value
