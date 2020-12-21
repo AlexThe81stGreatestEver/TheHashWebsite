@@ -2,6 +2,8 @@
 
 namespace HASH\Controller;
 
+require_once "BaseController.php";
+
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -15,33 +17,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
-
-
-class TagController
+class TagController extends BaseController
 {
-
-
-
-    private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
-
-      #Define the SQL to RuntimeException
-      $sql = "SELECT * FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
-
-      #Query the database
-      $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-      #Obtain the kennel ky from the returned object
-      $returnValue = $kennelValue['KENNEL_KY'];
-
-      #return the return value
-      return $returnValue;
-
-    }
-
-
     public function manageEventTagsPreAction(Request $request, Application $app){
-
-
       #Define the SQL to execute
       $eventTagListSQL = "SELECT TAG_TEXT, COUNT(HTJ.HASHES_KY) AS THE_COUNT
         FROM  HASHES_TAGS HT LEFT JOIN HASHES_TAG_JUNCTION HTJ ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
@@ -62,11 +40,7 @@ class TagController
 
       #Return the return value
       return $returnValue;
-
     }
-
-
-
 
 public function getEventTagsWithCountsJsonAction(Request $request, Application $app){
 
@@ -225,13 +199,13 @@ public function addNewEventTag(Request $request, Application $app){
       # Make a database call to obtain the hasher information
       $hashValue = $app['db']->fetchAssoc($sql, array((int) $hash_id));
 
-
       $returnValue = $app['twig']->render('show_hash_for_tagging.twig', array(
         'pageTitle' => 'Tag this hash event!',
         'pageHeader' => '(really)',
         'hashValue' => $hashValue,
         'hashKey' => $hash_id,
-        'tagList' => $eventTagList
+        'tagList' => $eventTagList,
+        'hashTypes' => $this->getHashTypes($app, $hashValue['KENNEL_KY'], 0)
       ));
 
       #Return the return value
@@ -448,9 +422,10 @@ public function addNewEventTag(Request $request, Application $app){
             EVENT_CITY,
             EVENT_STATE,
             SPECIAL_EVENT_DESCRIPTION,
-            IS_HYPER
+            HASH_TYPE_NAME
       FROM
         HASHES JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+        JOIN HASH_TYPES ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
       WHERE
         HASHES_TAGS_KY = ? AND KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE DESC";
@@ -517,7 +492,7 @@ public function addNewEventTag(Request $request, Application $app){
       $avgLng = $theAverageLatLong['THE_LNG'];
 
       # Obtain the number of hashings
-      #$hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+      #$hashCountValue = $app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
 
       # Obtain the number of harings
       #$hareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 1));

@@ -1,0 +1,49 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+
+<script type = "text/javascript" language = "javascript">
+
+
+
+  //Call these functions upon page load
+  $(document).ready(function() {
+    //Convert the main table into a data table
+    $('#the_main_table').DataTable({
+      "paging":   true,
+      "pageLength": 25,
+      "lengthMenu": [ [10, 25, 69, -1], [10, 25, 69, "All"]],
+      "aaSorting": [],
+      "responsive": true,
+      "autoWidth": false
+    });
+
+  });
+
+
+</script>
+
+    <div class="table-responsive">
+    <h3>{{pageTitle}}</h3>
+    <h4>{{pageSubTitle}}</h4>
+    <table class="table table-condensed table-hover" id="the_main_table">
+      <thead>
+        <tr>
+          <th>Hasher Name</th>
+          <td>Abbreviation</td>
+          <td>Hare Type</td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in theList %}
+          <tr>
+            <td><a href='/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}'>{{item.NAME}}</a></td>
+            <td>{{item.HASHER_ABBREVIATION}}</td>
+            <td>{{item.HARE_TYPE_NAME}}</td>
+          </tr>
+        {% endfor %}
+    </table>
+    </div>
+
+{% endblock %}

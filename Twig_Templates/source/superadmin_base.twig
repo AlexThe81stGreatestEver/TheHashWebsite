@@ -34,7 +34,7 @@
     {% if(constant("SITE_BANNER")) %}
         {{constant("SITE_BANNER") | raw}}
     {% endif %}
-    {% if(constant("GOOGLE_ANALYTICS_ID")) %}
+    {% if(constant("GOOGLE_ANALYTICS_ID") is defined) %}
       <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

@@ -197,10 +197,16 @@ $(function(){
       <input type="text" class="form-control" id="hashEventDescription" name="hashEventDescription">
     </div>
 
-    <label for"hyperIndicator" class="col-sm-2 control-label">Is a Hyper Hash</label>
+    <label for"hashType" class="col-sm-2 control-label">Hash Type</label>
     <div class="col-sm-4">
-      <label class="radio-inline"><input type="radio" name="hyperIndicator" id="hyperIndicator" value="0" checked="checked">No</input></label>
-      <label class="radio-inline"><input type="radio" name="hyperIndicator" id="hyperIndicator" value="1">Yes</input></label>
+      <select class="form-control" id="hashType" name="hashType">
+        {% for hashType in hashTypes %}
+          <option value="{{hashType.HASH_TYPE}}">
+            {{hashType.HASH_TYPE_NAME}}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
     </div>
   </div>
 

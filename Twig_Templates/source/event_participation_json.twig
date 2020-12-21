@@ -44,11 +44,11 @@ function displayMessage(messageValue){
          $('#hare-list').empty();
 
          $.each(data, function(key,row) {
-           $('#hare-list').append('<dt>'+ row.HASHER_NAME + '</dt>');
-           var linkOne = "<a href=/admin/hasherDetailsKennelSelection/" +row.HASHER_KY+ ">Details</a>";
-           var linkTwo = '<a href="javascript:deleteHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">Delete Hare</a>';
-           var linkThree = '<a href="javascript:addHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">Add Hasher</a>';
-           $('#hare-list').append('<dd>' + linkOne + ' | ' + linkTwo + ' | ' + linkThree + '</dd>');
+           $('#hare-list').append('<dt><a href="/admin/hasherDetailsKennelSelection/' + row.HASHER_KY + '">' +
+               row.HASHER_NAME + '</a> (' + row.HARE_TYPE_NAMES +')</dt>');
+           var linkTwo = '<a href="javascript:deleteHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">-Hare</a>';
+           var linkThree = '<a href="javascript:addHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">+Hound</a>';
+           $('#hare-list').append('<dd>' + linkTwo + ' | ' + linkThree + '</dd>');
 
          });
          //$('#hare-list').listview('refresh');
@@ -80,12 +80,16 @@ function displayMessage(messageValue){
         $('#hasher-list').empty();
 
         $.each(data, function(key,row) {
-          $('#hasher-list').append('<dt>'+ row.HASHER_NAME + '</dt>');
-          var linkOne = "<a href=/admin/hasherDetailsKennelSelection/" +row.HASHER_KY+ ">Details</a>";
-          var linkTwo = '<a href="javascript:deleteHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">Delete Hasher</a>';
-          var linkThree = '<a href="javascript:addHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">Add Hare</a>';
-          var linkFour = '<a target="_new" href="/admin/modifyhasher/form/'+row.HASHER_KY+'">Modify Hasher</a>';
-          $('#hasher-list').append('<dd>' + linkOne + ' | ' + linkTwo + ' | ' + linkThree + ' | ' + linkFour + '</dd>');
+          $('#hasher-list').append('<dt><a href="/admin/hasherDetailsKennelSelection/' + row.HASHER_KY + '">' +
+               row.HASHER_NAME + '</a></dt>');
+          var linkTwo = '<a href="javascript:deleteHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">-Hound</a>';
+          var linkThree =
+          {% for hareType in hareTypes %}
+            "<a href='javascript:addHare("+row.HASHER_KY+"," +{{hareType.HARE_TYPE}} + ",{{hash_key}});'>+{{hareType.HARE_TYPE_NAME}} Hare</a> | " +
+          {% endfor %}
+            "";
+          var linkFour = '<a target="_new" href="/admin/modifyhasher/form/'+row.HASHER_KY+'">Edit Hasher</a>';
+          $('#hasher-list').append('<dd>' + linkTwo + ' | ' + linkThree + linkFour + '</dd>');
 
         });
         //$('#hasher-list').listview('refresh');
@@ -93,7 +97,7 @@ function displayMessage(messageValue){
         //Update the hasher count div
         var hasherCount = data.length;
         //$('#hasherCount').empty();
-        $('#hasherCount').empty().append('Hashers: ' + hasherCount);
+        $('#hasherCount').empty().append('Hounds: ' + hasherCount);
 
       },
       error: function (jqXHR, textStatus, errorThrown){
@@ -149,8 +153,8 @@ function displayMessage(messageValue){
  }
 
  //Function to add a hare to the event
- function addHare(hasher_key, hash_key){
-  var formData = {hasher_key:hasher_key,hash_key:hash_key};
+ function addHare(hasher_key, hare_type, hash_key){
+  var formData = {hasher_key:hasher_key,hare_type:hare_type,hash_key:hash_key};
   $.ajax({
       url : "/admin/event/addHareToHash",
       type: "POST",
@@ -241,7 +245,11 @@ $(document).ready(function() {
       {
         "data": "THE_KEY",
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> | <a href='javascript:addHare("+oData.THE_KEY+",{{hash_key}});'>+ Hare</a> | " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
+          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> " +
+          {% for hareType in hareTypes %}
+            "| <a href='javascript:addHare("+oData.THE_KEY+"," + {{hareType.HARE_TYPE}} + ",{{hash_key}});'>+ {{hareType.HARE_TYPE_NAME}} Hare</a> " +
+          {% endfor %}
+          "| " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
         }
      }
     ]

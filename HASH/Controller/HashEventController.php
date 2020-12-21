@@ -2,6 +2,8 @@
 
 namespace HASH\Controller;
 
+require_once "BaseController.php";
+
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -15,10 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
-
-
-class HashEventController
-{
+class HashEventController extends BaseController {
 
   public static $stateDropdownArray = array(
       'Ohio' => 'OH',
@@ -74,24 +73,38 @@ class HashEventController
       'Wyoming' => 'WY'
   );
 
-
-
-
-
-  private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
+  protected function getHareTypesForHashType($app, $kennelKy, $hashType) {
 
     #Define the SQL to RuntimeException
-    $sql = "SELECT * FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
+    $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
+              FROM HARE_TYPES 
+              JOIN KENNELS
+                ON KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+              JOIN HASH_TYPES
+                ON HASH_TYPES.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+             WHERE KENNELS.KENNEL_KY = ?
+               AND HASH_TYPES.HASH_TYPE = ?
+             ORDER BY HARE_TYPES.SEQ";
 
     #Query the database
-    $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-    #Obtain the kennel ky from the returned object
-    $returnValue = $kennelValue['KENNEL_KY'];
+    $hareTypes = $app['db']->fetchAll($sql, array((int) $kennelKy, (int) $hashType));
 
     #return the return value
-    return $returnValue;
+    return $hareTypes;
+  }
 
+  protected function getAllHashTypes($app) {
+
+    #Define the SQL to RuntimeException
+    $sql = "SELECT HASH_TYPE, HASH_TYPE_NAME 
+              FROM HASH_TYPES 
+             ORDER BY SEQ";
+
+    #Query the database
+    $hashTypes = $app['db']->fetchAll($sql);
+
+    #return the return value
+    return $hashTypes;
   }
 
   #Define action
@@ -115,6 +128,7 @@ class HashEventController
       'pageTitle' => 'Create an Event!',
       'pageHeader' => 'Page Header',
       'kennelList' => $kennelDropdown,
+      'hashTypes' => $this->getAllHashTypes($app),
       'geocode_api_value' => GOOGLE_PLACES_API_WEB_SERVICE_KEY
     ));
 
@@ -137,7 +151,7 @@ class HashEventController
       $theKennel = trim(strip_tags($request->request->get('kennelName')));
       $theHashEventNumber = trim(strip_tags($request->request->get('hashEventNumber')));
       $theHashEventDescription = trim(strip_tags($request->request->get('hashEventDescription')));
-      $theHyperIndicator= trim(strip_tags($request->request->get('hyperIndicator')));
+      $theHashType= trim(strip_tags($request->request->get('hashType')));
       $theEventDate= trim(strip_tags($request->request->get('eventDate')));
       $theEventTime= trim(strip_tags($request->request->get('eventTime')));
       $theEventDateAndTime = $theEventDate." ".$theEventTime;
@@ -223,7 +237,7 @@ class HashEventController
             EVENT_CITY,
             EVENT_STATE,
             SPECIAL_EVENT_DESCRIPTION,
-            IS_HYPER,
+            HASH_TYPE,
             STREET_NUMBER,
             ROUTE,
             COUNTY,
@@ -248,7 +262,7 @@ class HashEventController
             $theLocality,
             $theAdministrative_area_level_1,
             $theHashEventDescription,
-            $theHyperIndicator,
+            $theHashType,
             $theStreet_number,
             $theRoute,
             $theAdministrative_area_level_2,
@@ -307,7 +321,15 @@ class HashEventController
       $kennelList = $app['db']->fetchAll($kennelsSQL);
 
       # Declare the SQL used to retrieve this information
-      $sql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES JOIN KENNELS ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
+      $sql = "
+        SELECT *, date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE,
+               date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME
+          FROM HASHES
+          JOIN HASH_TYPES
+            ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
+          JOIN KENNELS
+            ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY
+         WHERE HASH_KY = ?";
 
       # Make a database call to obtain the hasher information
       $hashValue = $app['db']->fetchAssoc($sql, array((int) $hash_id));
@@ -323,6 +345,7 @@ class HashEventController
       $returnValue = $app['twig']->render('edit_hash_form_ajax.twig', array(
         'pageTitle' => 'Modify an Event!',
         'pageHeader' => 'Page Header',
+        'hashTypes' => $this->getAllHashTypes($app),
         'kennelList' => $kennelDropdown,
         'geocode_api_value' => GOOGLE_PLACES_API_WEB_SERVICE_KEY,
         'hashValue' => $hashValue,
@@ -349,7 +372,7 @@ class HashEventController
       $theKennel = trim(strip_tags($request->request->get('kennelName')));
       //$theHashEventNumber = trim(strip_tags($request->request->get('hashEventNumber')));
       $theHashEventDescription = trim(strip_tags($request->request->get('hashEventDescription')));
-      $theHyperIndicator= trim(strip_tags($request->request->get('hyperIndicator')));
+      $theHashType= trim(strip_tags($request->request->get('hashType')));
       $theEventDate= trim(strip_tags($request->request->get('eventDate')));
       $theEventTime= trim(strip_tags($request->request->get('eventTime')));
       $theEventDateAndTime = $theEventDate." ".$theEventTime;
@@ -436,7 +459,7 @@ class HashEventController
               EVENT_CITY = ?,
               EVENT_STATE = ?,
               SPECIAL_EVENT_DESCRIPTION = ?,
-              IS_HYPER = ?,
+              HASH_TYPE = ?,
               STREET_NUMBER = ?,
               ROUTE = ?,
               COUNTY = ?,
@@ -456,7 +479,7 @@ class HashEventController
             $theLocality,
             $theAdministrative_area_level_1,
             $theHashEventDescription,
-            $theHyperIndicator,
+            $theHashType,
             $theStreet_number,
             $theRoute,
             $theAdministrative_area_level_2,
@@ -523,6 +546,7 @@ class HashEventController
       $hashEvent = $app['db']->fetchAssoc($hashEventInfoSQL,array((int)$hash_id));
 
       $kennelAbbreviation = $hashEvent['KENNEL_ABBREVIATION'];
+      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennelAbbreviation);
       $kennelEventNumber = $hashEvent['KENNEL_EVENT_NUMBER'];
       $eventDate = $hashEvent['EVENT_DATE'];
       $pageTitle = "Participation: $kennelAbbreviation # $kennelEventNumber ($eventDate)";
@@ -534,6 +558,7 @@ class HashEventController
         'pageHeader' => 'Why is this so complicated ?',
         'hasherList' => $hasherList,
         'hareList' => $hareList,
+        'hareTypes' => $this->getHareTypesForHashType($app, $kennelKy, $hashEvent['HASH_TYPE']),
         'hash_key'=> $hash_id,
         'kennel_abbreviation' => $kennelAbbreviation,
         'kennel_event_number' => $kennelEventNumber
@@ -634,9 +659,10 @@ class HashEventController
       #Obtain the post values
       $hasherKey = $request->request->get('hasher_key');
       $hashKey = $request->request->get('hash_key');
+      $hareType = $request->request->get('hare_type');
 
       #Validate the post values; ensure that they are both numbers
-      if(ctype_digit($hasherKey)  && ctype_digit($hashKey)){
+      if(ctype_digit($hasherKey)  && ctype_digit($hashKey) && ctype_digit($hareType)){
 
         #Determine the hasher identity
         $hasherIdentitySql = "SELECT * FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
@@ -660,20 +686,20 @@ class HashEventController
         $tempHasherName = $data['HASHER_NAME'];
 
         #Ensure the entry does not already exist
-        $existsSql = "SELECT HASHER_NAME
+        $existsSql = "SELECT 1 AS IGNORED
           FROM HARINGS
           JOIN HASHERS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-          WHERE HASHERS.HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ?;";
+          WHERE HASHERS.HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ? AND HARINGS.HARE_TYPE = ?;";
 
         #Retrieve the existing record
-        $hareToAdd = $app['db']->fetchAll($existsSql,array((int)$hasherKey,(int)$hashKey));
+        $hareToAdd = $app['db']->fetchAll($existsSql,array((int)$hasherKey, (int)$hashKey, (int)$hareType));
         if(count($hareToAdd) < 1){
 
           #Define the sql insert statement
-          $sql = "INSERT INTO HARINGS (HARINGS_HASHER_KY, HARINGS_HASH_KY) VALUES (?, ?);";
+          $sql = "INSERT INTO HARINGS (HARINGS_HASHER_KY, HARINGS_HASH_KY, HARE_TYPE) VALUES (?, ?, ?);";
 
           #Execute the sql insert statement
-          $app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey,$hareType));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -836,10 +862,15 @@ class HashEventController
       $hashKey = $request->request->get('hash_key');
 
       #Define the SQL to execute
-      $hareListSQL = "SELECT HASHER_KY, HASHER_NAME
+      $hareListSQL = "
+      SELECT HASHER_KY, HASHER_NAME, (
+      SELECT GROUP_CONCAT(HARE_TYPE_NAME)
+        FROM HARE_TYPES
+       WHERE HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE) AS HARE_TYPE_NAMES
         FROM HARINGS
-        JOIN HASHERS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-        WHERE HARINGS.HARINGS_HASH_KY = ? ";
+        JOIN HASHERS 
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+       WHERE HARINGS.HARINGS_HASH_KY = ? ";
 
       #Obtain the hare list
       $hareList = $app['db']->fetchAll($hareListSQL,array((int)$hashKey));
@@ -879,7 +910,7 @@ class HashEventController
       # Establish and set the return value
       $returnValue = $app['twig']->render('hash_list_json.twig',array(
         'pageTitle' => 'The List of Hashes',
-        'pageSubTitle' => '*Brown = Hyper Hash',
+        'pageSubTitle' => '',
         #'theList' => $hasherList,
         'kennel_abbreviation' => $kennel_abbreviation,
         'pageCaption' => "",
@@ -973,8 +1004,10 @@ class HashEventController
           KENNEL_KY AS KENNEL_KY,
           DATE_FORMAT(event_date,'%Y/%m/%d') AS EVENT_DATE_FORMATTED,
           DATE_FORMAT(event_date,'%Y/%m/%d %h:%i %p') AS EVENT_DATE_FORMATTED2,
-          IS_HYPER AS IS_HYPER
+          HASH_TYPE_NAME AS HASH_TYPE_NAME
         FROM HASHES
+        JOIN HASH_TYPES
+          ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
         WHERE
           KENNEL_KY = $kennelKy AND
           (
@@ -1039,9 +1072,4 @@ class HashEventController
       #Return the return value
       return $returnValue;
     }
-
-
-
-
-
 }

@@ -24,33 +24,24 @@
     <thead>
       <tr>
         <th>Hash Number</th>
-        <td>Hyper</td>
+        <td>Type</td>
         <td>Location</td>
         <td>Description</td>
         <td>Date</td>
         {#<td>Day Name</td>#}
         <td>City</td>
-
       </tr>
     </thead>
     <tbody>
       {% for item in theList %}
-        {% if item.IS_HYPER == '0000000000' %}
-          <tr>
-        {% else %}
-          <tr bgcolor = "#EDC9AF">
-        {% endif %}
+        <tr>
           <td><a href='/{{kennel_abbreviation}}/hashes/{{item.HASH_KY}}'>{{item.KENNEL_EVENT_NUMBER}}</a></td>
-          <td>
-            {% if item.IS_HYPER == '0000000000' %}No{% else %}Yes{% endif %}
-          </td>
+          <td>{{item.HASH_TYPE_NAME}}</td>
           <td>{{item.EVENT_LOCATION}}</td>
           <td>{{item.SPECIAL_EVENT_DESCRIPTION}}</td>
           <td nowrap="nowrap">{{item.EVENT_DATE|date("Y/m/d (D)", false)}}</td>
           {#<td>{{item.EVENT_DAY_NAME}}</td>#}
           <td>{{item.EVENT_CITY}}</td>
-
-
         </tr>
       {% endfor %}
   </table>

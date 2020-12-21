@@ -3,33 +3,15 @@
 namespace HASH\Controller;
 
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
+require_once "BaseController.php";
 use Silex\Application;
-#use HASH\Utils;
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Datetime;
 
-class HashController
+class HashController extends BaseController
 {
-
-
-  private function obtainKennelKeyFromKennelAbbreviation(Request $request, Application $app, string $kennel_abbreviation){
-
-    #Define the SQL to RuntimeException
-    $sql = "SELECT KENNEL_KY FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
-
-    #Query the database
-    $kennelValue = $app['db']->fetchAssoc($sql, array((string) $kennel_abbreviation));
-
-    #Obtain the kennel ky from the returned object
-    $returnValue = $kennelValue['KENNEL_KY'];
-
-    #return the return value
-    return $returnValue;
-
-  }
-
   #Define the action
   public function logonScreenAction(Request $request, Application $app){
 
@@ -57,11 +39,6 @@ class HashController
     # Return the return value;
     return $returnValue;
   }
-
-
-
-
-
 
   public function logoutAction(Request $request, Application $app){
 
@@ -124,24 +101,23 @@ class HashController
 
   }
 
-
   #Define the action
   public function slashKennelAction2(Request $request, Application $app, string $kennel_abbreviation){
+
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+    $hareTypes = $this->getHareTypes($app, $kennelKy);
 
     #Establish the page title
     $pageTitle = "$kennel_abbreviation Stats";
 
     #Get hound counts
-    $baseSql = HASHING_COUNTS;
+    $baseSql = $this->getHashingCountsQuery();
     $sql = "$baseSql  LIMIT 10";
 
-    #Get Top (True) Hare Counts
-    $baseSql2 = NON_HYPER_HARING_COUNTS;
-    $sql2 = "$baseSql2 LIMIT 10";
-
-    #Get Top (Hyper) Hare Counts
-    $baseSql3 = HYPER_HARING_COUNTS;
-    $sql3 = "$baseSql3 LIMIT 10";
+    $baseSql = HARE_TYPE_HARING_COUNTS;
+    $sql2 = "$baseSql  LIMIT 10";
 
     #Get Top (Overall) Hare Counts
     $baseSql4 = HARING_COUNTS;
@@ -159,13 +135,19 @@ class HashController
     $baseSql8 = HARING_COUNTS_LAST_YEAR;
     $sql8 = "$baseSql8 LIMIT 10";
 
-    #Obtain the kennel key
-    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+    $top_hares = array();
+
+    if(count($hareTypes) > 1) {
+      foreach ($hareTypes as &$hareType) {
+        $hareResults = $app['db']->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
+          array_push($top_hares, array('data' => $hareResults,
+            'label' => $hareType['HARE_TYPE_NAME'],
+            'hare_type' => $hareType['HARE_TYPE']));
+      }
+    }
 
     #Execute the SQL statement; create an array of rows
     $topHashersList = $app['db']->fetchAll($sql, array((int) $kennelKy));
-    $topTrueHareList = $app['db']->fetchAll($sql2, array((int) $kennelKy));
-    $topHyperHareList = $app['db']->fetchAll($sql3, array((int) $kennelKy));
     $topOverallHareList = $app['db']->fetchAll($sql4, array((int) $kennelKy));
     $topHashersThisYear = $app['db']->fetchAll($sql5, array((int) $kennelKy));
     $topHashersLastYear = $app['db']->fetchAll($sql6, array((int) $kennelKy));
@@ -178,7 +160,7 @@ class HashController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theQuickestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
     #Get the quickest to 100 hashes
     $theQuickestToYNumber = 100;
@@ -186,7 +168,7 @@ class HashController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToYResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theQuickestToYResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
     #Get the slowest to 5 hashes
     $theSlowestToXNumber = 5;
@@ -194,24 +176,21 @@ class HashController
     $theSql = str_replace("XORDERX","DESC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theSlowestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,(int) $kennelKy));
+    $theSlowestToXResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
 
+    $quickest_hares = array();
+    $theQuickestToXHaringsNumber = 5;
+    $theSql = str_replace("XLIMITX",$theQuickestToXHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
+    $theSql = str_replace("XORDERX","ASC",$theSql);
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
+    $theSql = "$theSql LIMIT 10";
 
+    foreach ($hareTypes as &$hareType) {
     #Get the quickest to 5 true harings
-    $theQuickestToXTrueHaringsNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXTrueHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
-    $theSql = str_replace("XORDERX","ASC",$theSql);
-    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
-    $theSql = "$theSql LIMIT 10";
-    $theQuickestToXTrueHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,0,0,(int) $kennelKy,0,0));
-
-    #Get the quickest to 5 hyper harings
-    $theQuickestToXHyperHaringsNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXHyperHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
-    $theSql = str_replace("XORDERX","ASC",$theSql);
-    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
-    $theSql = "$theSql LIMIT 10";
-    $theQuickestToXHyperHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy,1,1,(int) $kennelKy,1,1));
+      $theQuickestToXHaringsResults = $app['db']->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
+      array_push($quickest_hares,
+        array('data' => $theQuickestToXHaringsResults, 'label' => $hareType['HARE_TYPE_NAME'], 'hare_type' => $hareType['HARE_TYPE']));
+    }
 
     #Query for the event tag summary
     $eventTagSql = "SELECT HT.TAG_TEXT, HT.HASHES_TAGS_KY,COUNT(HTJ.HASHES_KY) AS THE_COUNT
@@ -234,26 +213,27 @@ class HashController
       'subTitle3' => 'Hare Statistics',
       'subTitle4' => 'Other Statistics',
       'kennel_abbreviation' => $kennel_abbreviation,
+      'hare_types' => count($hareTypes) == 1 ? array() : $hareTypes,
       'top_alltime_hashers' =>$topHashersList,
-      'top_true_hares' =>$topTrueHareList,
-      'top_hyper_hares' =>$topHyperHareList,
+      'top_hares' => $top_hares,
       'top_overall_hares' => $topOverallHareList,
       'the_quickest_to_x_number' => $theQuickestToXNumber,
       'the_quickest_to_x_results' => $theQuickestToXResults,
       'the_quickest_to_y_number' => $theQuickestToYNumber,
       'the_quickest_to_y_results' => $theQuickestToYResults,
-
       'the_slowest_to_x_number' => $theSlowestToXNumber,
       'the_slowest_to_x_results' => $theSlowestToXResults,
-      'the_quickest_to_x_true_harings_number' => $theQuickestToXTrueHaringsNumber,
-      'the_quickest_to_x_true_harings_results' => $theQuickestToXTrueHaringsResults,
-      'the_quickest_to_x_hyper_harings_number' => $theQuickestToXHyperHaringsNumber,
-      'the_quickest_to_x_hyper_harings_results' => $theQuickestToXHyperHaringsResults,
+      'the_quickest_to_x_harings_number' => $theQuickestToXHaringsNumber,
+      'quickest_hares' => $quickest_hares,
       'top_hashers_this_year' => $topHashersThisYear,
       'top_hashers_last_year' => $topHashersLastYear,
       'top_hares_this_year' => $topHaresThisYear,
       'top_hares_last_year' => $topHaresLastYear,
-      'event_tag_summaries' => $eventTagSummaries
+      'event_tag_summaries' => $eventTagSummaries,
+      'overall_hares_title' =>
+        count($hareTypes) > 1 ? "Top 10 (Overall) Hares" : "Top 10 Hares",
+      'overall_haring_counts_title' =>
+        count($hareTypes) > 1 ? "Overall Haring Counts" : "Haring Counts"
     ));
 
     #Return the return value
@@ -311,16 +291,18 @@ class HashController
   }
 
   #Define the action
-  public function listVirginHaringsPreActionJson(Request $request, Application $app, string $kennel_abbreviation){
+  public function listVirginHaringsPreActionJson(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
+
+    $hareTypeName = $this->getHareTypeName($app, $hare_type);
 
     # Establish and set the return value
     $returnValue = $app['twig']->render('virgin_haring_list_json.twig',array(
-      'pageTitle' => 'The List of Virgin (True) Harings',
+      'pageTitle' => 'The List of Virgin ('.$hareTypeName.') Harings',
       'pageSubTitle' => '',
-      #'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation,
       'pageCaption' => "",
-      'tableCaption' => ""
+      'tableCaption' => "",
+      'hare_type' => $hare_type
     ));
 
     #Return the return value
@@ -328,27 +310,19 @@ class HashController
 
   }
 
-  public function cohareCountsPreActionJson(Request $request, Application $app, string $kennel_abbreviation, $type){
+  public function cohareCountsPreActionJson(Request $request, Application $app, string $kennel_abbreviation, string $hare_type){
 
     # Establish and set the return value
     $returnValue = $app['twig']->render('cohare_list_json.twig',array(
-      'pageTitle' => ($type == "true" ? "True" : ($type=="hyper" ? "Hyper" : "All")).' Co-Hare Counts',
+      'pageTitle' => ($hare_type == "all" ? "Overall" : $this->getHareTypeName($app, $hare_type)).' Co-Hare Counts',
       'pageSubTitle' => 'Total number of events where two hashers have hared together.',
       'kennel_abbreviation' => $kennel_abbreviation,
-      'type' => $type=="true" ? "true" : ($type=="hyper" ? "hyper" : "all"),
+      'hare_type' => $hare_type,
       'pageTracking' => 'CoHareCounts'
     ));
 
     #Return the return value
     return $returnValue;
-  }
-
-  public function trueCohareCountsPreActionJson(Request $request, Application $app, string $kennel_abbreviation){
-    return $this->cohareCountsPreActionJson($request, $app, $kennel_abbreviation, "true");
-  }
-
-  public function hyperCohareCountsPreActionJson(Request $request, Application $app, string $kennel_abbreviation){
-    return $this->cohareCountsPreActionJson($request, $app, $kennel_abbreviation, "hyper");
   }
 
   public function allCohareCountsPreActionJson(Request $request, Application $app, string $kennel_abbreviation){
@@ -367,11 +341,10 @@ class HashController
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
     $inputSearch = $_POST['search'];
-    $type = $_POST['type'];
+    $hare_type = $_POST['hare_type'];
     $inputSearchValue = $inputSearch['value'];
 
-    $typeClause = $type=="hyper" ? "AND IS_HYPER=1" :
-                  ($type=="true" ? "AND IS_HYPER=0" : "");
+    $typeClause = $hare_type=="all" ? "" : "AND b.HARE_TYPE & ? != 0 AND c.HARE_TYPE & ? != 0";
 
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
@@ -486,24 +459,32 @@ class HashController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
-    #Perform the filtered search
-    $theResults = $app['db']->fetchAll($sql,array(
+
+    $args = array(
       $kennelKy,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+      (string) $inputSearchValueModified);
+
+    $args2 = array($kennelKy);
+
+    if($hare_type!="all") {
+        array_push($args, $hare_type);
+        array_push($args, $hare_type);
+        array_push($args2, $hare_type);
+        array_push($args2, $hare_type);
+    }
+
+    #Perform the filtered search
+    $theResults = $app['db']->fetchAll($sql, $args);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,$args2))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array(
-      $kennelKy,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = $app['db']->fetchAssoc($sqlFilteredCount,$args)['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
@@ -608,11 +589,22 @@ class HashController
 
 
     #Define the SQL to execute
-    $sql = "SELECT
-      HASHERS.HASHER_KY AS THE_KEY,
-      HASHERS.HASHER_NAME AS NAME ,
-      HASHERS.HASHER_ABBREVIATION
-      FROM HASHERS JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY WHERE HARINGS.HARINGS_HASH_KY = ?";
+    $sql = "
+      SELECT THE_KEY, NAME, HASHER_ABBREVIATION,
+             GROUP_CONCAT(HARE_TYPE_NAME SEPARATOR ', ') AS HARE_TYPE_NAME
+        FROM (
+      SELECT HASHERS.HASHER_KY AS THE_KEY,
+             HASHERS.HASHER_NAME AS NAME,
+             HASHERS.HASHER_ABBREVIATION,
+             HARE_TYPES.HARE_TYPE_NAME
+        FROM HASHERS
+        JOIN HARINGS
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+       WHERE HARINGS.HARINGS_HASH_KY = ?
+       ORDER BY HASHERS.HASHER_NAME, HARE_TYPES.SEQ) THE_TABLE
+       GROUP BY THE_KEY, NAME, HASHER_ABBREVIATION";
 
     #Execute the SQL statement; create an array of rows
     $hasherList = $app['db']->fetchAll($sql,array((int) $hash_id));
@@ -629,7 +621,7 @@ class HashController
     $theSubTitle = "Hares at Hash Number $theHashEventNumber ($theHashEventLocation) ";
 
     # Establish and set the return value
-    $returnValue = $app['twig']->render('hasher_list.twig',array(
+    $returnValue = $app['twig']->render('hare_list.twig',array(
       'pageTitle' => 'The List of Hares',
       'pageSubTitle' => $theSubTitle,
       'theList' => $hasherList,
@@ -704,7 +696,7 @@ class HashController
     $sql = "SELECT
       HASHER_NAME AS NAME,
       HASHER_ABBREVIATION,
-      COUNT(HASHINGS.HASHER_KY) AS THE_COUNT,
+      COUNT(HASHINGS.HASHER_KY) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
       HASHINGS.HASHER_KY AS THE_KEY
       FROM HASHERS
       JOIN HASHINGS
@@ -783,7 +775,7 @@ class HashController
   }
 
 
-  public function getVirginHaringsListJson(Request $request, Application $app, string $kennel_abbreviation){
+  public function getVirginHaringsListJson(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
     #$app['monolog']->addDebug("Entering the function------------------------");
 
@@ -844,81 +836,66 @@ class HashController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-		    HASHERS.HASHER_NAME AS HASHER_NAME,
-        FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
-		    HASHERS.HASHER_KY AS HASHER_KY,
-		    FIRST_HARING_EVENT_TABLE.FIRST_HASH_KEY AS FIRST_HARING_KEY
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-                     AND HASHES.IS_HYPER IN (?,?)
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))
-      WHERE HASHERS.HASHER_NAME LIKE ?
-      ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-      LIMIT $inputStart,$inputLength";
-      #$app['monolog']->addDebug("sql: $sql");
+    $sql = "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+                   FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
+                   HASHERS.HASHER_KY AS HASHER_KY,
+		   (SELECT HASH_KY FROM HASHES
+		     WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
+		       AND HASHES.KENNEL_KY = ?)
+		        AS FIRST_HARING_KEY
+          FROM HASHERS
+          JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                       MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+                 FROM HARINGS
+                 JOIN HASHES
+                   ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                WHERE HASHES.KENNEL_KY = ?
+                  AND HARINGS.HARE_TYPE & ? != 0
+                GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+            ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
+         WHERE HASHERS.HASHER_NAME LIKE ?
+         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+         LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT
-		    COUNT(*) AS THE_COUNT
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-                     AND HASHES.IS_HYPER IN (?,?)
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))
-      WHERE HASHERS.HASHER_NAME LIKE ?";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+               FROM HARINGS
+               JOIN HASHES
+                 ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+              WHERE HASHES.KENNEL_KY = ?
+                AND HARINGS.HARE_TYPE & ? != 0
+              GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+          ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
+       WHERE HASHERS.HASHER_NAME LIKE ?";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount = "SELECT
-		    COUNT(*) AS THE_COUNT
-	  FROM
-		    (HASHERS
-		        JOIN (
-			           SELECT
-				            HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-				            MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE,
-				            MIN(HASHES.HASH_KY) AS FIRST_HASH_KEY
-			           FROM
-				             HARINGS
-				             JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-			           WHERE
-				             HASHES.KENNEL_KY = ?
-                     AND HASHES.IS_HYPER IN (?,?)
-			          GROUP BY HARINGS.HARINGS_HASHER_KY
-			    ) FIRST_HARING_EVENT_TABLE ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY)))";
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+                FROM HARINGS
+                JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+                 AND HARINGS.HARE_TYPE & ? != 0
+               GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+          ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY))";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
     #Perform the filtered search
-    $theResults = $app['db']->fetchAll($sql,array($kennelKy,0,0,(string) $inputSearchValueModified));
+    $theResults = $app['db']->fetchAll($sql,array($kennelKy, $kennelKy, $hare_type, (string) $inputSearchValueModified));
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy,0,0)))['THE_COUNT'];
+    $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array($kennelKy, $hare_type)))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array($kennelKy,0,0,(string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array($kennelKy, $hare_type, (string) $inputSearchValueModified)))['THE_COUNT'];
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
@@ -1137,7 +1114,7 @@ class HashController
     $sql =
 	    "SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
 	       DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
-        SELECT MAX(HASH_KY)
+        SELECT HASH_KY
           FROM HASHES
          WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
            AND KENNEL_KY = $kennelKy) AS HASH_KY,
@@ -1358,7 +1335,7 @@ class HashController
 
 
 
-  public function listHashesByHasherAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+  public function listHashesByHasherAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -1372,8 +1349,10 @@ class HashController
           EVENT_LOCATION,
           EVENT_CITY,
           SPECIAL_EVENT_DESCRIPTION,
-          IS_HYPER
-    FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
+          HASH_TYPE_NAME
+    FROM HASHES
+    JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
+    JOIN HASH_TYPES ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
     WHERE HASHINGS.HASHER_KY = ? AND HASHES.KENNEL_KY = ?
     ORDER BY HASHES.EVENT_DATE DESC";
 
@@ -1399,7 +1378,6 @@ class HashController
 
     #Return the return value
     return $returnValue;
-
   }
 
   public function attendanceRecordForHasherAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
@@ -1448,8 +1426,12 @@ class HashController
         EVENT_LOCATION,
         EVENT_CITY,
         SPECIAL_EVENT_DESCRIPTION,
-        IS_HYPER
-      FROM HASHES JOIN HARINGS ON HASHES.HASH_KY = HARINGS.HARINGS_HASH_KY
+        HASH_TYPE_NAME
+      FROM HASHES
+      JOIN HARINGS
+        ON HASHES.HASH_KY = HARINGS.HARINGS_HASH_KY
+      JOIN HASH_TYPES
+        ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
       WHERE HARINGS.HARINGS_HASHER_KY = ? AND HASHES.KENNEL_KY = ?
       ORDER BY EVENT_DATE DESC";
 
@@ -1553,10 +1535,10 @@ class HashController
     $avgLng = $theAverageLatLong['THE_LNG'];
 
     # Obtain the number of hashings
-    $hashCountValue = $app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+    $hashCountValue = $app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
 
     # Obtain the number of harings
-    $hareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 1));
+    $hareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, (int) $kennelKy));
 
     # Obtain the hashes by month (name)
     $theHashesByMonthNameList = $app['db']->fetchAll(HASHER_HASH_COUNTS_BY_MONTH_NAME, array((int) $hasher_id, (int) $kennelKy));
@@ -1591,8 +1573,6 @@ class HashController
     #Obtain the harings by year
     $sqlHaringsByYear = "SELECT
     	  YEAR(EVENT_DATE) AS THE_VALUE,
-        SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-    	  SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
         COUNT(*) AS TOTAL_HARING_COUNT
     FROM
         HARINGS
@@ -1683,8 +1663,13 @@ class HashController
     $sunburstValuesA = $app['db']->fetchAll($sunburstSqlA, array((int) $hasher_id , (int) $kennelKy));
     $sunburstFormattedData = convertToFormattedHiarchy($sunburstValuesA);
 
+    $hareTypes = $this->getHareTypes($app, $kennelKy);
+
     # Establish and set the return value
     $returnValue = $app['twig']->render('hasher_chart_details.twig',array(
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
+      'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
+        "Hare Details",
       'sunburst_formatted_data' => $sunburstFormattedData,
       'quarter_month_formatted_data' => $quarterMonthFormattedData,
       'pageTitle' => 'Hasher Charts and Details',
@@ -1742,7 +1727,11 @@ class HashController
 
 
     # Make a database call to obtain the hasher information
-    $sql = "SELECT PLACE_ID, EVENT_STATE, COUNTY, EVENT_CITY, EVENT_LOCATION, STREET_NUMBER, ROUTE, FORMATTED_ADDRESS, NEIGHBORHOOD, POSTAL_CODE, COUNTRY, LAT, LNG, KENNEL_EVENT_NUMBER, EVENT_DATE, SPECIAL_EVENT_DESCRIPTION, IS_HYPER, HASH_KY FROM HASHES WHERE HASH_KY = ?";
+    $sql = "SELECT PLACE_ID, EVENT_STATE, COUNTY, EVENT_CITY, EVENT_LOCATION, STREET_NUMBER, ROUTE, FORMATTED_ADDRESS, NEIGHBORHOOD, POSTAL_CODE, COUNTRY, LAT, LNG, KENNEL_EVENT_NUMBER, EVENT_DATE, SPECIAL_EVENT_DESCRIPTION, HASH_KY, HASH_TYPE_NAME
+              FROM HASHES
+              JOIN HASH_TYPES
+                ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
+             WHERE HASH_KY = ?";
     $theHashValue = $app['db']->fetchAssoc($sql, array((int) $hash_id));
 
     $state = $theHashValue['EVENT_STATE'];
@@ -1808,16 +1797,10 @@ class HashController
 
 
       # Make a database call to obtain the hasher information
-      $houndAnalversaryList = $app['db']->fetchAll(HOUND_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $overallHareAnalversaryList = $app['db']->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $trueHareAnalversaryList = $app['db']->fetchAll(TRUE_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-      $hyperHareAnalversaryList = $app['db']->fetchAll(HYPER_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+      $houndAnalversaryList = $app['db']->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
       $consolidatedHareAnalversaryList = $app['db']->fetchAll(CONSOLIDATED_HARE_ANALVERSARIES_FOR_EVENT, array(
         (int) $hash_id,(int) $kennelKy, (int) $hash_id,
-        (int) $hash_id,(int) $kennelKy, (int) $hash_id,
         (int) $hash_id,(int) $kennelKy, (int) $hash_id));
-
-
 
       # Declare the SQL used to retrieve this information
       $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
@@ -1828,49 +1811,51 @@ class HashController
       $sqlHoundAnalversaryTemplate = "SELECT * FROM (
         SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
+	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+        AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
         'AAA' AS ANV_TYPE,
         (SELECT XXX FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.XXX = (SELECT XXX FROM HASHES WHERE HASH_KY = ?)
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC)
     DERIVED_TABLE WHERE ANV_VALUE !=''";
 
     $sqlHoundAnalversaryDateBasedTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY,
-		    'AAA' AS ANV_TYPE,
+	(COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+        AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
+        'AAA' AS ANV_TYPE,
         (SELECT XXX(HASHES.EVENT_DATE) FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = (SELECT KENNEL_KY FROM HASHES WHERE HASH_KY = ?) AND
         XXX(HASHES.EVENT_DATE) = (SELECT XXX(EVENT_DATE) FROM HASHES WHERE HASH_KY = ?)
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
       #Obtain the state analversaries (hound)
@@ -1958,9 +1943,6 @@ class HashController
         'pageTitle' => 'Consolidated Analversaries',
         'pageSubTitle' => $pageSubtitle,
         'houndAnalversaryList' => $houndAnalversaryList,
-        'overalHareAnalversaryList' => $overallHareAnalversaryList,
-        'trueHareAnalversaryList' => $trueHareAnalversaryList,
-        'hyperHareAnalversaryList' => $hyperHareAnalversaryList,
         'consolidatedHareAnalversaryList' => $consolidatedHareAnalversaryList,
         'kennel_abbreviation' => $kennel_abbreviation,
         'geolocationHoundAnalversaryList' => $geolocationHoundAnalversaryList,
@@ -1985,7 +1967,7 @@ class HashController
 
 
     # Make a database call to obtain the hasher information
-    $analversaryListHounds = $app['db']->fetchAll(HOUND_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+    $analversaryListHounds = $app['db']->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
     $analversaryListHares = $app['db']->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
 
     # Declare the SQL used to retrieve this information
@@ -2043,87 +2025,87 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sqlHoundAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     $sqlHoundAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Declare the SQL used to retrieve this information
     $sqlHareAnalversaryTemplate = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-        JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.XXX = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     $sqlHareAnalversaryTemplateDateBased = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HARINGS.HARINGS_HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-        JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         XXX(HASHES.EVENT_DATE) = ?
-    GROUP BY HASHERS.HASHER_NAME
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
     HAVING ((((THE_COUNT % 5) = 0)
         OR ((THE_COUNT % 69) = 0)
         OR ((THE_COUNT % 666) = 0)
         OR (((THE_COUNT - 69) % 100) = 0)))
-        AND MAX_HASH_KY = ?
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Derive the various SQL statements
@@ -2228,21 +2210,20 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2292,22 +2273,21 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.COUNTY = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2351,22 +2331,21 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.POSTAL_CODE = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2411,22 +2390,21 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_STATE = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2471,22 +2449,21 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.NEIGHBORHOOD = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2527,22 +2504,21 @@ class HashController
     # Declare the SQL used to retrieve this information
     $sql = "SELECT
         HASHERS.HASHER_NAME AS HASHER_NAME,
-        (COUNT(*)) AS THE_COUNT,
-        MAX(HASHINGS.HASH_KY) AS MAX_HASH_KY
+        COUNT(*) + ".$this->getLegacyHashingsCountSubquery()." AS THE_COUNT,
+        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
     FROM
-        ((HASHERS
-        JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
-        JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+        HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
     WHERE
         (HASHERS.DECEASED = 0) AND
-        HASHES.HASH_KY <= ? AND
+        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
         HASHES.KENNEL_KY = ? AND
         HASHES.EVENT_CITY = ?
-    GROUP BY HASHERS.HASHER_NAME
-    HAVING (
-          (THE_COUNT % 1) = 0
-      )
-        AND MAX_HASH_KY = ?
+    GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+    HAVING
+        (THE_COUNT % 1) = 0
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
@@ -2604,7 +2580,7 @@ class HashController
 public function pendingHasherAnalversariesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PENDING_HASHER_ANALVERSARIES;
+  $sql = $this->getPendingHasherAnalversariesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2621,16 +2597,14 @@ public function pendingHasherAnalversariesAction(Request $request, Application $
   # Declare the SQL to get the most recent hash
   $sqlMostRecentHash = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION
     FROM HASHES
-    JOIN (
-        SELECT MAX(HASHINGS.HASH_KY) AS HASH_KY
-        FROM HASHINGS
-        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-      ) AS TEMPTABLE
-    ON HASHES.HASH_KY = TEMPTABLE.HASH_KY";
+    WHERE HASHES.EVENT_DATE = (
+        SELECT MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+        FROM HASHES
+        WHERE HASHES.KENNEL_KY = ?)
+    AND HASHES.KENNEL_KY = ?";
 
   # Execute the SQL to get the most recent hash
-  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy));
+  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy,(int) $kennelKy));
 
   $tableCaption = "The most recent hash was: $theMostRecentHashValue[KENNEL_EVENT_NUMBER]
   at $theMostRecentHashValue[EVENT_LOCATION]";
@@ -2657,7 +2631,7 @@ public function pendingHasherAnalversariesAction(Request $request, Application $
 public function predictedHasherAnalversariesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PREDICTED_HASHER_ANALVERSARIES;
+  $sql = $this->getPredictedHasherAnalversariesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2688,7 +2662,7 @@ public function predictedHasherAnalversariesAction(Request $request, Application
 public function predictedCenturionsAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = PREDICTED_CENTURIONS;
+  $sql = $this->getPredictedCenturionsQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2736,17 +2710,14 @@ public function pendingHareAnalversariesAction(Request $request, Application $ap
   # Declare the SQL to get the most recent hash
   $sqlMostRecentHash = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION
     FROM HASHES
-    JOIN
-		(
-			SELECT MAX(harings_hash_ky) as HASH_KY
-            FROM HARINGS
-            JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-            WHERE HASHES.KENNEL_KY = ?
-		) AS TEMPTABLE
-    ON HASHES.HASH_KY = TEMPTABLE.HASH_KY";
+    WHERE HASHES.EVENT_DATE = (
+        SELECT MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+        FROM HASHES
+        WHERE HASHES.KENNEL_KY = ?)
+    AND HASHES.KENNEL_KY = ?";
 
   # Execute the SQL to get the most recent hash
-  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy));
+  $theMostRecentHashValue = $app['db']->fetchAssoc($sqlMostRecentHash, array((int) $kennelKy, (int) $kennelKy));
 
   $tableCaption = "The most recent hash was: $theMostRecentHashValue[KENNEL_EVENT_NUMBER]
   at $theMostRecentHashValue[EVENT_LOCATION]";
@@ -2771,7 +2742,7 @@ public function pendingHareAnalversariesAction(Request $request, Application $ap
 public function haringPercentageAllHashesAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGE_ALL_HASHES;
+  $sql = $this->getHaringPercentageAllHashesQuery();
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2800,10 +2771,12 @@ public function haringPercentageAllHashesAction(Request $request, Application $a
 }
 
 
-public function haringPercentageNonHypersAction(Request $request, Application $app, string $kennel_abbreviation){
+public function haringPercentageAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGE_NON_HYPER_HASHES;
+  $sql = $this->getHaringPercentageByHareTypeQuery();
+
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2812,12 +2785,12 @@ public function haringPercentageNonHypersAction(Request $request, Application $a
   $minHashCount = 0;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy,(int) $minHashCount));
+  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy, $hare_type, (int) $minHashCount));
 
   # Establish the return value
   $returnValue = $app['twig']->render('percentage_list.twig',array(
-    'pageTitle' => '(Non Hyper Hash) Haring Percentage List',
-    'tableCaption' => 'Percentage of non hyper harings per hashings for each hasher',
+    'pageTitle' => $hare_type_name . ' Haring Percentage List',
+    'tableCaption' => 'Percentage Of ' . $hare_type_name . ' Harings Per Hashings For Each Hasher',
     'columnOneName' => 'Hasher Name',
     'columnTwoName' => 'Hashing Count',
     'columnThreeName' => 'Haring Count',
@@ -2832,29 +2805,63 @@ public function haringPercentageNonHypersAction(Request $request, Application $a
 
 
 
-public function percentageHaringsHypersVsNonHypers(Request $request, Application $app, string $kennel_abbreviation){
-
-  # Declare the SQL used to retrieve this information
-  $sql = HARING_PERCENTAGES_HYPERS_VS_ALL;
+public function percentageHarings(Request $request, Application $app, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy));
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
 
+  $args = array($kennelKy);
+  $columnNames = array('Hasher Name', 'Haring Count (All)');
+
+  # Declare the SQL used to retrieve this information
+  $sql = "
+    SELECT ";
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .=
+      'COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,0) AS '.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,
+      (COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT / ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT,0) * 100) AS '.$hareType['HARE_TYPE_NAME'].'_HARINGS_PERCENTAGE,';
+  }
+  $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT
+      FROM HASHERS
+      JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
+              FROM HARINGS
+	      JOIN HASHES
+	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+	     WHERE HASHES.KENNEL_KY = ?
+             GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE
+        ON (HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
+  foreach ($hareTypes as &$hareType) {
+    $sql .="
+      LEFT JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT
+	      FROM HARINGS
+	      JOIN HASHES
+	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+	     WHERE HARINGS.HARE_TYPE & ? != 0
+	       AND HASHES.KENNEL_KY = ?
+             GROUP BY HARINGS.HARINGS_HASHER_KY) ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE
+	ON (HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
+    array_push($args, $hareType['HARE_TYPE']);
+    array_push($args, $kennelKy);
+    array_push($columnNames, 'Haring Count ('.$hareType['HARE_TYPE_NAME'].')');
+    array_push($columnNames, $hareType['HARE_TYPE_NAME'].' Haring Percentage');
+  }
+  $sql .="
+     ORDER BY HASHERS.HASHER_NAME";
+
+  #Execute the SQL statement; create an array of rows
+  $hasherList = $app['db']->fetchAll($sql, $args);
 
   # Establish the return value
   $returnValue = $app['twig']->render('percentage_list_multiple_values.twig',array(
-    'pageTitle' => 'Hyper Haring Percentages',
-    'tableCaption' => 'This shows the percentage of hyper hashes that make up each hare\'s haring list. The hyper haring percentage shows the percentage of harings people have done that were hyper hashes.',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Haring Count (All)',
-    'columnThreeName' => 'Haring Count (Hyper Hashes)',
-    'columnFourName' => 'Hyper Haring Percentage',
-    'columnFiveName' => 'Non-Hyper Haring Percentage',
+    'pageTitle' => 'Haring Percentages',
+    'tableCaption' => 'This shows the percentage of haring types for each hasher.',
+    'columnNames' => $columnNames,
     'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation
+    'kennel_abbreviation' => $kennel_abbreviation,
+    'hareTypes' => $hareTypes
   ));
 
   #Return the return value
@@ -2876,7 +2883,7 @@ function addRankToQuery(string $query, string $selectClause, string $countColumn
 public function hashingCountsAction(Request $request, Application $app, string $kennel_abbreviation){
 
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(HASHING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery($this->getHashingCountsQuery(), "THE_KEY, NAME, VALUE", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -2928,60 +2935,33 @@ public function haringCountsAction(Request $request, Application $app, string $k
 
 }
 
-public function trueHaringCountsAction(Request $request, Application $app, string $kennel_abbreviation){
+public function haringTypeCountsAction(Request $request, Application $app, string $kennel_abbreviation, int $hare_type) {
 
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(NON_HYPER_HARING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery(HARE_TYPE_HARING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
   #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy));
+  $hasherList = $app['db']->fetchAll($sql, array((int) $hare_type, (int) $kennelKy));
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('name_number_rank_list.twig',array(
-    'pageTitle' => 'True Haring Counts',
+    'pageTitle' => $hare_type_name.' Haring Counts',
     'columnOneName' => 'Hare Name',
     'columnTwoName' => 'Hash Count',
-    'tableCaption' => 'Hares, and the number of (non hyper-hash) hashes they have hared. More is better.',
+    'tableCaption' => 'Hares, and the number of hashes they have hared. More is better.',
     'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'TrueHareCounts'
+    'pageTracking' => $hare_type_name.'HareCounts'
   ));
 
   #Return the return value
   return $returnValue;
-
 }
-
-public function hyperHaringCountsAction(Request $request, Application $app, string $kennel_abbreviation){
-
-  # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(HYPER_HARING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $app['db']->fetchAll($sql, array((int) $kennelKy));
-
-  # Establish and set the return value
-  $returnValue = $app['twig']->render('name_number_rank_list.twig',array(
-    'pageTitle' => 'Hyper Haring Counts',
-    'columnOneName' => 'Hare Name',
-    'columnTwoName' => 'Hash Count',
-    'tableCaption' => 'Hares, and the number of (hyper-hash) hashes they have hared. More is better.',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'HyperHareCounts'
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
 
   public function coharelistByHareAllHashesAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
 
@@ -3010,11 +2990,11 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,1, (int) $kennelKy));
+    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3041,8 +3021,7 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
   }
 
 
-  public function coharelistByHareNonHypersAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
-
+  public function coharelistByHareAction(Request $request, Application $app, int $hasher_id, int $hare_type, string $kennel_abbreviation){
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3069,11 +3048,11 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,0, (int) $kennelKy));
+    $cohareList = $app['db']->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3081,12 +3060,14 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
     # Make a database call to obtain the hasher information
     $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
 
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've had the shame of haring with $hasherName";
     $returnValue = $app['twig']->render('cohare_list.twig',array(
-      'pageTitle' => 'Cohare List (Non Hyper Hashes)',
-      'pageSubTitle' => 'Non Hyper Hashes Only',
+      'pageTitle' => $hare_type_name . ' Cohare List',
+      'pageSubTitle' => '',
       'tableCaption' => $captionValue,
       'theList' => $cohareList,
       'kennel_abbreviation' => $kennel_abbreviation
@@ -3124,12 +3105,12 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HASHES.KENNEL_KY = ?
       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,1, (int) $kennelKy));
+    $hashList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3155,7 +3136,7 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
 
   }
 
-  public function cohareCountByHareNonHypersAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+  public function cohareCountByHareAction(Request $request, Application $app, int $hasher_id, int $hare_type, string $kennel_abbreviation){
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3181,12 +3162,12 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
       WHERE
       	HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.IS_HYPER IN (?,?) AND HASHES.KENNEL_KY = ?
+          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $app['db']->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id,0,0, (int) $kennelKy));
+    $hashList = $app['db']->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3194,17 +3175,19 @@ public function hyperHaringCountsAction(Request $request, Application $app, stri
     # Make a database call to obtain the hasher information
     $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
 
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've hared with  $hasherName";
     $returnValue = $app['twig']->render('name_number_list.twig',array(
-      'pageTitle' => 'Hare Counts (Hyper Hashes Excluded)',
+      'pageTitle' => $hare_type_name.' Hare Counts',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hare Count',
       'tableCaption' => $captionValue,
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'CoHareListTrueHarings'
+      'pageTracking' => 'CoHareList'.$hare_type_name.'Harings'
     ));
 
     #Return the return value
@@ -3347,13 +3330,10 @@ public function hashAttendanceByHareGrandTotalDistinctHashersAction(Request $req
 
 }
 
-public function hasherCountsByHareAction(Request $request, Application $app, int $hare_id, string $kennel_abbreviation){
+public function hasherCountsByHareAction(Request $request, Application $app, int $hare_id, int $hare_type, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  $hypersOnly = isset($_GET['type']) && $_GET['type']=='hyper';
-  $trueOnly = isset($_GET['type']) && $_GET['type']=='true';
 
   #Define the SQL to execute
   $sql = "SELECT
@@ -3369,13 +3349,12 @@ public function hasherCountsByHareAction(Request $request, Application $app, int
     	HARINGS.HARINGS_HASHER_KY = ?
         AND HASHINGS.HASHER_KY != ?
         AND HASHES.KENNEL_KY = ? " .
-        ($hypersOnly ? "AND HASHES.IS_HYPER = 1 " : "") .
-        ($trueOnly ? "AND HASHES.IS_HYPER = 0 " : "") . "
+        ($hare_type != 0 ? "AND HARINGS.HARE_TYPE & ? != 0 " : "AND HARINGS.HARE_TYPE != ?") . "
     GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
     ORDER BY VALUE DESC, NAME";
 
   #Execute the SQL statement; create an array of rows
-  $hashList = $app['db']->fetchAll($sql,array( (int) $hare_id, (int)$hare_id, (int) $kennelKy));
+  $hashList = $app['db']->fetchAll($sql,array($hare_id, $hare_id, (int) $kennelKy, $hare_type));
 
   # Declare the SQL used to retrieve this information
   $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3383,11 +3362,11 @@ public function hasherCountsByHareAction(Request $request, Application $app, int
   # Make a database call to obtain the hasher information
   $hasher = $app['db']->fetchAssoc($sql_for_hasher_lookup, array((int) $hare_id));
 
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
   # Establish and set the return value
   $hasherName = $hasher['HASHER_NAME'];
-  $captionValue = "The hashers who've hashed under the " .
-    ($hypersOnly ? "hyper " : "") .
-    ($trueOnly ? "true " : "") . "hare, $hasherName";
+  $captionValue = "The hashers who've hashed under the " . $hare_type_name . " hare, $hasherName";
   $returnValue = $app['twig']->render('name_number_list.twig',array(
     'pageTitle' => 'Hasher Counts',
     'columnOneName' => 'Hasher Name',
@@ -3410,6 +3389,8 @@ public function basicStatsAction(Request $request, Application $app, string $ken
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
 
   #SQL to determine the distinct year values
   $sql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
@@ -3436,7 +3417,9 @@ public function basicStatsAction(Request $request, Application $app, string $ken
     'kennel_abbreviation' => $kennel_abbreviation,
     'first_hash' => $firstHashValue,
     'latest_hash' => $mostRecentHashValue,
-    'theYearValues' => $yearValues
+    'theYearValues' => $yearValues,
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+    'overall' => count($hareTypes) > 1 ? "Overall " : "",
   ));
 
   #Return the return value
@@ -3450,9 +3433,13 @@ public function peopleStatsAction(Request $request, Application $app, string $ke
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_people.twig',array(
     'pageTitle' => 'People Stats',
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+    'overall' => count($hareTypes) > 1 ? "Overall " : "",
     'kennel_abbreviation' => $kennel_abbreviation
   ));
 
@@ -3468,7 +3455,7 @@ public function analversariesStatsAction(Request $request, Application $app, str
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
   #Determine the number of hashes already held for this kennel
-  $sql2 = HASHING_COUNTS;
+  $sql2 = $this->getHashingCountsQuery();
   $sql2 = "$sql2 LIMIT 1";
   $theCount2 = $app['db']->fetchAssoc($sql2, array((int) $kennelKy));
   $theCount2 = $theCount2['VALUE'];
@@ -3501,11 +3488,15 @@ public function yearByYearStatsAction(Request $request, Application $app, string
   #Execute the SQL statement; create an array of rows
   $yearValues = $app['db']->fetchAll($sql,array( (int) $kennelKy));
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_year_by_year.twig',array(
     'pageTitle' => 'Year Summary Stats',
     'kennel_abbreviation' => $kennel_abbreviation,
-    'year_values' => $yearValues
+    'year_values' => $yearValues,
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
+    'overall' => count($hareTypes) > 1 ? " (Overall)" : ""
   ));
 
   #Return the return value
@@ -3518,10 +3509,13 @@ public function kennelRecordsStatsAction(Request $request, Application $app, str
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   # Establish and set the return value
   $returnValue = $app['twig']->render('section_kennel_records.twig',array(
     'pageTitle' => 'Kennel Records',
-    'kennel_abbreviation' => $kennel_abbreviation
+    'kennel_abbreviation' => $kennel_abbreviation,
+    "hare_types" => count($hareTypes) > 1 ? $hareTypes : array()
   ));
 
   #Return the return value
@@ -3534,6 +3528,8 @@ public function kennelGeneralInfoStatsAction(Request $request, Application $app,
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
 
   #Obtain the first hash
   $firstHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
@@ -3549,6 +3545,7 @@ public function kennelGeneralInfoStatsAction(Request $request, Application $app,
     'kennel_abbreviation' => $kennel_abbreviation,
     'first_hash' => $firstHashValue,
     'latest_hash' => $mostRecentHashValue,
+    'hare_types' => $hareTypes
   ));
 
   #Return the return value
@@ -3614,7 +3611,7 @@ public function cautionaryStatsAction(Request $request, Application $app, string
 
   #Establish an array of ridiculous statistics
   $arrayOfRidiculousness = array(
-    "Hashes where VD was contrated",
+    "Hashes where VD was contracted",
     "Hashes where someone got pregnant",
     "Hashes where someone coveted their neighbor's wife",
     "Hashes where hashers were mocked for their Kentucky heritage",
@@ -3834,7 +3831,7 @@ public function hashersOfTheYearsAction(Request $request, Application $app, stri
 
 
 
-public function overallHaresOfTheYearsAction(Request $request, Application $app, string $kennel_abbreviation){
+public function HaresOfTheYearsAction(Request $request, Application $app, int $hare_type, string $kennel_abbreviation){
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
@@ -3850,12 +3847,23 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
   #Execute the SQL statement; create an array of rows
   $yearValues = $app['db']->fetchAll($distinctYearsSql,array( (int) $kennelKy));
 
+  $hashTypes = $this->getHashTypes($app, $kennelKy, $hare_type);
+
   #Define the sql
-  $topHaresSql = "SELECT
-    	HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
-    	(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 1) AS THE_YEARS_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 0) AS THE_YEARS_NON_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? ) AS THE_YEARS_OVERALL_HASH_COUNT
+  $topHaresSql = "SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,";
+  foreach ($hashTypes as &$hashType) {
+    $topHaresSql .=
+      "(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.HASH_TYPE = ?) AS THE_YEARS_".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+    }
+    $topHaresSql .=
+        "(SELECT COUNT(*) AS THE_HASH_COUNT
+            FROM HASHES ".
+         ($hare_type == 0 ? "" : "JOIN KENNELS ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY
+                                  JOIN HASH_TYPES ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0 AND HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE")."
+           WHERE HASHES.KENNEL_KY = ? ".
+         ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
+             AND YEAR(HASHES.EVENT_DATE) = ? )
+              AS THE_YEARS_OVERALL_HASH_COUNT
     FROM
     HASHERS JOIN (
     	SELECT HASHERS.HASHER_KY AS THE_HASHER_KY, COUNT(*) AS THE_COUNT
@@ -3864,14 +3872,14 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
     		JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
     	WHERE
     		HASHES.KENNEL_KY = ?
-    		AND YEAR(HASHES.EVENT_DATE) = ?
-            AND HASHES.IS_HYPER in (?,?)
+    		AND YEAR(HASHES.EVENT_DATE) = ? ".
+                ($hare_type == 0 ? "" : "AND HARINGS.HARE_TYPE & ? != 0 ")."
     	GROUP BY HASHERS.HASHER_KY
     	ORDER BY THE_COUNT DESC
     	LIMIT XLIMITX
     ) AS THE_TEMPORARY_TABLE on HASHERS.HASHER_KY = THE_TEMPORARY_TABLE.THE_HASHER_KY";
-  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
 
+  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
 
   #Initialize the array of arrays
   $array = array();
@@ -3882,138 +3890,47 @@ public function overallHaresOfTheYearsAction(Request $request, Application $app,
     #Establish the year for this loop iteration
     $tempYear = $yearValues[$tempCounter-1]["YEAR"];
 
+    $args = array((int) $tempYear);
+    foreach ($hashTypes as &$hashType) {
+      array_push($args, (int) $kennelKy);
+      array_push($args, (int) $tempYear);
+      array_push($args, (int) $hashType['HASH_TYPE']);
+    }
+    array_push($args, (int) $kennelKy);
+    if($hare_type != 0) array_push($args, $hare_type);
+    array_push($args, (int) $tempYear);
+    array_push($args, (int) $kennelKy);
+    array_push($args, (int) $tempYear);
+    if($hare_type != 0) array_push($args, $hare_type);
+
     #Make a database call passing in this iteration's year value
-    $tempResult = $app['db']->fetchAll($topHaresSql,array(
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) 0,
-      (int) 1));
+    $tempResult = $app['db']->fetchAll($topHaresSql,$args);
 
     #Add the database result set to the array of arrays
     $array[] = $tempResult;
-
   }
 
-
+  if($hare_type != 0) {
+    $hare_type_name = $this->getHareTypeName($app, $hare_type);
+  }
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('top_hares_by_years.twig',array(
     'theListOfLists' => $array,
-    #'tempList' => $tempResult,
-    'pageTitle' => 'Top Hares Per Year (All harings)',
-    'pageSubTitle' => '(All hashes included)',
+    'pageTitle' => $hare_type == 0 ? 'Top Hares Per Year (All harings)' : 'Top '.$hare_type_name.' Hares Per Year',
+    'pageSubTitle' => $hare_type == 0 ? '(All hashes included)' : '',
     'tableCaption' => '',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of overall harings',
-    'percentage_column_header' => 'Percentage of overall hashes hared',
-    'overall_boolean' => 'TRUE'
+    'number_column_header' => $hare_type == 0 ? 'Number Of Overall Harings' : 'Number Of '.$hare_type_name.' Harings',
+    'percentage_column_header' => $hare_type == 0 ? 'Percentage of overall hashes hared' : 'Percentage of hashes hared',
+    'hash_types' => $hashTypes
   ));
 
   #Return the return value
   return $returnValue;
-
 }
 
-
-public function nonHyperHaresOfTheYearsAction(Request $request, Application $app, string $kennel_abbreviation){
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  #SQL to determine the distinct year values
-  $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-  	KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
-
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $app['db']->fetchAll($distinctYearsSql,array( (int) $kennelKy));
-
-  #Define the sql
-  $topHaresSql = "SELECT
-    	HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
-    	(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 1) AS THE_YEARS_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.IS_HYPER = 0) AS THE_YEARS_NON_HYPER_HASH_COUNT,
-        (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? ) AS THE_YEARS_OVERALL_HASH_COUNT
-    FROM
-    HASHERS JOIN (
-    	SELECT HASHERS.HASHER_KY AS THE_HASHER_KY, COUNT(*) AS THE_COUNT
-    	FROM HARINGS
-    		JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-    		JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-    	WHERE
-    		HASHES.KENNEL_KY = ?
-    		AND YEAR(HASHES.EVENT_DATE) = ?
-            AND HASHES.IS_HYPER in (?,?)
-    	GROUP BY HASHERS.HASHER_KY
-    	ORDER BY THE_COUNT DESC
-    	LIMIT XLIMITX
-    ) AS THE_TEMPORARY_TABLE on HASHERS.HASHER_KY = THE_TEMPORARY_TABLE.THE_HASHER_KY";
-  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
-
-
-  #Initialize the array of arrays
-  $array = array();
-
-  #Loop through the year values
-  for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++){
-
-    #Establish the year for this loop iteration
-    $tempYear = $yearValues[$tempCounter-1]["YEAR"];
-
-    #Make a database call passing in this iteration's year value
-    $tempResult = $app['db']->fetchAll($topHaresSql,array(
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) $kennelKy,
-      (int) $tempYear,
-
-      (int) $kennelKy,
-      (int) $tempYear,
-      (int) 0,
-      (int) 0));
-
-    #Add the database result set to the array of arrays
-    $array[] = $tempResult;
-
-  }
-
-
-
-  # Establish and set the return value
-  $returnValue = $app['twig']->render('top_hares_by_years.twig',array(
-    'theListOfLists' => $array,
-    #'tempList' => $tempResult,
-    'pageTitle' => 'Top Hares Per Year (non-hyper harings)',
-    'pageSubTitle' => '(hyper-hashes excluded)',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
-    'overall_boolean' => 'FALSE'
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
 
 public function getHasherAnalversariesAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
 
@@ -4062,8 +3979,6 @@ public function getHasherAnalversariesAction(Request $request, Application $app,
     'tableCaption' => '',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
     'overall_boolean' => 'FALSE'
   ));
 
@@ -4221,8 +4136,6 @@ public function getProjectedHasherAnalversariesAction(Request $request, Applicat
     'tableCaption' => 'The projected analversaries are based on how many hashes this hasher has done, and how frequently this hasher has hashed them. It applies their days between hashes average and projects out when they might hit certain analversaries.',
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
-    'number_column_header' => 'Number of non-hyper harings',
-    'percentage_column_header' => 'Percentage of non-hypers hared',
     'overall_boolean' => 'FALSE',
     'firstHashKey' => $hasherStatsObject['FIRST_HASH_KEY'],
     'firstKennelEventNumber' => $hasherStatsObject['FIRST_KENNEL_EVENT_NUMBER'],
@@ -4249,6 +4162,9 @@ public function jumboCountsTablePreActionJson(Request $request, Application $app
   #Establish the subTitle
   $minimumHashCount = JUMBO_COUNTS_MINIMUM_HASH_COUNT;
   $subTitle = "Minimum of $minimumHashCount hashes";
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('jumbo_counts_list_json.twig',array(
@@ -4257,7 +4173,9 @@ public function jumboCountsTablePreActionJson(Request $request, Application $app
     #'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
-    'tableCaption' => ""
+    'tableCaption' => "",
+    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
+    "hashTypes" => count($hashTypes) > 1 ? $hashTypes : array()
   ));
 
   #Return the return value
@@ -4275,6 +4193,17 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
+
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
+
+  if(count($hashTypes) == 1) {
+    $hashTypes = array();
+  }
 
   #Obtain the post parameters
   #$inputDraw = $_POST['draw'] ;
@@ -4334,62 +4263,87 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   $sql = "SELECT
       HASHER_NAME,
       HASH_COUNT,
-      HARE_COUNT,
-      NON_HYPER_HARE_COUNT,
-      HYPER_HARE_COUNT,
+      HARE_COUNT,";
+
+  foreach ($hashTypes as &$hashType) {
+    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  $args = array($kennelKy, $kennelKy);
+
+  $sql .= "
       LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HASH_COUNT) AS NON_HYPER_HARING_TO_HASHING_PERCENTAGE,
-      (HYPER_HARE_COUNT/HARE_COUNT) AS HYPER_TO_OVERALL_HARING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HARE_COUNT) AS NON_HYPER_TO_OVERALL_HARING_PERCENTAGE,
       FIRST_HASH_KEY,
-  	  FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
+      FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
       FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE,
       LATEST_HASH_KEY,
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       OUTER_HASHER_KY AS HASHER_KY
   FROM
-  	(
-  	SELECT
-  		HASHERS.HASHER_NAME,
-  		HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-  		(
-  			SELECT COUNT(*)
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+        (
+        SELECT
+                HASHERS.HASHER_NAME,
+                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
+                (
+                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+  foreach ($hareTypes as &$hareType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hareType['HARE_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  foreach ($hashTypes as &$hashType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hashType['HASH_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  array_push($args, $kennelKy);
+  array_push($args, $kennelKy);
+  array_push($args, $minimumHashCount);
+  array_push($args, $inputSearchValueModified);
+
+  $sql .= "
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-  	FROM
-  		HASHERS
+        FROM
+                HASHERS
   )
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > $minimumHashCount AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$app['monolog']->addDebug("sql: $sql");
@@ -4399,7 +4353,7 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   FROM
     (
     SELECT
-      HASHERS.HASHER_NAME,
+      HASHERS.HASHER_NAME AS HASHER_NAME,
       HASHERS.HASHER_KY AS OUTER_HASHER_KY,
       (
         SELECT COUNT(*)
@@ -4409,53 +4363,23 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > $minimumHashCount AND (
-        HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT > ? AND HASHER_NAME LIKE ?";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
   FROM
       (
       SELECT
-        HASHERS.HASHER_NAME,
         HASHERS.HASHER_KY AS OUTER_HASHER_KY,
         (
           SELECT COUNT(*)
           FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
       FROM
         HASHERS
     )
     MAIN_TABLE
-    JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-    JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-    WHERE HASH_COUNT > $minimumHashCount";
+    WHERE HASH_COUNT > ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4463,30 +4387,20 @@ public function jumboCountsTablePostActionJson(Request $request, Application $ap
   #$app['monolog']->addDebug("Point A");
 
   #Perform the filtered search
-  $theResults = $app['db']->fetchAll($sql,array(
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (string) $inputSearchValueModified));
+  $theResults = $app['db']->fetchAll($sql,$args);
   #$app['monolog']->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array(
     (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
+    $minimumHashCount
   )))['THE_COUNT'];
   #$app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array(
     (int) $kennelKy,
+    $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$app['monolog']->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------
@@ -4524,6 +4438,9 @@ public function jumboPercentagesTablePreActionJson(Request $request, Application
   #Establish the sub title
   $minimumHashCount = JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT;
   $subTitle = "Minimum of $minimumHashCount hashes";
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, 0);
 
   # Establish and set the return value
   $returnValue = $app['twig']->render('jumbo_percentages_list_json.twig',array(
@@ -4532,7 +4449,9 @@ public function jumboPercentagesTablePreActionJson(Request $request, Application
     #'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageCaption' => "",
-    'tableCaption' => ""
+    'tableCaption' => "",
+    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
+    'hashTypes' => count($hashTypes) > 1 ? $hashTypes : array()
   ));
 
   #Return the return value
@@ -4547,6 +4466,17 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
+
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  $hashTypes = $this->getHashTypes($app, $kennelKy, $hare_type);
+
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
+
+  if(count($hashTypes) == 1) {
+    $hashTypes = array();
+  }
 
   #Define the minimum hash count
   $minimumHashCount = JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT;
@@ -4608,14 +4538,23 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
   #Define the sql that performs the filtering
   $sql = "SELECT
       HASHER_NAME,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HASH_COUNT) AS NON_HYPER_HARING_TO_HASHING_PERCENTAGE,
-      (HYPER_HARE_COUNT/HARE_COUNT) AS HYPER_TO_OVERALL_HARING_PERCENTAGE,
-      (NON_HYPER_HARE_COUNT/HARE_COUNT) AS NON_HYPER_TO_OVERALL_HARING_PERCENTAGE,
       HASH_COUNT,
       HARE_COUNT,
-      HYPER_HARE_COUNT,
-      NON_HYPER_HARE_COUNT,
+      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+  foreach ($hashTypes as &$hashType) {
+    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+  }
+
+  $args = array($kennelKy, $kennelKy);
+
+  $sql .= "
       LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
       FIRST_HASH_KEY,
       FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
@@ -4624,47 +4563,66 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       OUTER_HASHER_KY AS HASHER_KY
   FROM
-  	(
-  	SELECT
-  		HASHERS.HASHER_NAME,
-  		HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-  		(
-  			SELECT COUNT(*)
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-  		(
-  			SELECT COUNT(*)
-  			FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  			WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-  			AND HASHES.KENNEL_KY = ?
-  			AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+        (
+        SELECT
+                HASHERS.HASHER_NAME,
+                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
+                (
+                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+  foreach ($hareTypes as &$hareType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hareType['HARE_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  foreach ($hashTypes as &$hashType) {
+    array_push($args, $kennelKy);
+    array_push($args, $hashType['HASH_TYPE']);
+    $sql .= "
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+  }
+
+  array_push($args, $kennelKy);
+  array_push($args, $kennelKy);
+  array_push($args, $minimumHashCount);
+  array_push($args, $inputSearchValueModified);
+
+  $sql .= "
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
               ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-  	FROM
-  		HASHERS
+        FROM
+                HASHERS
   )
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > $minimumHashCount AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$app['monolog']->addDebug("sql: $sql");
@@ -4684,53 +4642,23 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > $minimumHashCount AND (
-        HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT > ? AND ( HASHER_NAME LIKE ? )";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
   FROM
       (
       SELECT
-        HASHERS.HASHER_NAME,
         HASHERS.HASHER_KY AS OUTER_HASHER_KY,
         (
           SELECT COUNT(*)
           FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 0) AS NON_HYPER_HARE_COUNT,
-        (
-          SELECT COUNT(*)
-          FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-          AND HASHES.KENNEL_KY = ?
-          AND HASHES.IS_HYPER = 1) AS HYPER_HARE_COUNT,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-        (
-          SELECT HASHES.HASH_KY
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-                ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
       FROM
         HASHERS
     )
     MAIN_TABLE
-    JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-    JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-    WHERE HASH_COUNT > $minimumHashCount";
+    WHERE HASH_COUNT > ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4738,30 +4666,20 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
   #$app['monolog']->addDebug("Point A");
 
   #Perform the filtered search
-  $theResults = $app['db']->fetchAll($sql,array(
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (string) $inputSearchValueModified));
+  $theResults = $app['db']->fetchAll($sql, $args);
   #$app['monolog']->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($app['db']->fetchAssoc($sqlUnfilteredCount,array(
     (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
-    (int) $kennelKy,
+    $minimumHashCount,
   )))['THE_COUNT'];
   #$app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($app['db']->fetchAssoc($sqlFilteredCount,array(
     (int) $kennelKy,
+    $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$app['monolog']->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------
@@ -4784,7 +4702,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, Applicatio
   return $returnValue;
 }
 
-private function getStandardHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+private function getStandardHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation) {
 
   # Declare the SQL used to retrieve this information
   $sql = "SELECT HASHER_KY, HASHER_NAME, HASHER_ABBREVIATION, FIRST_NAME, LAST_NAME, DECEASED FROM HASHERS WHERE HASHER_KY = ?";
@@ -4796,20 +4714,34 @@ private function getStandardHareChartsAction(Request $request, Application $app,
   $hasher = $app['db']->fetchAssoc($sql, array((int) $hasher_id));
 
   # Obtain the number of harings
-  $overallHareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 1));
+  $overallHareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, (int) $kennelKy));
 
-  # Obtain the number of hyper harings
-  $hyperHareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 1, (int) 1));
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
 
-  # Obtain the number of true harings
-  $trueHareCountValue = $app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 0));
+  $hareCounts = array();
 
+  foreach ($hareTypes as &$hareType) {
+      $total = $app['db']->fetchAssoc(PERSONS_HARING_TYPE_COUNT,
+        array((int) $hasher_id, (int) $kennelKy, (int) $hareType['HARE_TYPE']));
+    array_push($hareCounts, array(
+      'type' => $hareType['HARE_TYPE_NAME'],
+      'total' => $total['THE_COUNT']));
+  }
 
   #Obtain the harings by year
   $sqlHaringsByYear = "SELECT
-      YEAR(EVENT_DATE) AS THE_VALUE,
-      SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-      SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
+      YEAR(EVENT_DATE) AS THE_VALUE,";
+  $args = array();
+
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByYear .= "
+      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    array_push($args, (int) $hareType['HARE_TYPE']);
+  }
+  array_push($args, (int) $hasher_id);
+  array_push($args, (int) $kennelKy);
+
+  $sqlHaringsByYear .= "
       COUNT(*) AS TOTAL_HARING_COUNT
   FROM
       HARINGS
@@ -4819,13 +4751,18 @@ private function getStandardHareChartsAction(Request $request, Application $app,
       HASHES.KENNEL_KY = ?
   GROUP BY YEAR(EVENT_DATE)
   ORDER BY YEAR(EVENT_DATE)";
-  $haringsByYearList = $app['db']->fetchAll($sqlHaringsByYear, array((int) $hasher_id,(int) $kennelKy));
+
+  $haringsByYearList = $app['db']->fetchAll($sqlHaringsByYear, $args);
 
   # Obtain the hashes by month (name)
   $sqlHaringsByMonth = "SELECT
-      THE_VALUE,
-        NON_HYPER_COUNT ,
-        HYPER_COUNT,
+      THE_VALUE,";
+
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByMonth .= $hareType['HARE_TYPE_NAME']."_COUNT, ";
+  }
+
+  $sqlHaringsByMonth .= "
         TOTAL_HARING_COUNT,
       CASE THE_VALUE
         WHEN '1' THEN 'January'
@@ -4843,9 +4780,12 @@ private function getStandardHareChartsAction(Request $request, Application $app,
         END AS MONTH_NAME
     FROM (
       SELECT
-          MONTH(EVENT_DATE) AS THE_VALUE,
-          SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-          SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
+          MONTH(EVENT_DATE) AS THE_VALUE,";
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByMonth .= "
+      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+  }
+    $sqlHaringsByMonth .= "
           COUNT(*) AS TOTAL_HARING_COUNT
         FROM
           HARINGS
@@ -4856,13 +4796,16 @@ private function getStandardHareChartsAction(Request $request, Application $app,
         GROUP BY MONTH(EVENT_DATE)
         ORDER BY MONTH(EVENT_DATE)
     ) TEMPTABLE";
-  $theHaringsByMonthNameList = $app['db']->fetchAll($sqlHaringsByMonth, array((int) $hasher_id, (int) $kennelKy));
+  $theHaringsByMonthNameList = $app['db']->fetchAll($sqlHaringsByMonth, $args);
 
   # Obtain the hashes by quarter
       $sqlHaringsByQuarter = "SELECT
-        QUARTER(EVENT_DATE) AS THE_VALUE,
-        SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-        SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
+        QUARTER(EVENT_DATE) AS THE_VALUE,";
+      foreach ($hareTypes as &$hareType) {
+	$sqlHaringsByQuarter .= "
+	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+      }
+      $sqlHaringsByQuarter .= "
         COUNT(*) AS TOTAL_HARING_COUNT
       FROM
         HARINGS
@@ -4873,13 +4816,16 @@ private function getStandardHareChartsAction(Request $request, Application $app,
       GROUP BY QUARTER(EVENT_DATE)
       ORDER BY QUARTER(EVENT_DATE)
   ";
-  $theHaringsByQuarterList = $app['db']->fetchAll($sqlHaringsByQuarter, array((int) $hasher_id, (int) $kennelKy));
+  $theHaringsByQuarterList = $app['db']->fetchAll($sqlHaringsByQuarter, $args);
 
   # Obtain the hashes by state
   $sqlHaringsByState = "SELECT
-      HASHES.EVENT_STATE,
-      SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-      SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
+      HASHES.EVENT_STATE,";
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByState .= "
+	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    }
+    $sqlHaringsByState .= "
       COUNT(*) AS TOTAL_HARING_COUNT
     FROM
       HARINGS
@@ -4890,14 +4836,16 @@ private function getStandardHareChartsAction(Request $request, Application $app,
     GROUP BY HASHES.EVENT_STATE
     ORDER BY HASHES.EVENT_STATE
   ";
-  $theHaringsByStateList = $app['db']->fetchAll($sqlHaringsByState, array((int) $hasher_id, (int) $kennelKy));
-
+  $theHaringsByStateList = $app['db']->fetchAll($sqlHaringsByState, $args);
 
   # Obtain the hashes by day name
   $sqlHaringsByDayName = "SELECT
-      THE_VALUE,
-        NON_HYPER_COUNT,
-        HYPER_COUNT,
+      THE_VALUE,";
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByDayName .=
+      $hareType['HARE_TYPE_NAME']."_COUNT,";
+  }
+  $sqlHaringsByDayName .= "
         TOTAL_HARING_COUNT,
       CASE THE_VALUE
         WHEN 'Sunday' THEN '0'
@@ -4911,9 +4859,12 @@ private function getStandardHareChartsAction(Request $request, Application $app,
     FROM
     (
       SELECT
-        DAYNAME(EVENT_DATE) AS THE_VALUE,
-        SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-        SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
+        DAYNAME(EVENT_DATE) AS THE_VALUE,";
+  foreach ($hareTypes as &$hareType) {
+    $sqlHaringsByDayName .= "
+	SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    }
+    $sqlHaringsByDayName .= "
         COUNT(*) AS TOTAL_HARING_COUNT
       FROM
         HARINGS
@@ -4925,14 +4876,13 @@ private function getStandardHareChartsAction(Request $request, Application $app,
       ORDER BY DAYNAME(EVENT_DATE)
     )TEMP
     ORDER BY DAYNUMBER ASC";
-  $theHaringsByDayNameList = $app['db']->fetchAll($sqlHaringsByDayName, array((int) $hasher_id, (int) $kennelKy));
+  $theHaringsByDayNameList = $app['db']->fetchAll($sqlHaringsByDayName, $args);
 
   # Establish and set the return value
   $returnValue = array(
     'hasherValue' => $hasher,
+    'hareCounts' => $hareCounts,
     'overallHareCount' => $overallHareCountValue['THE_COUNT'],
-    'trueHareCount' => $trueHareCountValue['THE_COUNT'],
-    'hyperHareCount' =>$hyperHareCountValue['THE_COUNT'],
     'kennel_abbreviation' => $kennel_abbreviation,
     'harings_by_year_list' => $haringsByYearList,
     'harings_by_month_list' => $theHaringsByMonthNameList,
@@ -4947,7 +4897,7 @@ private function getStandardHareChartsAction(Request $request, Application $app,
 }
 
 
-public function viewOverallHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+public function viewOverallHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation) {
 
   $commonValues = $this->getStandardHareChartsAction($request, $app, $hasher_id, $kennel_abbreviation);
 
@@ -4964,12 +4914,10 @@ public function viewOverallHareChartsAction(Request $request, Application $app, 
   }
 
   #Obtain the favorite cohare list
-  $cohareCountList = $app['db']->fetchAll(COHARE_COUNT_BY_HARE, array(
+  $cohareCountList = $app['db']->fetchAll(OVERALL_COHARE_COUNT_BY_HARE, array(
     (int) $kennelKy,
     (int) $hasher_id,
-    (int) $hasher_id,
-    0,
-    1,));
+    (int) $hasher_id));
 
   #Obtain the largest entry from the list
   $cohareCountMax = 1;
@@ -4989,8 +4937,14 @@ public function viewOverallHareChartsAction(Request $request, Application $app, 
   $avgLat = $theAverageLatLong['THE_LAT'];
   $avgLng = $theAverageLatLong['THE_LNG'];
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
   $customValues = array(
-    'pageTitle' => 'Overall Hare Charts and Details',
+    'pageTitle' => (count($hareTypes) > 1 ? 'Overall ' : '').
+      'Hare Charts and Details',
+    'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
+      "Hare Details",
+    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
     'firstHeader' => 'Basic Details',
     'secondHeader' => 'Statistics',
     'city_haring_count_list' => $cityHaringCountList,
@@ -5005,16 +4959,13 @@ public function viewOverallHareChartsAction(Request $request, Application $app, 
   $finalArray = array_merge($commonValues,$customValues);
   $returnValue = $app['twig']->render('hare_chart_overall_details.twig',$finalArray);
 
-
-
   # Return the return value
   return $returnValue;
-
 }
 
 
 
-public function viewTrueHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
+public function viewHareChartsAction(Request $request, Application $app, int $hare_type, int $hasher_id, string $kennel_abbreviation) {
 
   $commonValues = $this->getStandardHareChartsAction($request, $app, $hasher_id, $kennel_abbreviation);
 
@@ -5022,7 +4973,7 @@ public function viewTrueHareChartsAction(Request $request, Application $app, int
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
 
   #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $app['db']->fetchAll(HASHER_NONHYPER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy));
+  $cityHaringCountList = $app['db']->fetchAll(HASHER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy, (int) $hare_type));
 
   #Obtain largest entry from the list
   $cityHaringsCountMax = 1;
@@ -5035,8 +4986,7 @@ public function viewTrueHareChartsAction(Request $request, Application $app, int
     (int) $kennelKy,
     (int) $hasher_id,
     (int) $hasher_id,
-    0,
-    0,));
+    (int) $hare_type));
 
   #Obtain the largest entry from the list
   $cohareCountMax = 1;
@@ -5045,19 +4995,50 @@ public function viewTrueHareChartsAction(Request $request, Application $app, int
   }
 
   # Obtain their hashes
-  $sqlTheHashes = "SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and HASHES.IS_HYPER = 0 and LAT is not null and LNG is not null";
-  $theHashes = $app['db']->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy));
+  $sqlTheHashes = "
+    SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE,
+           HASHES.HASH_KY, LAT, LNG
+      FROM HARINGS
+      JOIN HASHES
+        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+     WHERE HARINGS.HARINGS_HASHER_KY = ?
+       AND KENNEL_KY = ?
+       AND HARINGS.HARE_TYPE & ? != 0
+       AND LAT IS NOT NULL
+       AND LNG IS NOT NULL";
+  $theHashes = $app['db']->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy,
+    (int) $hare_type));
 
   #Obtain the average lat
-  $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and HASHES.IS_HYPER = 0 and LAT is not null and LNG is not null";
-  $theAverageLatLong = $app['db']->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id, (int) $kennelKy));
+  $sqlTheAverageLatLong = "
+    SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+      FROM HARINGS
+      JOIN HASHES
+        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+     WHERE HARINGS.HARINGS_HASHER_KY = ?
+       AND KENNEL_KY = ?
+       AND HARINGS.HARE_TYPE & ? != 0
+       AND LAT IS NOT NULL
+       AND LNG IS NOT NULL";
+  $theAverageLatLong = $app['db']->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id,
+    (int) $kennelKy, (int) $hare_type));
   $avgLat = $theAverageLatLong['THE_LAT'];
   $avgLng = $theAverageLatLong['THE_LNG'];
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+
+  $hare_type_name = $this->getHareTypeName($app, $hare_type);
+
+  foreach ($hareTypes as &$hareType) {
+    if($hareType['HARE_TYPE'] == $hare_type) {
+      $chart_color = $hareType['CHART_COLOR'];
+      break;
+    }
+  }
+
   $customValues = array(
-    'pageTitle' => 'True Hare Charts and Details',
+    'pageTitle' => $hare_type_name.' Hare Charts and Details',
+    'hare_types' => $hareTypes,
     'firstHeader' => 'Basic Details',
     'secondHeader' => 'Statistics',
     'city_haring_count_list' => $cityHaringCountList,
@@ -5067,80 +5048,16 @@ public function viewTrueHareChartsAction(Request $request, Application $app, int
     'the_hashes' => $theHashes,
     'geocode_api_value' => GOOGLE_MAPS_JAVASCRIPT_API_KEY,
     'avg_lat' => $avgLat,
-    'avg_lng' => $avgLng
+    'avg_lng' => $avgLng,
+    'hare_type' => $hare_type,
+    'hare_type_name' => $hare_type_name,
+    'chart_color' => $chart_color
   );
   $finalArray = array_merge($commonValues,$customValues);
-  $returnValue = $app['twig']->render('hare_chart_true_details.twig',$finalArray);
+  $returnValue = $app['twig']->render('hare_chart_details.twig',$finalArray);
 
   # Return the return value
   return $returnValue;
-
-}
-
-
-public function viewHyperHareChartsAction(Request $request, Application $app, int $hasher_id, string $kennel_abbreviation){
-
-
-  $commonValues = $this->getStandardHareChartsAction($request, $app, $hasher_id, $kennel_abbreviation);
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($request, $app, $kennel_abbreviation);
-
-  #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $app['db']->fetchAll(HASHER_HYPER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy));
-
-  #Obtain largest entry from the list
-  $cityHaringsCountMax = 1;
-  if(isset($cityHaringCountList[0]['THE_COUNT'])){
-    $cityHaringsCountMax = $cityHaringCountList[0]['THE_COUNT'];
-  }
-
-  #Obtain the favorite cohare list
-  $cohareCountList = $app['db']->fetchAll(COHARE_COUNT_BY_HARE, array(
-    (int) $kennelKy,
-    (int) $hasher_id,
-    (int) $hasher_id,
-    1,
-    1,));
-
-  #Obtain the largest entry from the list
-  $cohareCountMax = 1;
-  if(isset($cohareCountList[0]['THE_COUNT'])){
-    $cohareCountMax = $cohareCountList[0]['THE_COUNT'];
-  }
-
-  # Obtain their hashes
-  $sqlTheHashes = "SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and HASHES.IS_HYPER = 1 and LAT is not null and LNG is not null";
-  $theHashes = $app['db']->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy));
-
-  #Obtain the average lat
-  $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and HASHES.IS_HYPER = 1 and LAT is not null and LNG is not null";
-  $theAverageLatLong = $app['db']->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id, (int) $kennelKy));
-  $avgLat = $theAverageLatLong['THE_LAT'];
-  $avgLng = $theAverageLatLong['THE_LNG'];
-
-
-  $customValues = array(
-    'pageTitle' => 'Hyper Hare Charts and Details',
-    'firstHeader' => 'Basic Details',
-    'secondHeader' => 'Statistics',
-    'city_haring_count_list' => $cityHaringCountList,
-    'city_harings_max_value' => $cityHaringsCountMax,
-    'cohare_count_list' =>$cohareCountList,
-    'cohare_count_max' => $cohareCountMax,
-    'the_hashes' => $theHashes,
-    'geocode_api_value' => GOOGLE_MAPS_JAVASCRIPT_API_KEY,
-    'avg_lat' => $avgLat,
-    'avg_lng' => $avgLng
-  );
-  $finalArray = array_merge($commonValues,$customValues);
-  $returnValue = $app['twig']->render('hare_chart_hyper_details.twig',$finalArray);
-
-  # Return the return value
-  return $returnValue;
-
 }
 
 public function twoPersonComparisonPreAction(Request $request, Application $app, string $kennel_abbreviation){
@@ -5277,6 +5194,11 @@ private function createComparisonObjectWithStatsAsDates(string $stat1, string $s
 
 private function twoPersonComparisonDataFetch(Request $request, Application $app, int $kennelKy, int $hasher_id1, int $hasher_id2){
 
+  $hareTypes = $this->getHareTypes($app, $kennelKy);
+  if(count($hareTypes) == 1) {
+    $hareTypes = array();
+  }
+
   #Establish the reurn value array
   $returnValue = array();
 
@@ -5289,43 +5211,41 @@ private function twoPersonComparisonDataFetch(Request $request, Application $app
 
 
   #Obtain the overall hashing count
-  $hashingCountH1 = ($app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
-  $hashingCountH2 = ($app['db']->fetchAssoc(PERSONS_HASHING_COUNT, array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
+  $hashingCountH1 = ($app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
+  $hashingCountH2 = ($app['db']->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hashingCountH1, $hashingCountH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hashing Count");
   $returnValue[] = $statObject;
 
   #Obtain the overall haring count
-  $hareCountOverallH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 0, (int) 1)))['THE_COUNT'];
-  $hareCountOverallH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 0, (int) 1)))['THE_COUNT'];
+  $hareCountOverallH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
+  $hareCountOverallH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hareCountOverallH1, $hareCountOverallH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring Count");
   $returnValue[] = $statObject;
 
-  #Obtain the true haring count
-  $hareCountTrueH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 0, (int) 0)))['THE_COUNT'];
-  $hareCountTrueH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 0, (int) 0)))['THE_COUNT'];
-  $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountTrueH1, $hareCountTrueH2, $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring Count");
-  $returnValue[] = $statObject;
-
-  #Obtain the hyper haring count
-  $hareCountHyperH1 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id1, (int) $kennelKy,  (int) 1, (int) 1)))['THE_COUNT'];
-  $hareCountHyperH2 = ($app['db']->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id2, (int) $kennelKy,  (int) 1, (int) 1)))['THE_COUNT'];
-  $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountHyperH1, $hareCountHyperH2, $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hyper Haring Count");
-  $returnValue[] = $statObject;
+  #Obtain the haring counts
+  foreach ($hareTypes as &$hareType) {
+    $hareCountH1[$hareType['HARE_TYPE']] = ($app['db']->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id1, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $hareCountH2[$hareType['HARE_TYPE']] = ($app['db']->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id2, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountH1[$hareType['HARE_TYPE']], $hareCountH2[$hareType['HARE_TYPE']], $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring Count");
+    $returnValue[] = $statObject;
+  }
 
   #Obtain the overall haring percentage
   $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountOverallH1/$hashingCountH1),
-    ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring/Hashing %");
+    ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring / Hashing %");
   $returnValue[] = $statObject;
 
-  #Obtain the true haring percentage
-  $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountTrueH1/$hashingCountH1),
-    ($hashingCountH2 == 0 ? 0 : $hareCountTrueH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring/Hashing %");
-  $returnValue[] = $statObject;
+  foreach ($hareTypes as &$hareType) {
+    #Obtain the haring percentage
+    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hashingCountH1),
+      ($hashingCountH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / Hashing %");
+    $returnValue[] = $statObject;
 
-  #Obtain the true haring / all haring percentage
-  $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountTrueH1/$hareCountOverallH1),
-    ($hareCountOverallH2 == 0 ? 0 : $hareCountTrueH2/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "True Haring / All Haring %");
-  $returnValue[] = $statObject;
+    #Obtain the haring / all haring percentage
+    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hareCountOverallH1),
+      ($hareCountOverallH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / All Haring %");
+    $returnValue[] = $statObject;
+  }
 
   #Obtain the virgin hash dates
   $virginHashH1 = $app['db']->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id1, (int) $kennelKy));

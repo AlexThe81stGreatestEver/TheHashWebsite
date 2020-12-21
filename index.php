@@ -246,14 +246,13 @@ $app->post('/{kennel_abbreviation}/mia',                                       '
 $app->get('/{kennel_abbreviation}/listhashers2',                                       'HASH\Controller\HashController::listHashersPreActionJson');
 $app->post('/{kennel_abbreviation}/listhashers2',                                       'HASH\Controller\HashController::getHasherListJson');
 
-$app->get('/{kennel_abbreviation}/listvirginharings',                                       'HASH\Controller\HashController::listVirginHaringsPreActionJson');
-$app->post('/{kennel_abbreviation}/listvirginharings',                                       'HASH\Controller\HashController::getVirginHaringsListJson');
+$app->get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HASH\Controller\HashController::listVirginHaringsPreActionJson');
+$app->post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HASH\Controller\HashController::getVirginHaringsListJson');
 
 $app->get('/{kennel_abbreviation}/attendancePercentages',                                'HASH\Controller\HashController::attendancePercentagesPreActionJson');
 $app->post('/{kennel_abbreviation}/attendancePercentages',                               'HASH\Controller\HashController::attendancePercentagesPostActionJson');
 
-$app->get('/{kennel_abbreviation}/trueCohareCounts',                                     'HASH\Controller\HashController::trueCohareCountsPreActionJson');
-$app->get('/{kennel_abbreviation}/hyperCohareCounts',                                    'HASH\Controller\HashController::hyperCohareCountsPreActionJson');
+$app->get('/{kennel_abbreviation}/CohareCounts/{hare_type}',                                    'HASH\Controller\HashController::cohareCountsPreActionJson');
 $app->get('/{kennel_abbreviation}/allCohareCounts',                                      'HASH\Controller\HashController::allCohareCountsPreActionJson');
 $app->post('/{kennel_abbreviation}/cohareCounts',                                        'HASH\Controller\HashController::getCohareCountsJson');
 
@@ -279,8 +278,7 @@ $app->get('/{kennel_abbreviation}/hashers/{hasher_id}',                         
 $app->get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HASH\Controller\HashController::hashedWithAction');
 
 $app->get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HASH\Controller\HashController::viewOverallHareChartsAction');
-$app->get('/{kennel_abbreviation}/hares/true/{hasher_id}',        'HASH\Controller\HashController::viewTrueHareChartsAction');
-$app->get('/{kennel_abbreviation}/hares/hyper/{hasher_id}',       'HASH\Controller\HashController::viewHyperHareChartsAction');
+$app->get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HASH\Controller\HashController::viewHareChartsAction');
 
 
 $app->get('/{kennel_abbreviation}/chartsAndDetails',                                 'HASH\Controller\ObscureStatisticsController::viewKennelChartsAction');
@@ -293,15 +291,12 @@ $app->get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',      
 $app->get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'HASH\Controller\ObscureStatisticsController::viewLastTimersChartsAction');
 
 #Virgin harings charts
-$app->get('/{kennel_abbreviation}/virginHaringsStatistics',              'HASH\Controller\ObscureStatisticsController::virginHaringsChartsAction');
+$app->get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'HASH\Controller\ObscureStatisticsController::virginHaringsChartsAction');
 
 #Distinct Hasher hashings charts
 $app->get('/{kennel_abbreviation}/distinctHasherStatistics',              'HASH\Controller\ObscureStatisticsController::distinctHasherChartsAction');
 
-#Distinct True Hares charts
-$app->get('/{kennel_abbreviation}/distinctTrueHareStatistics',              'HASH\Controller\ObscureStatisticsController::distinctTrueHaresChartsAction');
-#Distinct Hyper Hares charts
-$app->get('/{kennel_abbreviation}/distinctHyperHareStatistics',              'HASH\Controller\ObscureStatisticsController::distinctHyperHaresChartsAction');
+$app->get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'HASH\Controller\ObscureStatisticsController::distinctHaresChartsAction');
 
 $app->get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HASH\Controller\HashController::viewHashAction');
 $app->get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HASH\Controller\HashController::hasherCountsForEventAction');
@@ -320,11 +315,11 @@ $app->get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',             
 $app->get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HASH\Controller\HashController::consolidatedEventAnalversariesAction');
 
 $app->get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'HASH\Controller\ObscureStatisticsController::trendingHashersAction');
-$app->get('/{kennel_abbreviation}/trendingTrueHares/{day_count}',                       'HASH\Controller\ObscureStatisticsController::trendingTrueHaresAction');
+$app->get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'HASH\Controller\ObscureStatisticsController::trendingHaresAction');
 
 #Ajax version of untrending hares graphs
-$app->get('/{kennel_abbreviation}/unTrendingTrueHaresJsonPre/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingTrueHaresJsonPreAction');
-$app->get('/{kennel_abbreviation}/unTrendingTrueHaresJsonPost/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingTrueHaresJsonPostAction');
+$app->get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingHaresJsonPreAction');
+$app->get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'HASH\Controller\ObscureStatisticsController::unTrendingHaresJsonPostAction');
 
 
 
@@ -333,22 +328,21 @@ $app->get('/{kennel_abbreviation}/predictedHasherAnalversaries',                
 $app->get('/{kennel_abbreviation}/predictedCenturions',                                 'HASH\Controller\HashController::predictedCenturionsAction');
 $app->get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HASH\Controller\HashController::pendingHareAnalversariesAction');
 $app->get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HASH\Controller\HashController::haringPercentageAllHashesAction');
-$app->get('/{kennel_abbreviation}/haringPercentageNonHypers',                           'HASH\Controller\HashController::haringPercentageNonHypersAction');
+$app->get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HASH\Controller\HashController::haringPercentageAction');
 $app->get('/{kennel_abbreviation}/hashingCounts',                                       'HASH\Controller\HashController::hashingCountsAction');
 $app->get('/{kennel_abbreviation}/haringCounts',                                        'HASH\Controller\HashController::haringCountsAction');
-$app->get('/{kennel_abbreviation}/nonHyperharingCounts',                                'HASH\Controller\HashController::trueHaringCountsAction');
-$app->get('/{kennel_abbreviation}/hyperharingCounts',                                   'HASH\Controller\HashController::hyperHaringCountsAction');
+$app->get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HASH\Controller\HashController::haringTypeCountsAction');
 $app->get('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',             'HASH\Controller\HashController::coharelistByHareAllHashesAction');
-$app->get('/{kennel_abbreviation}/coharelist/byhare/nonhypers/{hasher_id}',             'HASH\Controller\HashController::coharelistByHareNonHypersAction');
+$app->get('/{kennel_abbreviation}/coharelist/byhare/{hare_type}/{hasher_id}',           'HASH\Controller\HashController::coharelistByHareAction');
 $app->get('/{kennel_abbreviation}/coharecount/byhare/allhashes/{hasher_id}',            'HASH\Controller\HashController::cohareCountByHareAllHashesAction');
-$app->get('/{kennel_abbreviation}/coharecount/byhare/nonhypers/{hasher_id}',            'HASH\Controller\HashController::cohareCountByHareNonHypersAction');
+$app->get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',          'HASH\Controller\HashController::cohareCountByHareAction');
 $app->get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HASH\Controller\HashController::hashAttendanceByHareLowestAction');
 $app->get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HASH\Controller\HashController::hashAttendanceByHareHighestAction');
 $app->get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HASH\Controller\HashController::hashAttendanceByHareAverageAction');
 $app->get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HASH\Controller\HashController::hashAttendanceByHareGrandTotalNonDistinctHashersAction');
 $app->get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HASH\Controller\HashController::hashAttendanceByHareGrandTotalDistinctHashersAction');
-$app->get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}',                     'HASH\Controller\HashController::hasherCountsByHareAction');
-$app->get('/{kennel_abbreviation}/percentages/percentageofharingsthatwerehypers',       'HASH\Controller\HashController::percentageHaringsHypersVsNonHypers');
+$app->get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HASH\Controller\HashController::hasherCountsByHareAction');
+$app->get('/{kennel_abbreviation}/percentages/harings',                                 'HASH\Controller\HashController::percentageHarings');
 $app->get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HASH\Controller\HashController::getHasherAnalversariesAction');
 $app->get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HASH\Controller\HashController::getProjectedHasherAnalversariesAction');
 
@@ -400,10 +394,6 @@ $app->post('/{kennel_abbreviation}/jumboCountsTable',                'HASH\Contr
 $app->get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HASH\Controller\HashController::jumboPercentagesTablePreActionJson');
 $app->post('/{kennel_abbreviation}/jumboPercentagesTable',                'HASH\Controller\HashController::jumboPercentagesTablePostActionJson');
 
-
-# Modify the participation for an event
-#$app->get('/admin/event/manageparticipation/{hash_id}',            'HASH\Controller\HashEventController::hashParticipationAction');
-
 # Modify the participation for an event
 $app->get('/admin/event/manageparticipation2/{hash_id}',            'HASH\Controller\HashEventController::hashParticipationJsonPreAction');
 $app->post('/admin/event/manageparticipation2/{hash_id}',           'HASH\Controller\HashEventController::hashParticipationJsonPostAction');
@@ -454,11 +444,9 @@ $app->get('/admin/eventBudget/{hash_id}','HASH\Controller\AdminController::event
 $app->get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'HASH\Controller\ObscureStatisticsController::getYearInReviewAction');
 $app->post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'HASH\Controller\ObscureStatisticsController::getHasherCountsByYear');
 $app->post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'HASH\Controller\ObscureStatisticsController::getTotalHareCountsByYear');
-$app->post('/{kennel_abbreviation}/statistics/getHyperHareCountsByYear',                  'HASH\Controller\ObscureStatisticsController::getHyperHareCountsByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNonHyperHareCountsByYear',               'HASH\Controller\ObscureStatisticsController::getNonHyperHareCountsByYear');
+$app->post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'HASH\Controller\ObscureStatisticsController::getHareCountsByYear');
 $app->post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'HASH\Controller\ObscureStatisticsController::getNewbieHasherListByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNewbieTrueHareListByYear',               'HASH\Controller\ObscureStatisticsController::getNewbieTrueHareListByYear');
-$app->post('/{kennel_abbreviation}/statistics/getNewbieHyperHareListByYear',              'HASH\Controller\ObscureStatisticsController::getNewbieHyperHareListByYear');
+$app->post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'HASH\Controller\ObscureStatisticsController::getNewbieHareListByYear');
 $app->post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'HASH\Controller\ObscureStatisticsController::getNewbieOverallHareListByYear');
 
 
@@ -492,21 +480,17 @@ $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/dayname',   
 $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/state',                     'HASH\Controller\ObscureStatisticsController::getHasherAllHaringsByState');
 $app->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'HASH\Controller\ObscureStatisticsController::getHasherAllHaringsByCity');
 
-# Mappings for hasher (non hyper) harings by (year/month/state/etc)
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/year',                      'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByYear');
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/quarter',                   'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByQuarter');
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/month',                     'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByMonth');
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/dayname',                   'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByDayName');
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/state',                     'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByState');
-$app->post('/{kennel_abbreviation}/statistics/hasher/nonhyper/harings/by/city',                      'HASH\Controller\ObscureStatisticsController::getHasherNonHyperHaringsByCity');
-
-# Mappings for hasher (hyper only) haring by year/month/state
-$app->post('/{kennel_abbreviation}/statistics/hasher/hyper/harings/by/city',                      'HASH\Controller\ObscureStatisticsController::getHasherHyperHaringsByCity');
+# Mappings for hasher harings by (year/month/state/etc) by hare type
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',                      'HASH\Controller\ObscureStatisticsController::getHasherHaringsByYear');
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'HASH\Controller\ObscureStatisticsController::getHasherHaringsByQuarter');
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'HASH\Controller\ObscureStatisticsController::getHasherHaringsByMonth');
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/dayname',                   'HASH\Controller\ObscureStatisticsController::getHasherHaringsByDayName');
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',                     'HASH\Controller\ObscureStatisticsController::getHasherHaringsByState');
+$app->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',                      'HASH\Controller\ObscureStatisticsController::getHasherHaringsByCity');
 
 # Per person stats (more of them)
-$app->post('/{kennel_abbreviation}/coharecount/byhare/nonhypers','HASH\Controller\ObscureStatisticsController::getCohareCountByHareNonHypers');
-$app->post('/{kennel_abbreviation}/coharecount/byhare/onlyhypers','HASH\Controller\ObscureStatisticsController::getCohareCountByHareOnlyHypers');
 $app->post('/{kennel_abbreviation}/coharecount/byhare/allhashes','HASH\Controller\ObscureStatisticsController::getCohareCountByHareAllHashes');
+$app->post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','HASH\Controller\ObscureStatisticsController::getCohareCountByHare');
 
 
 $app->get('/{kennel_abbreviation}/basic/stats',         'HASH\Controller\HashController::basicStatsAction');
@@ -542,15 +526,14 @@ $app->get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','HASH
 
 $app->get('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenAllHaringsAction');
 $app->get('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenAllHaringsAction');
-$app->get('/{kennel_abbreviation}/highest/nonhyperharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenNonHyperHaringsAction');
-$app->get('/{kennel_abbreviation}/lowest/nonhyperharings/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenNonHyperHaringsAction');
+$app->get('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::highestAverageDaysBetweenHaringsAction');
+$app->get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','HASH\Controller\ObscureStatisticsController::lowestAverageDaysBetweenHaringsAction');
 
 $app->get('/{kennel_abbreviation}/highest/attendedHashes','HASH\Controller\HashController::highestAttendedHashesAction');
 $app->get('/{kennel_abbreviation}/lowest/attendedHashes','HASH\Controller\HashController::lowestAttendedHashesAction');
 
 $app->get('/{kennel_abbreviation}/hashers/of/the/years','HASH\Controller\HashController::hashersOfTheYearsAction');
-$app->get('/{kennel_abbreviation}/hares/overall/of/the/years','HASH\Controller\HashController::overallHaresOfTheYearsAction');
-$app->get('/{kennel_abbreviation}/hares/nonhyper/of/the/years','HASH\Controller\HashController::nonHyperHaresOfTheYearsAction');
+$app->get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HASH\Controller\HashController::HaresOfTheYearsAction');
 
 #Establish the mortal kombat head to head matchup functionality
 $app->get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HASH\Controller\HashController::twoPersonComparisonPreAction');
