@@ -2,6 +2,7 @@
 
 // web/index.php
 require_once __DIR__.'/vendor/autoload.php';
+require_once __DIR__.'/HASH/Controller/DatabaseUpdater.php';
 require_once __DIR__.'/HASH/Controller/HashController.php';
 require_once __DIR__.'/HASH/Controller/TagController.php';
 require_once __DIR__.'/HASH/Controller/HashEventController.php';
@@ -557,16 +558,13 @@ $app->get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HASH
 $app->get('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',     'HASH\Controller\HashController::twoPersonComparisonAction');
 $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'HASH\Controller\HashPersonController::retrieveHasherAction');
 
-# Set the before/after actions
-$app->before(function (Request $request, Application $app) {
-});
-
 #Do magic on the json traffic
-$app->before(function (Request $request) {
+$app->before(function (Request $request, Application $app) {
     if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
         $data = json_decode($request->getContent(), true);
         $request->request->replace(is_array($data) ? $data : array());
     }
+    new DatabaseUpdater($app, DB_NAME);
 });
 
 $app->after(function (Request $request, Response $response) {
