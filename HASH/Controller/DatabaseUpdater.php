@@ -18,7 +18,7 @@ class DatabaseUpdater {
 
     if($databaseVersion != $currentDatabaseVersion) {
 
-      $has_semaphones = true;
+      $has_semaphores = true;
 
       try {
         $semRes = sem_get(696969);
