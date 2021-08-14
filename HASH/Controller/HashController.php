@@ -3989,7 +3989,6 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
       LATEST_HASH_KEY,
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       HASHER_KY,
-      (DATEDIFF(CURDATE(),FIRST_HASH.EVENT_DATE)) AS DAYS_SINCE_FIRST_HASH,
       ((DATEDIFF(CURDATE(),FIRST_HASH.EVENT_DATE)) / HASH_COUNT) AS DAYS_BETWEEN_HASHES
   FROM
   	(
@@ -4031,9 +4030,22 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
     (int) $kennelKy,
     (int) $numberOfDaysInDateRange,
     (int) $hasher_id));
-  $hasherStatsHashCount = $hasherStatsObject['HASH_COUNT'];
-  $hasherStatsDaysSinceFirstHash = $hasherStatsObject['DAYS_SINCE_FIRST_HASH'];
-  $hasherStatsDaysPerHash = $hasherStatsObject['DAYS_BETWEEN_HASHES'];
+
+  if($hasherStatsObject) {
+    $hasherStatsHashCount = $hasherStatsObject['HASH_COUNT'];
+    $hasherStatsDaysPerHash = $hasherStatsObject['DAYS_BETWEEN_HASHES'];
+    $firstHashKey = $hasherStatsObject['FIRST_HASH_KEY'];
+    $firstKennelEventNumber = $hasherStatsObject['FIRST_KENNEL_EVENT_NUMBER'];
+    $firstEventDate = $hasherStatsObject['FIRST_EVENT_DATE'];
+    $eventsToIterate = 750;
+  } else {
+    $hasherStatsHashCount = 0;
+    $hasherStatsDaysPerHash = 32768;
+    $firstHashKey = null;
+    $firstKennelEventNumber = null;
+    $firstEventDate = null;
+    $eventsToIterate = 25;
+  }
 
   $numberOfDaysInRecentDateRange = 365;
   $hasherRecentStatsObject = $this->fetchAssoc($sql, array(
@@ -4061,8 +4073,8 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
   # Add a count into their list of hashes
   $destinationArray = array();
 
-  #Loop through 500 events
-  for ($x = 1; $x <= 750; $x++) {
+  #Loop through 750 events, or maybe 25
+  for ($x = 1; $x <= $eventsToIterate; $x++) {
     $incrementedHashCount = $hasherStatsHashCount + $x;
     if(
       ($incrementedHashCount % 25 == 0) ||
@@ -4114,9 +4126,9 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
     'kennel_abbreviation' => $kennel_abbreviation,
     'participant_column_header' => 'Hasher',
     'overall_boolean' => 'FALSE',
-    'firstHashKey' => $hasherStatsObject['FIRST_HASH_KEY'],
-    'firstKennelEventNumber' => $hasherStatsObject['FIRST_KENNEL_EVENT_NUMBER'],
-    'firstEventDate' => $hasherStatsObject['FIRST_EVENT_DATE'],
+    'firstHashKey' => $firstHashKey,
+    'firstKennelEventNumber' => $firstKennelEventNumber,
+    'firstEventDate' => $firstEventDate,
     'overallRunRate' => $hasherStatsDaysPerHash,
     'recentDateRangeInDays' => $numberOfDaysInRecentDateRange,
     'recentRunRate' => $recentDaysPerHash,
