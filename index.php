@@ -31,6 +31,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\User;
+use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -74,34 +75,6 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
       'password'  => DB_PASSWORD,
       'charset'   => "utf8"
     ))));
-
-
-#Create users table in database-------------------------------------------------
-$schema = $app['dbs']['mysql_write']->getSchemaManager();
-if (!$schema->tablesExist('USERS')) {
-    $users = new Table('USERS');
-    $users->addColumn('id', 'integer', array('unsigned' => true, 'autoincrement' => true));
-    $users->setPrimaryKey(array('id'));
-    $users->addColumn('username', 'string', array('length' => 32));
-    $users->addUniqueIndex(array('username'));
-    $users->addColumn('password', 'string', array('length' => 255));
-    $users->addColumn('roles', 'string', array('length' => 255));
-
-    $schema->createTable($users);
-
-    $app['dbs']['mysql_write']->insert('USERS', array(
-      'username' => 'admin',
-      'password' => DEFAULT_USER_PASSWORD,
-      'roles' => 'ROLE_ADMIN'
-    ));
-
-    $app['dbs']['mysql_write']->insert('USERS', array(
-      'username' => 'superadmin',
-      'password' => DEFAULT_USER_PASSWORD,
-      'roles' => 'ROLE_SUPERADMIN'
-    ));
-
-}
 
 
 #-------------------------------------------------------------------------------
@@ -224,6 +197,41 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 # End: -------------------------------------------------------------------------
 
 
+#Check users table in database-------------------------------------------------
+
+$schema = $app['dbs']['mysql_write']->getSchemaManager();
+
+if (!$schema->tablesExist('USERS')) {
+
+    // Create Users Table
+    $users = new Table('USERS');
+    $users->addColumn('id', 'integer', array('unsigned' => true, 'autoincrement' => true));
+    $users->setPrimaryKey(array('id'));
+    $users->addColumn('username', 'string', array('length' => 32));
+    $users->addUniqueIndex(array('username'));
+    $users->addColumn('password', 'string', array('length' => 255));
+    $users->addColumn('roles', 'string', array('length' => 255));
+    $schema->createTable($users);
+
+    // Array of new users to create
+    // admin user will have admin and superadmin privs
+    $users = array(new User('admin', null, array('ROLE_ADMIN', 'ROLE_SUPERADMIN'), true, true, true, true));
+
+    foreach ($users as &$user) {
+
+        // find the encoder for a UserInterface instance
+        $encoder = $app['security.encoder_factory']->getEncoder($user);
+
+        // compute the encoded password for the new password
+        $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
+
+        // insert the new user record
+        $app['dbs']['mysql_write']->insert('USERS', array(
+            'username' => $user->getUsername(),
+            'password' => $encodedNewPassword,
+            'roles' => implode(',',$user->getRoles())));
+    }
+}
 
 
 
