@@ -3914,21 +3914,25 @@ public function getHasherAnalversariesAction(Request $request, int $hasher_id, s
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
+  $sql_hasher_name = "
+      SELECT HASHER_NAME
+        FROM HASHERS
+       WHERE HASHERS.HASHER_KY = ?";
+
+  $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
+
   # Define the SQL to retrieve all of their hashes
-  $sql_all_hashes_for_this_hasher = "	SELECT
-	HASHERS.HASHER_KY, HASHERS.HASHER_NAME, HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
-	FROM HASHINGS
-		JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-		JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-	WHERE
-		HASHERS.HASHER_KY = ?
-		AND HASHES.KENNEL_KY = ?
-	ORDER By HASHES.EVENT_DATE ASC";
+  $sql_all_hashes_for_this_hasher = "
+      SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
+        FROM HASHINGS
+        JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHERS.HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE ASC";
 
   #Retrieve all of this hasher's hashes
-  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array(
-        (int) $hasher_id,
-        (int) $kennelKy));
+  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array($hasher_id, $kennelKy));
 
   # Add a count into their list of hashes
   $destinationArray = array();
@@ -3947,7 +3951,6 @@ public function getHasherAnalversariesAction(Request $request, int $hasher_id, s
   }
 
   # Establish and set the return value
-  $hasherName = $theInitialListOfHashes[0]['HASHER_NAME'];
   $pageTitle = "Hashing Analversaries: $hasherName";
   $returnValue = $this->render('hasher_analversary_list.twig',array(
     'theList' => $destinationArray,
@@ -3961,9 +3964,6 @@ public function getHasherAnalversariesAction(Request $request, int $hasher_id, s
 
   #Return the return value
   return $returnValue;
-
-
-
 }
 
 
