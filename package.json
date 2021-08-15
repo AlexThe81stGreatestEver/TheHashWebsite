@@ -18,19 +18,18 @@
   },
   "homepage": "https://github.com/AlexThe81stGreatestEver/TheHashWebsite#readme",
   "dependencies": {
-    "c3": "^0.6.12" ,
-    "chart.js": "^2.4.0" ,
-    "datatables.net-responsive": "^2.1.0" ,
-    "datatables.net-responsive-dt": "^2.1.0" ,
-    "echarts": "^4.1.0" ,
-    "echarts-gl": "^1.1.1" ,
-    "jquery-tags-input": "^1.3.5" ,
-    "jquery-timepicker": "^1.3.3" ,
-    "jquery-ui": "^1.12.1" ,
-    "jquery-ui-dist": "^1.12.1" ,
-    "jquery-validation": "^1.16.0" ,
-    "zrender": "^4.0.7",
-    "wordcloud": "^1.0.5"
-
+    "c3": "^0.6.12",
+    "chart.js": "^2.4.0",
+    "datatables.net-responsive": "^2.2.9",
+    "datatables.net-responsive-dt": "^2.2.9",
+    "echarts": "^4.1.0",
+    "echarts-gl": "^1.1.2",
+    "jquery-tags-input": "^1.3.5",
+    "jquery-timepicker": "^1.3.3",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
+    "jquery-validation": "^1.19.3",
+    "wordcloud": "^1.2.2",
+    "zrender": "^4.0.7"
   }
 }
