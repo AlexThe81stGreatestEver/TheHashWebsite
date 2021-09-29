@@ -295,7 +295,8 @@ class SuperAdminController extends BaseController {
       'kennelValue' => $kennelValue,
       'awardLevels' => $awardLevels,
       'hare_types' => $hareTypes,
-      'hash_types' => $hashTypes
+      'hash_types' => $hashTypes,
+      'showAwardsPage' => $this->showAwardsPage()
     ));
 
     #Return the return value
