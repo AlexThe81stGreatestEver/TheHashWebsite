@@ -2948,7 +2948,8 @@ function addHasherStatusToQuery(string $query) {
      WHERE 1=1 ".
      ($_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
      ($_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
-     ($_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "");
+     ($_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "")."
+     ORDER BY VALUE DESC";
 }
 
 public function hashingCountsAction(Request $request, string $kennel_abbreviation) {
