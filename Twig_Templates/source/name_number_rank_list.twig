@@ -1,15 +1,57 @@
 {% extends "fullwidth.twig" %}
 
 {% block content %}
+
+    <script>
+      function getSearchParams(k) {
+        var p={};
+        location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v});
+        return k?p[k]:p;
+      }
+
+      function writeCheckbox(name, label) {
+
+        var checked = "";
+
+        if(!(getSearchParams(name) === "false")) {
+          checked=" checked='checked'";
+        }
+
+        document.write("<input onchange='reload()' name='" + name + "' type='checkbox'" + checked + "></input> " + label + " ");
+      }
+
+      function getState(qs, name) {
+        if(!$("input[name=" + name + "]").prop("checked")) {
+          if(qs === "") {
+            qs += "?";
+          } else {
+            qs += "&";
+          }
+          qs += name + "=false";
+        }
+        return qs;
+      }
+
+      function reload() {
+        var qs = "";
+        qs = getState(qs, "active");
+        qs = getState(qs, "inactive");
+        qs = getState(qs, "deceased");
+        location.replace(location.href.split('?')[0] + qs);
+      }
+    </script>
+
     <h1>{{pageTitle}}</h1>
     <table class="table table-condensed table-hover">
       <caption>{{tableCaption}}</caption>
       <thead>
         <tr>
           <td colspan="3">Filters:
-            <input onchange="reload()" name="active" type="checkbox"></input> Active
-            <input onchange="reload()" name="inactive" type="checkbox"></input> Inactive
-            <input onchange="reload()" name="deceased" type="checkbox"></input> Deceased
+            <script>
+              writeCheckbox("active", "Active");
+              writeCheckbox("inactive", "Inactive");
+              writeCheckbox("deceased", "Deceased");
+            </script>
           </td>
         </tr>
         <tr>
@@ -33,43 +75,4 @@
       </tbody>
     </table>
 
-    <script>
-      function getState(qs, name) {
-        if(!$("input[name=" + name + "]").prop("checked")) {
-          if(qs === "") {
-            qs += "?";
-          } else {
-            qs += "&";
-          }
-          qs += name + "=false";
-        }
-        return qs;
-      }
-
-      function reload() {
-        var qs = "";
-        qs = getState(qs, "active");
-        qs = getState(qs, "inactive");
-        qs = getState(qs, "deceased");
-        location.replace(location.href.split('?')[0] + qs);
-      }
-
-      $(function() {
-
-        function getSearchParams(k) {
-          var p={};
-          location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v});
-          return k?p[k]:p;
-        }
-
-        function setChecked(name) {
-          $("input[name=" + name + "]").prop("checked", !(getSearchParams(name) === "false"));
-        }
-
-        setChecked("active");
-        setChecked("inactive");
-        setChecked("deceased");
-
-      });
-    </script>
 {% endblock %}
