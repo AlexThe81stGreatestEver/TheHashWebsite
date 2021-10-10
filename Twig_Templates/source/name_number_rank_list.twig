@@ -6,9 +6,16 @@
       <caption>{{tableCaption}}</caption>
       <thead>
         <tr>
+          <td colspan="3">Filters:
+            <input onchange="reload()" name="active" type="checkbox"></input> Active
+            <input onchange="reload()" name="inactive" type="checkbox"></input> Inactive
+            <input onchange="reload()" name="deceased" type="checkbox"></input> Deceased
+          </td>
+        </tr>
+        <tr>
           <th>Rank</th>
           <th>{{columnOneName}}</th>
-          <td>{{columnTwoName}}</td>
+          <th>{{columnTwoName}}</th>
         </tr>
       </thead>
       <tbody>
@@ -16,13 +23,53 @@
           <tr>
             <td>{{item.THE_RANK}}</td>
             {% if google_analytics_id != 'none' %}
-              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}?name={{item.NAME}}&src={{pageTracking}}">{{item.NAME}}</a></td>
+              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}?name={{item.NAME}}&src={{pageTracking}}">{{item.NAME}}</a>{{item.STATUS}}</td>
             {% else %}
-              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a></td>
+              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>{{item.STATUS}}</td>
             {% endif %}
             <td>{{item.VALUE}}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <script>
+      function getState(qs, name) {
+        if(!$("input[name=" + name + "]").prop("checked")) {
+          if(qs === "") {
+            qs += "?";
+          } else {
+            qs += "&";
+          }
+          qs += name + "=false";
+        }
+        return qs;
+      }
+
+      function reload() {
+        var qs = "";
+        qs = getState(qs, "active");
+        qs = getState(qs, "inactive");
+        qs = getState(qs, "deceased");
+        location.replace(location.href.split('?')[0] + qs);
+      }
+
+      $(function() {
+
+        function getSearchParams(k) {
+          var p={};
+          location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v});
+          return k?p[k]:p;
+        }
+
+        function setChecked(name) {
+          $("input[name=" + name + "]").prop("checked", !(getSearchParams(name) === "false"));
+        }
+
+        setChecked("active");
+        setChecked("inactive");
+        setChecked("deceased");
+
+      });
+    </script>
 {% endblock %}

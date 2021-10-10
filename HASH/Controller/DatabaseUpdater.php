@@ -14,7 +14,7 @@ class DatabaseUpdater {
 
     $databaseVersion = $this->getDatabaseVersion();
 
-    $currentDatabaseVersion = 21;
+    $currentDatabaseVersion = 22;
 
     if($databaseVersion != $currentDatabaseVersion) {
 
@@ -114,6 +114,9 @@ class DatabaseUpdater {
             case 20:
               $this->addDefaultAwardEventHorizonToSiteConfig();
               $this->setDatabaseVersion(21);
+            case 21:
+              $this->addNumDaysBeforeConsideredInactiveToSiteConfig();
+              $this->setDatabaseVersion(22);
             default:
               // Overkill, but guarantees the view is up to date with the
               // current database structure.
@@ -199,6 +202,10 @@ class DatabaseUpdater {
 
   private function addBudgetOptionToSiteConfig() {
     $this->insertIntoSiteConfig('show_budget_page', "true", 'Set to "true" to show the link to the budget page on the manage event page.');
+  }
+
+  private function addNumDaysBeforeConsideredInactiveToSiteConfig() {
+    $this->insertIntoSiteConfig('num_days_before_considered_inactive', "90", 'Number of days before a hasher will be considered inactive.');
   }
 
   private function addDefaultAwardEventHorizonToSiteConfig() {

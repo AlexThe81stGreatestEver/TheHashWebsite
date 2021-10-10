@@ -90,11 +90,11 @@ class HashController extends BaseController
     $baseSql = $this->getHashingCountsQuery();
     $sql = "$baseSql  LIMIT 10";
 
-    $baseSql = HARE_TYPE_HARING_COUNTS;
+    $baseSql = $this->getHaringCountsByTypeQuery(false);
     $sql2 = "$baseSql  LIMIT 10";
 
     #Get Top (Overall) Hare Counts
-    $baseSql4 = HARING_COUNTS;
+    $baseSql4 = $this->getHaringCountsQuery(false);
     $sql4 = "$baseSql4 LIMIT 10";
 
     $baseSql5 = HASHING_COUNTS_THIS_YEAR;
@@ -2930,12 +2930,33 @@ function addRankToQuery(string $query, string $selectClause, string $countColumn
      (SELECT @curRank:=1, @_sequence:=1, @_last_count:=0) AS VARS";
 }
 
+function addHasherStatusToQuery(string $query) {
+  return
+    "SELECT *
+      FROM (
+     SELECT iq.*,
+            CASE WHEN HASHERS.DECEASED = 1 THEN ' (RIP)'
+                 WHEN (iq.LATEST_EVENT IS NULL) OR (DATEDIFF(CURDATE(), iq.LATEST_EVENT) >
+                      CAST((SELECT value FROM SITE_CONFIG WHERE name='num_days_before_considered_inactive') AS SIGNED))
+                      THEN ' (inactive)'
+                      ELSE ' '
+                       END
+              AS STATUS
+      FROM ($query) iq
+      JOIN HASHERS
+        ON HASHERS.HASHER_KY = iq.THE_KEY) iq2
+     WHERE 1=1 ".
+     ($_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
+     ($_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
+     ($_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "");
+}
 
+public function hashingCountsAction(Request $request, string $kennel_abbreviation) {
 
-public function hashingCountsAction(Request $request, string $kennel_abbreviation){
+  $sql = $this->addHasherStatusToQuery($this->getHashingCountsQuery(true, true));
 
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery($this->getHashingCountsQuery(), "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2956,20 +2977,21 @@ public function hashingCountsAction(Request $request, string $kennel_abbreviatio
 
   #Return the return value
   return $returnValue;
-
 }
 
 
 public function haringCountsAction(Request $request, string $kennel_abbreviation){
 
+  $sql = $this->addHasherStatusToQuery($this->getHaringCountsQuery(true));
+
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(HARING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy));
+  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_rank_list.twig',array(
@@ -2984,13 +3006,14 @@ public function haringCountsAction(Request $request, string $kennel_abbreviation
 
   #Return the return value
   return $returnValue;
-
 }
 
 public function haringTypeCountsAction(Request $request, string $kennel_abbreviation, int $hare_type) {
 
+  $sql = $this->addHasherStatusToQuery($this->getHaringCountsByTypeQuery(true));
+
   # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery(HARE_TYPE_HARING_COUNTS, "THE_KEY, NAME, VALUE", "VALUE");
+  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2998,7 +3021,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
   $hare_type_name = $this->getHareTypeName($hare_type);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $hare_type, (int) $kennelKy));
+  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $hare_type, (int) $kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_rank_list.twig',array(

@@ -250,7 +250,67 @@ class BaseController {
     return "0";
   }
 
-  protected function getHashingCountsQuery(bool $considerLegacyRuns = true) {
+  function getLatestEventSubquery(bool $includeLatestEvent) {
+    if($includeLatestEvent) {
+      return ", (
+        SELECT MAX(HASHES2.EVENT_DATE)
+          FROM HASHES HASHES2
+          JOIN HASHINGS
+            ON HASHINGS.HASH_KY = HASHES2.HASH_KY
+         WHERE HASHINGS.HASHER_KY = THE_KEY
+           AND HASHES2.KENNEL_KY = ?) AS LATEST_EVENT
+      ";
+    }
+
+    return "";
+  }
+
+  protected function getHaringCountsQuery(bool $includeLatestEvent = false) {
+
+    $le = $this->getLatestEventSubquery($includeLatestEvent);
+
+    return
+      "SELECT HASHERS.HASHER_KY AS THE_KEY,
+	      HASHERS.HASHER_NAME AS NAME,
+	      COUNT(0) AS VALUE
+              $le
+         FROM HASHERS
+	 JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+         JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+	 JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        WHERE HASHES.KENNEL_KY = ?
+        GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+        ORDER BY VALUE DESC";
+  }
+
+  protected function getHaringCountsByTypeQuery(bool $includeLatestEvent = false) {
+
+    $le = $this->getLatestEventSubquery($includeLatestEvent);
+
+    return
+      "SELECT HASHERS.HASHER_KY AS THE_KEY,
+	      HASHERS.HASHER_NAME AS NAME,
+	      COUNT(0) AS VALUE
+              $le
+         FROM HASHERS
+	 JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+	 JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        WHERE HARINGS.HARE_TYPE & ? != 0
+          AND HASHES.KENNEL_KY = ?
+     GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+     ORDER BY VALUE DESC";
+  }
+
+  protected function getHashingCountsQuery(bool $considerLegacyRuns = true, bool $includeLatestEvent = false) {
+
+   $le1 = "";
+   $le2 = "";
+
+   if($includeLatestEvent) {
+     $le1 = ", MAX(HASHES.EVENT_DATE) AS LATEST_EVENT";
+     $le2 = ", NULL AS LATEST_EVENT";
+   }
+
    if($this->hasLegacyHashCounts() && $considerLegacyRuns) {
      return "SELECT THE_KEY, NAME, SUM(VALUE) AS VALUE, KENNEL_KY
                FROM (
@@ -258,6 +318,7 @@ class BaseController {
                     HASHERS.HASHER_NAME AS NAME,
                     COUNT(0) AS VALUE,
                     HASHES.KENNEL_KY AS KENNEL_KY
+                    $le1
                FROM HASHERS
                JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
                JOIN HASHES on HASHINGS.HASH_KY = HASHES.HASH_KY
@@ -268,6 +329,7 @@ class BaseController {
                     HASHERS.HASHER_NAME AS NAME,
                     LEGACY_HASHINGS.LEGACY_HASHINGS_COUNT AS VALUE,
                     LEGACY_HASHINGS.KENNEL_KY AS KENNEL_KY
+                    $le2
                FROM HASHERS
                JOIN LEGACY_HASHINGS ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
               WHERE LEGACY_HASHINGS.KENNEL_KY = ?) AS HASH_COUNTS_INNER
@@ -279,6 +341,7 @@ class BaseController {
                   HASHERS.HASHER_NAME AS NAME,
                   COUNT(0) AS VALUE,
                   HASHES.KENNEL_KY AS KENNEL_KY
+                  $le1
              FROM HASHERS
              JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
              JOIN HASHES on HASHINGS.HASH_KY = HASHES.HASH_KY
