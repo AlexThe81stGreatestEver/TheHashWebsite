@@ -1166,13 +1166,13 @@ class HashController extends BaseController
         SELECT HASH_KY
           FROM HASHES
          WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
-           AND KENNEL_KY = $kennelKy) AS HASH_KY,
+           AND KENNEL_KY = ?) AS HASH_KY,
 	    HASHER_KY AS THE_KEY, HASHER_ABBREVIATION
 	  FROM (
 	SELECT HASHER_NAME, HASHER_KY, HASHER_ABBREVIATION, LAST_SEEN_DATE, (
 	       SELECT COUNT(*)
 		 FROM HASHES
-		WHERE KENNEL_KY = $kennelKy
+		WHERE KENNEL_KY = ?
 		  AND HASHES.EVENT_DATE > LAST_SEEN_DATE) AS NUM_HASHES_MISSED, (
 	       SELECT MAX(KENNEL_EVENT_NUMBER)
 		 FROM HASHES
@@ -1180,7 +1180,7 @@ class HashController extends BaseController
 		  AND HASHES.HASH_KY IN (
 		      SELECT HASH_KY
 			FROM HASHINGS
-		       WHERE KENNEL_KY = $kennelKy
+		       WHERE KENNEL_KY = ?
 			 AND HASHINGS.HASHER_KY = HASHER_KY)) AS LAST_SEEN_EVENT
 	  FROM (
 	SELECT HASHER_NAME, HASHER_ABBREVIATION, HASHERS.HASHER_KY AS HASHER_KY, (
@@ -1189,7 +1189,7 @@ class HashController extends BaseController
 		 WHERE HASHES.HASH_KY IN (
 		       SELECT HASH_KY
 			 FROM HASHINGS
-			WHERE KENNEL_KY = $kennelKy
+			WHERE KENNEL_KY = ?
 			  AND HASHINGS.HASHER_KY = HASHERS.HASHER_KY)) AS LAST_SEEN_DATE
 	  FROM HASHERS
 	 WHERE HASHER_NAME NOT LIKE 'Just %'
@@ -1216,17 +1216,16 @@ class HashController extends BaseController
 
     #-------------- Begin: Query the database   --------------------------------
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql3,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql3,array($kennelKy, $kennelKy, $kennelKy, $kennelKy,
+      (string) $inputSearchValueModified, (string) $inputSearchValueModified));
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array()))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,
+      array($kennelKy, $kennelKy, $kennelKy, $kennelKy)))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy, $kennelKy, $kennelKy, $kennelKy,
+      (string) $inputSearchValueModified, (string) $inputSearchValueModified)))['THE_COUNT'];
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output

@@ -927,7 +927,7 @@ class HashEventController extends BaseController {
         JOIN HASH_TYPES
           ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
         WHERE
-          KENNEL_KY = $kennelKy AND
+          KENNEL_KY = ? AND
           (
             KENNEL_EVENT_NUMBER LIKE ? OR
             EVENT_LOCATION LIKE ? OR
@@ -942,7 +942,7 @@ class HashEventController extends BaseController {
       $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
         FROM HASHES
         WHERE
-        KENNEL_KY = $kennelKy AND
+        KENNEL_KY = ? AND
         (
           KENNEL_EVENT_NUMBER LIKE ? OR
           EVENT_LOCATION LIKE ? OR
@@ -951,13 +951,13 @@ class HashEventController extends BaseController {
           EVENT_STATE LIKE ?)";
 
       #Define the sql that gets the overall counts
-      $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = $kennelKy";
+      $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = ?";
 
       #-------------- End: Define the SQL used here   ----------------------------
 
       #-------------- Begin: Query the database   --------------------------------
       #Perform the filtered search
-      $theResults = $this->fetchAll($sql,array(
+      $theResults = $this->fetchAll($sql,array($kennelKy,
         (string) $inputSearchValueModified,
         (string) $inputSearchValueModified,
         (string) $inputSearchValueModified,
@@ -965,10 +965,10 @@ class HashEventController extends BaseController {
         (string) $inputSearchValueModified));
 
       #Perform the untiltered count
-      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array()))['THE_COUNT'];
+      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
 
       #Perform the filtered count
-      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
+      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy,
         (string) $inputSearchValueModified,
         (string) $inputSearchValueModified,
         (string) $inputSearchValueModified,
