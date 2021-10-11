@@ -25,12 +25,12 @@ class ObscureStatisticsController extends BaseController {
     # Obtain the hashes
     $sqlTheHashes = "SELECT HASHES.* FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array((int) $kennelKy));
+    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
 
     #Obtain the average lat
     $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $kennelKy));
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
@@ -59,12 +59,12 @@ class ObscureStatisticsController extends BaseController {
     # Obtain the hashes
     $sqlTheHashes = "SELECT HASHES.* FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array((int) $kennelKy));
+    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
 
     #Obtain the average lat
     $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $kennelKy));
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
@@ -93,12 +93,12 @@ class ObscureStatisticsController extends BaseController {
     # Obtain the hashes
     $sqlTheHashes = "SELECT HASHES.* FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array((int) $kennelKy));
+    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
 
     #Obtain the average lat
     $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
     WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $kennelKy));
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
@@ -132,36 +132,36 @@ class ObscureStatisticsController extends BaseController {
       $pageTitle = "$year_value: Year in review";
 
       #Obtain number of hashes
-      $hashCount = ($this->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
+      $hashCount = ($this->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
 
       foreach($hashTypes as &$hashType) {
         #Obtain number of hashtype hashes
         $hashCounts[$hashType['HASH_TYPE_NAME']] = ($this->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR . " AND HASHES.HASH_TYPE = ?",
-          array((int)$year_value, (int) $kennelKy, $hashType['HASH_TYPE'])))['THE_COUNT'];
+          array((int)$year_value, $kennelKy, $hashType['HASH_TYPE'])))['THE_COUNT'];
       }
 
       #Obtain number of hashers
-      $hasherCount = ($this->fetchAssoc(PER_KENNEL_HASHERS_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
+      $hasherCount = ($this->fetchAssoc(PER_KENNEL_HASHERS_COUNT_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
 
       #Obtain number of overall hares
-      $overallHareCount = ($this->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR,array((int)$year_value, (int) $kennelKy)))['THE_COUNT'];
+      $overallHareCount = ($this->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
 
       foreach($hareTypes as &$hareType) {
         $hareCounts[$hareType['HARE_TYPE_NAME']] = ($this->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR . "AND HARINGS.HARE_TYPE & ? != 0",
-          array((int)$year_value, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+          array((int)$year_value, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
       }
 
       # Obtain the number of newbie hashers
-      $newHashers = $this->fetchAll(NEW_HASHERS_FOR_THIS_YEAR, array((int) $kennelKy,(int) $kennelKy, (int)$year_value));
+      $newHashers = $this->fetchAll(NEW_HASHERS_FOR_THIS_YEAR, array($kennelKy, $kennelKy, (int)$year_value));
       $newHashersCount = count($newHashers);
 
       foreach($hareTypes as &$hareType) {
         $newHareCounts[$hareType['HARE_TYPE_NAME']] = count($this->fetchAll(NEW_HARES_FOR_THIS_YEAR_BY_HARE_TYPE,
-          array($hareType['HARE_TYPE'],(int) $kennelKy,$hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE'],(int)$year_value)));
+          array($hareType['HARE_TYPE'], $kennelKy,$hareType['HARE_TYPE'], $kennelKy, $hareType['HARE_TYPE'],(int)$year_value)));
       }
 
       # Obtain the number of new overall hares
-      $newOverallHares = $this->fetchAll(NEW_HARES_FOR_THIS_YEAR, array((int) $kennelKy,(int) $kennelKy,(int)$year_value));
+      $newOverallHares = $this->fetchAll(NEW_HARES_FOR_THIS_YEAR, array($kennelKy, $kennelKy,(int)$year_value));
       $newOverallHaresCount = count($newOverallHares);
 
       #Establish the return value

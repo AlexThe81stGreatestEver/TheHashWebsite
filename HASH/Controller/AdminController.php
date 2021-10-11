@@ -425,7 +425,7 @@ class AdminController extends BaseController
   public function listHashesPreActionJson(Request $request, string $kennel_abbreviation = null) {
 
     if($kennel_abbreviation) {
-      $kennelKy = (int) $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
     } else {
       $kennels = $this->getKennels();
 
@@ -471,7 +471,7 @@ class AdminController extends BaseController
 
   public function getHashListJson(Request $request, string $kennel_abbreviation){
 
-    $kennelKy = (int) $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #$this->app['monolog']->addDebug("Entering the function------------------------");
 
@@ -901,7 +901,7 @@ class AdminController extends BaseController
       $kennels = $this->getKennels();
 
       if(count($kennels) == 1) {
-        $kennelKy = $kennels[0]['KENNEL_KY'];
+        $kennelKy = (int) $kennels[0]['KENNEL_KY'];
       } else {
         return $this->render('admin_select_kennel.twig',array(
           'kennels' => $kennels,
@@ -933,7 +933,7 @@ class AdminController extends BaseController
            ORDER BY HASHER_NAME";
 
         #Execute the SQL statement; create an array of rows
-        $theList = $this->fetchAll($sql, array($i * 6, (int) $kennelKy, $j));
+        $theList = $this->fetchAll($sql, array($i * 6, $kennelKy, $j));
 
         if(count($theList) > 15) break;
       }
@@ -967,7 +967,7 @@ class AdminController extends BaseController
       $kennels = $this->getKennels();
 
       if(count($kennels) == 1) {
-        $kennelKy = $kennels[0]['KENNEL_KY'];
+        $kennelKy = (int) $kennels[0]['KENNEL_KY'];
         $kennel_abbreviation = $kennels[0]['KENNEL_ABBREVIATION'];
       } else {
         return $this->render('admin_select_kennel.twig',array(

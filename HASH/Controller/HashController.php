@@ -113,7 +113,7 @@ class HashController extends BaseController
 
     if(count($hareTypes) > 1) {
       foreach ($hareTypes as &$hareType) {
-        $hareResults = $this->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], (int) $kennelKy));
+        $hareResults = $this->fetchAll($sql2, array((int) $hareType['HARE_TYPE'], $kennelKy));
           array_push($top_hares, array('data' => $hareResults,
             'label' => $hareType['HARE_TYPE_NAME'],
             'hare_type' => $hareType['HARE_TYPE']));
@@ -121,12 +121,12 @@ class HashController extends BaseController
     }
 
     #Execute the SQL statement; create an array of rows
-    $topHashersList = $this->fetchAllIgnoreErrors($sql, array((int) $kennelKy, (int) $kennelKy));
-    $topOverallHareList = $this->fetchAllIgnoreErrors($sql4, array((int) $kennelKy));
-    $topHashersThisYear = $this->fetchAllIgnoreErrors($sql5, array((int) $kennelKy));
-    $topHashersLastYear = $this->fetchAllIgnoreErrors($sql6, array((int) $kennelKy));
-    $topHaresThisYear = $this->fetchAllIgnoreErrors($sql7, array((int) $kennelKy));
-    $topHaresLastYear = $this->fetchAllIgnoreErrors($sql8, array((int) $kennelKy));
+    $topHashersList = $this->fetchAllIgnoreErrors($sql, array($kennelKy, $kennelKy));
+    $topOverallHareList = $this->fetchAllIgnoreErrors($sql4, array($kennelKy));
+    $topHashersThisYear = $this->fetchAllIgnoreErrors($sql5, array($kennelKy));
+    $topHashersLastYear = $this->fetchAllIgnoreErrors($sql6, array($kennelKy));
+    $topHaresThisYear = $this->fetchAllIgnoreErrors($sql7, array($kennelKy));
+    $topHaresLastYear = $this->fetchAllIgnoreErrors($sql8, array($kennelKy));
 
     #Get the quickest to 5 hashes
     $theQuickestToXNumber = 5;
@@ -134,7 +134,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToXResults = $this->fetchAllIgnoreErrors($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
+    $theQuickestToXResults = $this->fetchAllIgnoreErrors($theSql, array($kennelKy, $kennelKy, $kennelKy));
 
     #Get the quickest to 100 hashes
     $theQuickestToYNumber = 100;
@@ -142,7 +142,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theQuickestToYResults = $this->fetchAllIgnoreErrors($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
+    $theQuickestToYResults = $this->fetchAllIgnoreErrors($theSql, array($kennelKy, $kennelKy, $kennelKy));
 
     #Get the slowest to 5 hashes
     $theSlowestToXNumber = 5;
@@ -150,7 +150,7 @@ class HashController extends BaseController
     $theSql = str_replace("XORDERX","DESC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
-    $theSlowestToXResults = $this->fetchAllIgnoreErrors($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
+    $theSlowestToXResults = $this->fetchAllIgnoreErrors($theSql, array($kennelKy, $kennelKy, $kennelKy));
 
     $quickest_hares = array();
     $theQuickestToXHaringsNumber = 5;
@@ -161,7 +161,7 @@ class HashController extends BaseController
 
     foreach ($hareTypes as &$hareType) {
     #Get the quickest to 5 true harings
-      $theQuickestToXHaringsResults = $this->fetchAllIgnoreErrors($theSql, array((int) $kennelKy, (int) $kennelKy, $hareType['HARE_TYPE'],(int) $kennelKy, $hareType['HARE_TYPE']));
+      $theQuickestToXHaringsResults = $this->fetchAllIgnoreErrors($theSql, array($kennelKy, $kennelKy, $hareType['HARE_TYPE'], $kennelKy, $hareType['HARE_TYPE']));
       array_push($quickest_hares,
         array('data' => $theQuickestToXHaringsResults, 'label' => $hareType['HARE_TYPE_NAME'], 'hare_type' => $hareType['HARE_TYPE']));
     }
@@ -176,13 +176,13 @@ class HashController extends BaseController
         HASHES.KENNEL_KY = ?
       GROUP BY HT.TAG_TEXT,HT.HASHES_TAGS_KY
       ORDER BY THE_COUNT DESC";
-    $eventTagSummaries = $this->fetchAll($eventTagSql, array((int) $kennelKy));
+    $eventTagSummaries = $this->fetchAll($eventTagSql, array($kennelKy));
 
-    $topStreakers = $this->fetchAll(THE_LONGEST_STREAKS." LIMIT 10", array((int) $kennelKy));
+    $topStreakers = $this->fetchAll(THE_LONGEST_STREAKS." LIMIT 10", array($kennelKy));
 
-    $lastEvent = $this->fetchOne("SELECT HASH_KY FROM HASHES WHERE KENNEL_KY=? ORDER BY EVENT_DATE DESC LIMIT 1", array((int) $kennelKy));
+    $lastEvent = $this->fetchOne("SELECT HASH_KY FROM HASHES WHERE KENNEL_KY=? ORDER BY EVENT_DATE DESC LIMIT 1", array($kennelKy));
 
-    $currentStreakers = $this->fetchAll(STREAKERS_LIST." LIMIT 10", array($lastEvent, (int) $kennelKy));
+    $currentStreakers = $this->fetchAll(STREAKERS_LIST." LIMIT 10", array($lastEvent, $kennelKy));
 
     $tableColors = array( "#d1f2eb", "#d6eaf8", "#d7bde2", "#eaeded", "#fad7a0", "#fdedec" );
 
@@ -233,7 +233,7 @@ class HashController extends BaseController
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $theList = $this->fetchAll(STREAKERS_LIST,array((int) $hash_id,(int) $kennelKy));
+    $theList = $this->fetchAll(STREAKERS_LIST,array((int) $hash_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
@@ -1406,7 +1406,7 @@ class HashController extends BaseController
     ORDER BY HASHES.EVENT_DATE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $hasher_id, (int)$kennelKy));
+    $hashList = $this->fetchAll($sql,array((int) $hasher_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -1435,7 +1435,7 @@ class HashController extends BaseController
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll(HASHER_ATTENDANCE_RECORD_LIST,array((int)$kennelKy,(int) $hasher_id, (int)$kennelKy));
+    $hashList = $this->fetchAll(HASHER_ATTENDANCE_RECORD_LIST,array($kennelKy,(int) $hasher_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -1485,7 +1485,7 @@ class HashController extends BaseController
       ORDER BY EVENT_DATE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $hasher_id, (int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array((int) $hasher_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ? ";
@@ -1540,7 +1540,7 @@ class HashController extends BaseController
        ORDER BY VALUE DESC, NAME";
 
     #Query the database
-    $theResults = $this->fetchAll($theSql, array($hasher_id, (int) $kennelKy, $hasher_id));
+    $theResults = $this->fetchAll($theSql, array($hasher_id, $kennelKy, $hasher_id));
 
     #Define the page title
     $pageTitle = "Hashers that have hashed with $hasherName";
@@ -1869,10 +1869,10 @@ class HashController extends BaseController
 
 
       # Make a database call to obtain the hasher information
-      $houndAnalversaryList = $this->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+      $houndAnalversaryList = $this->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id, $kennelKy, (int) $hash_id));
       $consolidatedHareAnalversaryList = $this->fetchAll(CONSOLIDATED_HARE_ANALVERSARIES_FOR_EVENT, array(
-        (int) $hash_id,(int) $kennelKy, (int) $hash_id,
-        (int) $hash_id,(int) $kennelKy, (int) $hash_id));
+        (int) $hash_id, $kennelKy, (int) $hash_id,
+        (int) $hash_id, $kennelKy, (int) $hash_id));
 
       # Declare the SQL used to retrieve this information
       $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
@@ -1999,10 +1999,10 @@ class HashController extends BaseController
       array_multisort($theCountDateArray, SORT_DESC,$dateHoundAnalversaryList );
 
       #Obtain the streakers
-      $theStreakersList = $this->fetchAll(STREAKERS_LIST,array((int) $hash_id,(int) $kennelKy));
+      $theStreakersList = $this->fetchAll(STREAKERS_LIST,array((int) $hash_id, $kennelKy));
 
       #Obtain the backsliders
-      $backSliderList = $this->fetchAll(BACKSLIDERS_FOR_SPECIFIC_HASH_EVENT, array((int) $kennelKy,(int) $hash_id,(int) $kennelKy, (int) $hash_id));
+      $backSliderList = $this->fetchAll(BACKSLIDERS_FOR_SPECIFIC_HASH_EVENT, array($kennelKy,(int) $hash_id, $kennelKy, (int) $hash_id));
 
 
       # Establish and set the return value
@@ -2039,8 +2039,8 @@ class HashController extends BaseController
 
 
     # Make a database call to obtain the hasher information
-    $analversaryListHounds = $this->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
-    $analversaryListHares = $this->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+    $analversaryListHounds = $this->fetchAll($this->getHoundAnalversariesForEvent(), array((int) $hash_id, $kennelKy, (int) $hash_id));
+    $analversaryListHares = $this->fetchAll(OVERALL_HARE_ANALVERSARIES_FOR_EVENT, array((int) $hash_id, $kennelKy, (int) $hash_id));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_STATE, EVENT_CITY, NEIGHBORHOOD, COUNTY, POSTAL_CODE, ROUTE, YEAR(EVENT_DATE) AS THE_YEAR, MONTHNAME(EVENT_DATE) AS THE_MONTH, DAYNAME(EVENT_DATE) AS THE_DAY FROM HASHES WHERE HASH_KY = ?";
@@ -2204,25 +2204,25 @@ class HashController extends BaseController
     $theSqlHareDayName = str_replace("XXX","DAYNAME",$sqlHareAnalversaryTemplateDateBased);
 
     # Query the datbase a bunch of times
-    $theHoundStateList = $this->fetchAll($theSqlHoundState, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventState ,(int) $hash_id));
-    $theHoundCityList = $this->fetchAll($theSqlHoundCity, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventCity ,(int) $hash_id));
-    $theHoundNeighborhoodList = $this->fetchAll($theSqlHoundNeighborhood, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventNeighborhood ,(int) $hash_id));
-    $theHoundCountyList = $this->fetchAll($theSqlHoundCounty, array((int) $hash_id,(int) $kennelKy,(string) $theHashEventCounty , (int) $hash_id));
-    $theHoundZipList = $this->fetchAll($theSqlHoundZip, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventZip ,(int) $hash_id));
-    $theHoundRoadList = $this->fetchAll($theSqlHoundRoad, array((int) $hash_id,(int) $kennelKy,(string) $theHashEventRoute , (int) $hash_id));
-    $theHoundYearList = $this->fetchAll($theSqlHoundYear, array((int) $hash_id,(int) $kennelKy,(string) $theHashYear , (int) $hash_id));
-    $theHoundMonthList = $this->fetchAll($theSqlHoundMonth, array((int) $hash_id,(int) $kennelKy,(string) $theHashMonth , (int) $hash_id));
-    $theHoundDayNameList = $this->fetchAll($theSqlHoundDayName, array((int) $hash_id,(int) $kennelKy,(string) $theHashDay , (int) $hash_id));
+    $theHoundStateList = $this->fetchAll($theSqlHoundState, array((int) $hash_id, $kennelKy, (string) $theHashEventState ,(int) $hash_id));
+    $theHoundCityList = $this->fetchAll($theSqlHoundCity, array((int) $hash_id, $kennelKy, (string) $theHashEventCity ,(int) $hash_id));
+    $theHoundNeighborhoodList = $this->fetchAll($theSqlHoundNeighborhood, array((int) $hash_id, $kennelKy, (string) $theHashEventNeighborhood ,(int) $hash_id));
+    $theHoundCountyList = $this->fetchAll($theSqlHoundCounty, array((int) $hash_id, $kennelKy,(string) $theHashEventCounty , (int) $hash_id));
+    $theHoundZipList = $this->fetchAll($theSqlHoundZip, array((int) $hash_id, $kennelKy, (string) $theHashEventZip ,(int) $hash_id));
+    $theHoundRoadList = $this->fetchAll($theSqlHoundRoad, array((int) $hash_id, $kennelKy,(string) $theHashEventRoute , (int) $hash_id));
+    $theHoundYearList = $this->fetchAll($theSqlHoundYear, array((int) $hash_id, $kennelKy,(string) $theHashYear , (int) $hash_id));
+    $theHoundMonthList = $this->fetchAll($theSqlHoundMonth, array((int) $hash_id, $kennelKy,(string) $theHashMonth , (int) $hash_id));
+    $theHoundDayNameList = $this->fetchAll($theSqlHoundDayName, array((int) $hash_id, $kennelKy,(string) $theHashDay , (int) $hash_id));
 
-    $theHareStateList = $this->fetchAll($theSqlHareState, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventState ,(int) $hash_id));
-    $theHareCityList = $this->fetchAll($theSqlHareCity, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventCity ,(int) $hash_id));
-    $theHareNeighborhoodList = $this->fetchAll($theSqlHareNeighborhood, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventNeighborhood ,(int) $hash_id));
-    $theHareCountyList = $this->fetchAll($theSqlHareCounty, array((int) $hash_id,(int) $kennelKy,(string) $theHashEventCounty , (int) $hash_id));
-    $theHareZipList = $this->fetchAll($theSqlHareZip, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventZip ,(int) $hash_id));
-    $theHareRoadList = $this->fetchAll($theSqlHareRoad, array((int) $hash_id,(int) $kennelKy,(string) $theHashEventRoute , (int) $hash_id));
-    $theHareYearList = $this->fetchAll($theSqlHareYear, array((int) $hash_id,(int) $kennelKy,(string) $theHashYear , (int) $hash_id));
-    $theHareMonthList = $this->fetchAll($theSqlHareMonth, array((int) $hash_id,(int) $kennelKy,(string) $theHashMonth , (int) $hash_id));
-    $theHareDayNameList = $this->fetchAll($theSqlHareDayName, array((int) $hash_id,(int) $kennelKy,(string) $theHashDay , (int) $hash_id));
+    $theHareStateList = $this->fetchAll($theSqlHareState, array((int) $hash_id, $kennelKy, (string) $theHashEventState ,(int) $hash_id));
+    $theHareCityList = $this->fetchAll($theSqlHareCity, array((int) $hash_id, $kennelKy, (string) $theHashEventCity ,(int) $hash_id));
+    $theHareNeighborhoodList = $this->fetchAll($theSqlHareNeighborhood, array((int) $hash_id, $kennelKy, (string) $theHashEventNeighborhood ,(int) $hash_id));
+    $theHareCountyList = $this->fetchAll($theSqlHareCounty, array((int) $hash_id, $kennelKy,(string) $theHashEventCounty , (int) $hash_id));
+    $theHareZipList = $this->fetchAll($theSqlHareZip, array((int) $hash_id, $kennelKy, (string) $theHashEventZip ,(int) $hash_id));
+    $theHareRoadList = $this->fetchAll($theSqlHareRoad, array((int) $hash_id, $kennelKy,(string) $theHashEventRoute , (int) $hash_id));
+    $theHareYearList = $this->fetchAll($theSqlHareYear, array((int) $hash_id, $kennelKy,(string) $theHashYear , (int) $hash_id));
+    $theHareMonthList = $this->fetchAll($theSqlHareMonth, array((int) $hash_id, $kennelKy,(string) $theHashMonth , (int) $hash_id));
+    $theHareDayNameList = $this->fetchAll($theSqlHareDayName, array((int) $hash_id, $kennelKy,(string) $theHashDay , (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2301,7 +2301,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (int) $hash_id));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
@@ -2365,7 +2365,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventCounty, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (string) $theHashEventCounty, (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2423,7 +2423,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventPostalCode, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (string) $theHashEventPostalCode, (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2482,7 +2482,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventState, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (string) $theHashEventState, (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2541,7 +2541,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventNeighborhood, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (string) $theHashEventNeighborhood, (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2596,7 +2596,7 @@ class HashController extends BaseController
     ORDER BY THE_COUNT DESC";
 
     # Make a database call to obtain the hasher information
-    $analversaryList = $this->fetchAll($sql, array((int) $hash_id,(int) $kennelKy, (string) $theHashEventCity, (int) $hash_id));
+    $analversaryList = $this->fetchAll($sql, array((int) $hash_id, $kennelKy, (string) $theHashEventCity, (int) $hash_id));
 
     # Establish and set the return value
     $hashNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
@@ -2625,7 +2625,7 @@ class HashController extends BaseController
         $sql = BACKSLIDERS_FOR_SPECIFIC_HASH_EVENT;
 
         # Make a database call to obtain the hasher information
-        $backSliderList = $this->fetchAll($sql, array((int) $kennelKy,(int) $hash_id,(int) $kennelKy, (int) $hash_id));
+        $backSliderList = $this->fetchAll($sql, array($kennelKy,(int) $hash_id, $kennelKy, (int) $hash_id));
 
         # Declare the SQL used to retrieve this information
         $sql_for_hash_event = "SELECT EVENT_DATE, KENNEL_EVENT_NUMBER, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
@@ -2698,7 +2698,7 @@ public function predictedHasherAnalversariesAction(Request $request, string $ken
   $runrate=180;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $kennelKy, (int) $kennelKy, $runrate, (int) $kennelKy, $runrate));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate));
 
   # Establish the return value
   $returnValue = $this->render('predicted_analversary_list.twig',array(
@@ -2729,7 +2729,7 @@ public function predictedCenturionsAction(Request $request, string $kennel_abbre
   $runrate=180;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $kennelKy, (int) $kennelKy, $runrate, (int) $kennelKy, $runrate));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate));
 
   # Establish the return value
   $returnValue = $this->render('predicted_analversary_list.twig',array(
@@ -2796,7 +2796,7 @@ public function haringPercentageAllHashesAction(Request $request, string $kennel
   $minHashCount = 0;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy,(int) $minHashCount));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy,(int) $minHashCount));
 
   # Establish the return value
   $returnValue = $this->render('percentage_list.twig',array(
@@ -2830,7 +2830,7 @@ public function haringPercentageAction(Request $request, int $hare_type, string 
   $minHashCount = 0;
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy,(int) $kennelKy, $hare_type, (int) $minHashCount));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $hare_type, (int) $minHashCount));
 
   # Establish the return value
   $returnValue = $this->render('percentage_list.twig',array(
@@ -2963,7 +2963,7 @@ public function hashingCountsAction(Request $request, string $kennel_abbreviatio
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $kennelKy));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_rank_list.twig',array(
@@ -2992,7 +2992,7 @@ public function haringCountsAction(Request $request, string $kennel_abbreviation
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $kennelKy));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_rank_list.twig',array(
@@ -3022,7 +3022,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
   $hare_type_name = $this->getHareTypeName($hare_type);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array((int) $kennelKy, (int) $hare_type, (int) $kennelKy));
+  $hasherList = $this->fetchAll($sql, array($kennelKy, (int) $hare_type, $kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_rank_list.twig',array(
@@ -3070,7 +3070,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, (int) $kennelKy));
+    $cohareList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3128,7 +3128,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
+    $cohareList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3186,7 +3186,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, (int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3243,7 +3243,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, (int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, $kennelKy));
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3279,7 +3279,7 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array($kennelKy));
 
     # Establish and set the return value
     $returnValue = $this->render('name_number_list.twig',array(
@@ -3307,7 +3307,7 @@ public function hashAttendanceByHareHighestAction(Request $request, string $kenn
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array((int) $kennelKy));
+  $hashList = $this->fetchAll($sql,array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_list.twig',array(
@@ -3335,7 +3335,7 @@ public function hashAttendanceByHareHighestAction(Request $request, string $kenn
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array($kennelKy));
 
     # Establish and set the return value
     $returnValue = $this->render('name_number_list.twig',array(
@@ -3362,7 +3362,7 @@ public function hashAttendanceByHareHighestAction(Request $request, string $kenn
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $kennelKy));
+    $hashList = $this->fetchAll($sql,array($kennelKy));
 
     # Establish and set the return value
     $returnValue = $this->render('name_number_list.twig',array(
@@ -3388,7 +3388,7 @@ public function hashAttendanceByHareGrandTotalDistinctHashersAction(Request $req
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array((int) $kennelKy));
+  $hashList = $this->fetchAll($sql,array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('name_number_list.twig',array(
@@ -3431,7 +3431,7 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
     ORDER BY VALUE DESC, NAME";
 
   #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array($hare_id, $hare_id, (int) $kennelKy, $hare_type));
+  $hashList = $this->fetchAll($sql,array($hare_id, $hare_id, $kennelKy, $hare_type));
 
   # Declare the SQL used to retrieve this information
   $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
@@ -3482,15 +3482,15 @@ public function basicStatsAction(Request $request, string $kennel_abbreviation){
   ORDER BY YEAR(EVENT_DATE) DESC";
 
   #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($sql,array( (int) $kennelKy));
+  $yearValues = $this->fetchAll($sql,array($kennelKy));
 
   #Obtain the first hash
   $firstHashSQL = "SELECT * FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
-  $firstHashValue = $this->fetchAssoc($firstHashSQL, array((int) $kennelKy));
+  $firstHashValue = $this->fetchAssoc($firstHashSQL, array($kennelKy));
 
   #Obtain the most recent hash
   $mostRecentHashSQL = "SELECT * FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE DESC LIMIT 1";
-  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array((int) $kennelKy));
+  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('basic_stats.twig',array(
@@ -3538,7 +3538,7 @@ public function analversariesStatsAction(string $kennel_abbreviation) {
   #Determine the number of hashes already held for this kennel
   $sql2 = $this->getHashingCountsQuery(false);
   $sql2 = "$sql2 LIMIT 1";
-  $theCount2 = $this->fetchAssoc($sql2, array((int) $kennelKy, (int) $kennelKy));
+  $theCount2 = $this->fetchAssoc($sql2, array($kennelKy, $kennelKy));
   $theCount2 = $theCount2['VALUE'];
 
   # Establish and set the return value
@@ -3566,7 +3566,7 @@ public function yearByYearStatsAction(Request $request, string $kennel_abbreviat
   ORDER BY YEAR(EVENT_DATE) DESC";
 
   #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($sql,array( (int) $kennelKy));
+  $yearValues = $this->fetchAll($sql,array($kennelKy));
 
   $hareTypes = $this->getHareTypes($kennelKy);
 
@@ -3613,11 +3613,11 @@ public function kennelGeneralInfoStatsAction(Request $request, string $kennel_ab
 
   #Obtain the first hash
   $firstHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
-  $firstHashValue = $this->fetchAssoc($firstHashSQL, array((int) $kennelKy));
+  $firstHashValue = $this->fetchAssoc($firstHashSQL, array($kennelKy));
 
   #Obtain the most recent hash
   $mostRecentHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE DESC LIMIT 1";
-  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array((int) $kennelKy));
+  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('section_kennel_general_info.twig',array(
@@ -3645,7 +3645,7 @@ public function cautionaryStatsAction(Request $request, string $kennel_abbreviat
     WHERE HASHES.KENNEL_KY = ? ORDER BY RAND() LIMIT 5";
 
   #Execute the SQL statement; create an array of rows
-  $hareKeys = $this->fetchAll($hareKeysSQL,array( (int) $kennelKy));
+  $hareKeys = $this->fetchAll($hareKeysSQL,array($kennelKy));
 
   #Establish an array of ridiculous statistics
   $sql = "SELECT VALUE FROM SITE_CONFIG WHERE NAME LIKE 'ridiculous%'";
@@ -3709,7 +3709,7 @@ public function highestAttendedHashesAction(Request $request, string $kennel_abb
   $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
 
   #Execute the SQL statement; create an array of rows
-  $theList = $this->fetchAll($theSql,array((int) $kennelKy));
+  $theList = $this->fetchAll($theSql,array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('hash_events_with_participation_counts.twig',array(
@@ -3737,7 +3737,7 @@ public function lowestAttendedHashesAction(Request $request, string $kennel_abbr
   $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
 
   #Execute the SQL statement; create an array of rows
-  $theList = $this->fetchAll($theSql,array((int) $kennelKy));
+  $theList = $this->fetchAll($theSql,array($kennelKy));
 
   # Establish and set the return value
   $returnValue = $this->render('hash_events_with_participation_counts.twig',array(
@@ -3767,7 +3767,7 @@ public function hashersOfTheYearsAction(Request $request, string $kennel_abbrevi
   ORDER BY YEAR(EVENT_DATE) DESC";
 
   #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($distinctYearsSql,array( (int) $kennelKy));
+  $yearValues = $this->fetchAll($distinctYearsSql,array($kennelKy));
 
   #Define the sql
   $topHashersSql = "SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
@@ -3800,11 +3800,11 @@ public function hashersOfTheYearsAction(Request $request, string $kennel_abbrevi
     #Make a database call passing in this iteration's year value
     $tempResult = $this->fetchAll($topHashersSql,array(
       (int) $tempYear,
-      (int) $kennelKy,
+      $kennelKy,
       (int) $tempYear,
-      (int) $kennelKy,
+      $kennelKy,
       (int) $tempYear,
-      (int) $kennelKy,
+      $kennelKy,
       (int) $tempYear));
 
     #Add the database result set to the array of arrays
@@ -3845,7 +3845,7 @@ public function HaresOfTheYearsAction(Request $request, int $hare_type, string $
   ORDER BY YEAR(EVENT_DATE) DESC";
 
   #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($distinctYearsSql,array( (int) $kennelKy));
+  $yearValues = $this->fetchAll($distinctYearsSql,array($kennelKy));
 
   $hashTypes = $this->getHashTypes($kennelKy, $hare_type);
 
@@ -3893,14 +3893,14 @@ public function HaresOfTheYearsAction(Request $request, int $hare_type, string $
 
     $args = array((int) $tempYear);
     foreach ($hashTypes as &$hashType) {
-      array_push($args, (int) $kennelKy);
+      array_push($args, $kennelKy);
       array_push($args, (int) $tempYear);
       array_push($args, (int) $hashType['HASH_TYPE']);
     }
-    array_push($args, (int) $kennelKy);
+    array_push($args, $kennelKy);
     if($hare_type != 0) array_push($args, $hare_type);
     array_push($args, (int) $tempYear);
-    array_push($args, (int) $kennelKy);
+    array_push($args, $kennelKy);
     array_push($args, (int) $tempYear);
     if($hare_type != 0) array_push($args, $hare_type);
 
@@ -4047,11 +4047,11 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
   # Make a database call to obtain the hasher information
   $numberOfDaysInDateRange = 360000;
   $hasherStatsObject = $this->fetchAssoc($sql, array(
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInDateRange,
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInDateRange,
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInDateRange,
     (int) $hasher_id));
 
@@ -4073,11 +4073,11 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
 
   $numberOfDaysInRecentDateRange = 365;
   $hasherRecentStatsObject = $this->fetchAssoc($sql, array(
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInRecentDateRange,
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInRecentDateRange,
-    (int) $kennelKy,
+    $kennelKy,
     (int) $numberOfDaysInRecentDateRange,
     (int) $hasher_id));
   if(empty($hasherRecentStatsObject)){
@@ -4407,14 +4407,14 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
 
   #Perform the untiltered count
   $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
-    (int) $kennelKy,
+    $kennelKy,
     $minimumHashCount
   )))['THE_COUNT'];
   #$this->app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-    (int) $kennelKy,
+    $kennelKy,
     $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$this->app['monolog']->addDebug("Point D");
@@ -4688,14 +4688,14 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
 
   #Perform the untiltered count
   $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
-    (int) $kennelKy,
+    $kennelKy,
     $minimumHashCount,
   )))['THE_COUNT'];
   #$this->app['monolog']->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-    (int) $kennelKy,
+    $kennelKy,
     $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
   #$this->app['monolog']->addDebug("Point D");
@@ -4731,7 +4731,7 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
   $hasher = $this->fetchAssoc($sql, array((int) $hasher_id));
 
   # Obtain the number of harings
-  $overallHareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, (int) $kennelKy));
+  $overallHareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, $kennelKy));
 
   $hareTypes = $this->getHareTypes($kennelKy);
 
@@ -4739,7 +4739,7 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
 
   foreach ($hareTypes as &$hareType) {
       $total = $this->fetchAssoc(PERSONS_HARING_TYPE_COUNT,
-        array((int) $hasher_id, (int) $kennelKy, (int) $hareType['HARE_TYPE']));
+        array((int) $hasher_id, $kennelKy, (int) $hareType['HARE_TYPE']));
     array_push($hareCounts, array(
       'type' => $hareType['HARE_TYPE_NAME'],
       'total' => $total['THE_COUNT']));
@@ -4756,7 +4756,7 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
     array_push($args, (int) $hareType['HARE_TYPE']);
   }
   array_push($args, (int) $hasher_id);
-  array_push($args, (int) $kennelKy);
+  array_push($args, $kennelKy);
 
   $sqlHaringsByYear .= "
       COUNT(*) AS TOTAL_HARING_COUNT
@@ -4927,7 +4927,7 @@ public function viewOverallHareChartsAction(Request $request, int $hasher_id, st
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $this->fetchAll(HASHER_ALL_HARING_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy));
+  $cityHaringCountList = $this->fetchAll(HASHER_ALL_HARING_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy));
 
   #Obtain largest entry from the list
   $cityHaringsCountMax = 1;
@@ -4937,7 +4937,7 @@ public function viewOverallHareChartsAction(Request $request, int $hasher_id, st
 
   #Obtain the favorite cohare list
   $cohareCountList = $this->fetchAll(OVERALL_COHARE_COUNT_BY_HARE, array(
-    (int) $kennelKy,
+    $kennelKy,
     (int) $hasher_id,
     (int) $hasher_id));
 
@@ -4950,12 +4950,12 @@ public function viewOverallHareChartsAction(Request $request, int $hasher_id, st
   # Obtain their hashes
   $sqlTheHashes = "SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
   WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy));
+  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, $kennelKy));
 
   #Obtain the average lat
   $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
   WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-  $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id, (int) $kennelKy));
+  $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id, $kennelKy));
   $avgLat = $theAverageLatLong['THE_LAT'];
   $avgLng = $theAverageLatLong['THE_LNG'];
 
@@ -4995,7 +4995,7 @@ public function viewHareChartsAction(Request $request, int $hare_type, int $hash
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $this->fetchAll(HASHER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy, (int) $hare_type));
+  $cityHaringCountList = $this->fetchAll(HASHER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy, (int) $hare_type));
 
   #Obtain largest entry from the list
   $cityHaringsCountMax = 1;
@@ -5005,7 +5005,7 @@ public function viewHareChartsAction(Request $request, int $hare_type, int $hash
 
   #Obtain the favorite cohare list
   $cohareCountList = $this->fetchAll(COHARE_COUNT_BY_HARE, array(
-    (int) $kennelKy,
+    $kennelKy,
     (int) $hasher_id,
     (int) $hasher_id,
     (int) $hare_type));
@@ -5028,7 +5028,7 @@ public function viewHareChartsAction(Request $request, int $hare_type, int $hash
        AND HARINGS.HARE_TYPE & ? != 0
        AND LAT IS NOT NULL
        AND LNG IS NOT NULL";
-  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, (int) $kennelKy,
+  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, $kennelKy,
     (int) $hare_type));
 
   #Obtain the average lat
@@ -5043,7 +5043,7 @@ public function viewHareChartsAction(Request $request, int $hare_type, int $hash
        AND LAT IS NOT NULL
        AND LNG IS NOT NULL";
   $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id,
-    (int) $kennelKy, (int) $hare_type));
+    $kennelKy, (int) $hare_type));
   $avgLat = $theAverageLatLong['THE_LAT'];
   $avgLng = $theAverageLatLong['THE_LNG'];
 
@@ -5233,21 +5233,21 @@ private function twoPersonComparisonDataFetch(Request $request, int $kennelKy, i
 
 
   #Obtain the overall hashing count
-  $hashingCountH1 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id1, (int) $kennelKy, (int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
-  $hashingCountH2 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id2, (int) $kennelKy, (int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
+  $hashingCountH1 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id1, $kennelKy, (int) $hasher_id1, $kennelKy)))['THE_COUNT'];
+  $hashingCountH2 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id2, $kennelKy, (int) $hasher_id2, $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hashingCountH1, $hashingCountH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hashing Count");
   $returnValue[] = $statObject;
 
   #Obtain the overall haring count
-  $hareCountOverallH1 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id1, (int) $kennelKy)))['THE_COUNT'];
-  $hareCountOverallH2 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id2, (int) $kennelKy)))['THE_COUNT'];
+  $hareCountOverallH1 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id1, $kennelKy)))['THE_COUNT'];
+  $hareCountOverallH2 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id2, $kennelKy)))['THE_COUNT'];
   $statObject = $this-> createComparisonObjectWithStatsAsInts($hareCountOverallH1, $hareCountOverallH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring Count");
   $returnValue[] = $statObject;
 
   #Obtain the haring counts
   foreach ($hareTypes as &$hareType) {
-    $hareCountH1[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id1, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
-    $hareCountH2[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id2, (int) $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $hareCountH1[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id1, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
+    $hareCountH2[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id2, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
     $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountH1[$hareType['HARE_TYPE']], $hareCountH2[$hareType['HARE_TYPE']], $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring Count");
     $returnValue[] = $statObject;
   }
@@ -5270,8 +5270,8 @@ private function twoPersonComparisonDataFetch(Request $request, int $kennelKy, i
   }
 
   #Obtain the virgin hash dates
-  $virginHashH1 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id1, (int) $kennelKy));
-  $virginHashH2 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id2, (int) $kennelKy));
+  $virginHashH1 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id1, $kennelKy));
+  $virginHashH2 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id2, $kennelKy));
   $statObject = $this->createComparisonObjectWithStatsAsDates(
     is_null($virginHashH1['EVENT_DATE_FORMATTED']) ? "": $virginHashH1['EVENT_DATE_FORMATTED'] ,
     is_null($virginHashH2['EVENT_DATE_FORMATTED']) ? "": $virginHashH2['EVENT_DATE_FORMATTED'] ,
@@ -5284,8 +5284,8 @@ private function twoPersonComparisonDataFetch(Request $request, int $kennelKy, i
   $returnValue[] = $statObject;
 
   #Obtain the latest hash dates
-  $latestHashH1 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id1, (int) $kennelKy));
-  $latestHashH2 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id2, (int) $kennelKy));
+  $latestHashH1 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id1, $kennelKy));
+  $latestHashH2 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id2, $kennelKy));
   $statObject = $this->createComparisonObjectWithStatsAsDates(
     is_null($latestHashH1['EVENT_DATE_FORMATTED']) ? "": $latestHashH1['EVENT_DATE_FORMATTED'] ,
     is_null($latestHashH2['EVENT_DATE_FORMATTED']) ? "": $latestHashH2['EVENT_DATE_FORMATTED'] ,

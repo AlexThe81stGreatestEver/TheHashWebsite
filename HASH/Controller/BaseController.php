@@ -164,19 +164,16 @@ class BaseController {
     return $value;
   }
 
-  protected function obtainKennelKeyFromKennelAbbreviation(
-      string $kennel_abbreviation) {
+  protected function obtainKennelKeyFromKennelAbbreviation(string $kennel_abbreviation) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT KENNEL_KY FROM KENNELS WHERE KENNEL_ABBREVIATION = ?";
 
     #Query the database
-    $kennelValue = $this->fetchAssoc($sql,
-      array((string) $kennel_abbreviation));
+    $kennelValue = $this->fetchAssoc($sql, array($kennel_abbreviation));
 
     if(!$kennelValue) {
-      // don't fail after initial install when kennel abbrev might not yet
-      // be set
+      // don't fail after initial install when kennel abbrev might not yet be set
       if($kennel_abbreviation != "**NEEDS UPDATED**") {
         throw new \Exception("Bad kennel abbreviation");
       }
@@ -184,10 +181,7 @@ class BaseController {
     }
 
     #Obtain the kennel ky from the returned object
-    $returnValue = $kennelValue['KENNEL_KY'];
-
-    #return the return value
-    return $returnValue;
+    return (int) $kennelValue['KENNEL_KY'];
   }
 
   protected function getHareTypes($kennelKy) {

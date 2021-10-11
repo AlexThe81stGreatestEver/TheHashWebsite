@@ -23,7 +23,7 @@ class HashEventController extends BaseController {
     parent::__construct($app);
   }
 
-  protected function getHareTypesForHashType($kennelKy, $hashType) {
+  protected function getHareTypesForHashType(int $kennelKy, int $hashType) {
 
     #Define the SQL to RuntimeException
     $sql = "SELECT HARE_TYPE, HARE_TYPE_NAME, CHART_COLOR
@@ -37,7 +37,7 @@ class HashEventController extends BaseController {
              ORDER BY HARE_TYPES.SEQ";
 
     #Query the database
-    $hareTypes = $this->fetchAll($sql, array((int) $kennelKy, (int) $hashType));
+    $hareTypes = $this->fetchAll($sql, array($kennelKy, $hashType));
 
     #return the return value
     return $hareTypes;
@@ -69,7 +69,7 @@ class HashEventController extends BaseController {
 
     $eventDetails = $this->fetchAssoc($sql, array($hash_id));
 
-    $kennelKy = $eventDetails['KENNEL_KY'];
+    $kennelKy = (int) $eventDetails['KENNEL_KY'];
     $kennel_abbreviation = $eventDetails['KENNEL_ABBREVIATION'];
 
     $returnValue = $this->render('duplicate_hash_form_ajax.twig', array(

@@ -435,7 +435,7 @@ public function addNewEventTag(Request $request){
       ORDER BY HASHES.EVENT_DATE DESC";
 
       #Execute the SQL statement; create an array of rows
-      $hashList = $this->fetchAll($sql,array((int) $event_tag_ky, (int)$kennelKy));
+      $hashList = $this->fetchAll($sql,array((int) $event_tag_ky, $kennelKy));
 
       # Declare the SQL used to retrieve this information
       $sql_for_tag_lookup = "SELECT * FROM HASHES_TAGS WHERE HASHES_TAGS_KY = ?";
@@ -482,7 +482,7 @@ public function addNewEventTag(Request $request){
         WHERE
         HASHES_TAGS_KY = ? AND KENNEL_KY = ?
         AND LAT IS NOT NULL AND LNG IS NOT NULL";
-      $theHashes = $this->fetchAll($sqlTheHashes, array((int) $event_tag_ky, (int) $kennelKy));
+      $theHashes = $this->fetchAll($sqlTheHashes, array((int) $event_tag_ky, $kennelKy));
 
       #Obtain the average lat
       $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM
@@ -491,33 +491,33 @@ public function addNewEventTag(Request $request){
         WHERE
         HASHES_TAGS_KY = ? AND KENNEL_KY = ?
         AND LAT IS NOT NULL AND LNG IS NOT NULL";
-      $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $event_tag_ky, (int) $kennelKy));
+      $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $event_tag_ky, $kennelKy));
       $avgLat = $theAverageLatLong['THE_LAT'];
       $avgLng = $theAverageLatLong['THE_LNG'];
 
       # Obtain the number of hashings
-      #$hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
+      #$hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, $kennelKy));
 
       # Obtain the number of harings
-      #$hareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, (int) $kennelKy,  (int) 0, (int) 1));
+      #$hareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, $kennelKy,  (int) 0, (int) 1));
 
       # Obtain the hashes by month (name)
-      #$theHashesByMonthNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_MONTH_NAME, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByMonthNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_MONTH_NAME, array((int) $hasher_id, $kennelKy));
 
       # Obtain the hashes by quarter
-      #$theHashesByQuarterList = $this->fetchAll(HASHER_HASH_COUNTS_BY_QUARTER, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByQuarterList = $this->fetchAll(HASHER_HASH_COUNTS_BY_QUARTER, array((int) $hasher_id, $kennelKy));
 
       # Obtain the hashes by quarter
-      #$theHashesByStateList = $this->fetchAll(HASHER_HASH_COUNTS_BY_STATE, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByStateList = $this->fetchAll(HASHER_HASH_COUNTS_BY_STATE, array((int) $hasher_id, $kennelKy));
 
       # Obtain the hashes by county
-      #$theHashesByCountyList = $this->fetchAll(HASHER_HASH_COUNTS_BY_COUNTY, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByCountyList = $this->fetchAll(HASHER_HASH_COUNTS_BY_COUNTY, array((int) $hasher_id, $kennelKy));
 
       # Obtain the hashes by postal code
-      #$theHashesByPostalCodeList = $this->fetchAll(HASHER_HASH_COUNTS_BY_POSTAL_CODE, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByPostalCodeList = $this->fetchAll(HASHER_HASH_COUNTS_BY_POSTAL_CODE, array((int) $hasher_id, $kennelKy));
 
       # Obtain the hashes by day name
-      #$theHashesByDayNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_DAYNAME, array((int) $hasher_id, (int) $kennelKy));
+      #$theHashesByDayNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_DAYNAME, array((int) $hasher_id, $kennelKy));
 
       #Obtain the hashes by year
       $sqlHashesByYear = "SELECT TEMP_A.YEAR_A AS THE_VALUE, COUNT(TEMP_B.YEAR_B) AS THE_COUNT
@@ -552,13 +552,13 @@ public function addNewEventTag(Request $request){
         ) TEMP_B ON TEMP_A.YEAR_A = TEMP_B.YEAR_B
         GROUP BY TEMP_A.YEAR_A";
       $hashesByYearList = $this->fetchAll($sqlHashesByYear, array(
-        (int) $kennelKy,
+        $kennelKy,
         (int) $event_tag_ky,
-        (int) $kennelKy,
+        $kennelKy,
         (int) $event_tag_ky,
-        (int) $kennelKy,
+        $kennelKy,
         (int) $event_tag_ky,
-        (int) $kennelKy)
+        $kennelKy)
       );
 
       #Hasher Counts
@@ -572,7 +572,7 @@ public function addNewEventTag(Request $request){
           HASHES_TAGS_KY = ? AND KENNEL_KY = ?
         GROUP BY HASHER_NAME
         ORDER BY THE_COUNT DESC";
-      $hasherCountList = $this->fetchAll($sqlHasherCounts, array((int) $event_tag_ky,(int) $kennelKy));
+      $hasherCountList = $this->fetchAll($sqlHasherCounts, array((int) $event_tag_ky, $kennelKy));
 
       #Hare Counts
       $sqlHareCounts = "SELECT HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
@@ -585,7 +585,7 @@ public function addNewEventTag(Request $request){
           HASHES_TAGS_KY = ? AND KENNEL_KY = ?
         GROUP BY HASHER_NAME
         ORDER BY THE_COUNT DESC";
-      $hareCountList = $this->fetchAll($sqlHareCounts, array((int) $event_tag_ky,(int) $kennelKy));
+      $hareCountList = $this->fetchAll($sqlHareCounts, array((int) $event_tag_ky, $kennelKy));
 
       #Obtain the harings by year
       #$sqlHaringsByYear = "SELECT
@@ -601,10 +601,10 @@ public function addNewEventTag(Request $request){
       #    HASHES.KENNEL_KY = ?
       #GROUP BY YEAR(EVENT_DATE)
       #ORDER BY YEAR(EVENT_DATE)";
-      #$haringsByYearList = $this->fetchAll($sqlHaringsByYear, array((int) $hasher_id,(int) $kennelKy));
+      #$haringsByYearList = $this->fetchAll($sqlHaringsByYear, array((int) $hasher_id, $kennelKy));
 
       #Query the database
-      #$cityHashingsCountList = $this->fetchAll(HASHER_HASH_COUNTS_BY_CITY, array((int) $hasher_id, (int) $kennelKy));
+      #$cityHashingsCountList = $this->fetchAll(HASHER_HASH_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy));
 
       #Obtain largest entry from the list
       #$cityHashingsCountMax = 1;
@@ -613,7 +613,7 @@ public function addNewEventTag(Request $request){
       #}
 
       #Obtain their largest streak
-      #$longestStreakValue = $this->fetchAssoc(THE_LONGEST_STREAKS_FOR_HASHER, array((int) $kennelKy , (int) $hasher_id));
+      #$longestStreakValue = $this->fetchAssoc(THE_LONGEST_STREAKS_FOR_HASHER, array($kennelKy , (int) $hasher_id));
 
       # Establish and set the return value
       $returnValue = $this->render('eventtag_chart_details.twig',array(
