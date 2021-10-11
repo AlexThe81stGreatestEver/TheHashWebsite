@@ -2946,9 +2946,9 @@ function addHasherStatusToQuery(string $query) {
       JOIN HASHERS
         ON HASHERS.HASHER_KY = iq.THE_KEY) iq2
      WHERE 1=1 ".
-     ($_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
-     ($_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
-     ($_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "")."
+     (array_key_exists("active", $_GET) && $_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
+     (array_key_exists("inactive", $_GET) && $_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
+     (array_key_exists("deceased", $_GET) && $_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "")."
      ORDER BY VALUE DESC";
 }
 
