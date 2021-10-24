@@ -189,6 +189,7 @@ function deleteHasher(hasher_key, hash_key){
      success: function(data, textStatus, jqXHR){
          getHashers({{hash_key}});
          displayMessage(data);
+         clearSearch();
      },
      error: function (jqXHR, textStatus, errorThrown)
      {

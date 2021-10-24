@@ -781,6 +781,9 @@ class AdminController extends BaseController
 
     #-------------- Begin: Define the SQL used here   --------------------------
 
+    $hashersAlreadyAddedToEventSql =
+      "SELECT HASHER_KY FROM HASHINGS WHERE HASH_KY = ?";
+
     #Define the sql that performs the filtering
     $sql = "SELECT
         HASHER_NAME AS NAME,
@@ -810,6 +813,8 @@ class AdminController extends BaseController
                AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR))) AS SORTA_RECENT_HASH_COUNT
       FROM HASHERS
       WHERE
+          HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
+        AND
         (
           HASHER_NAME LIKE ? OR
           FIRST_NAME LIKE ? OR
@@ -822,6 +827,8 @@ class AdminController extends BaseController
     $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
     FROM HASHERS
     WHERE
+        HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
+      AND
       (
         HASHER_NAME LIKE ? OR
         FIRST_NAME LIKE ? OR
@@ -829,7 +836,7 @@ class AdminController extends BaseController
         HASHER_ABBREVIATION LIKE ?)";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHERS";
+    $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHERS WHERE HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
@@ -837,17 +844,17 @@ class AdminController extends BaseController
     #Perform the filtered search
     $theResults = $this->fetchAll($sql,array(
       $hashKy, $kennelKy, $hashKy, $hashKy,
-      $hashKy, $kennelKy, $hashKy, $hashKy,
+      $hashKy, $kennelKy, $hashKy, $hashKy, $hashKy,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified));
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array()))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($hashKy)))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($hashKy,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
       (string) $inputSearchValueModified,
