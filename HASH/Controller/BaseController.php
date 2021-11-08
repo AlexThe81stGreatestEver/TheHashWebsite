@@ -299,14 +299,16 @@ class BaseController {
 
    $le1 = "";
    $le2 = "";
+   $le3 = "";
 
    if($includeLatestEvent) {
      $le1 = ", MAX(HASHES.EVENT_DATE) AS LATEST_EVENT";
      $le2 = ", NULL AS LATEST_EVENT";
+     $le3 = ", LATEST_EVENT";
    }
 
    if($this->hasLegacyHashCounts() && $considerLegacyRuns) {
-     return "SELECT THE_KEY, NAME, SUM(VALUE) AS VALUE, KENNEL_KY
+     return "SELECT THE_KEY, NAME, SUM(VALUE) AS VALUE, KENNEL_KY $le3
                FROM (
              SELECT HASHERS.HASHER_KY AS THE_KEY,
                     HASHERS.HASHER_NAME AS NAME,
