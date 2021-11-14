@@ -2915,18 +2915,7 @@ public function percentageHarings(Request $request, string $kennel_abbreviation)
 
 
 function addRankToQuery(string $query, string $selectClause, string $countColumn) {
-  if(defined('MYSQL8') && MYSQL8) {
-    return
-      "SELECT RANK() OVER(ORDER BY $countColumn DESC) AS THE_RANK, $selectClause
-         FROM ($query) AS INNER_QUERY";
-  }
-
-  return
-    "SELECT IF($countColumn=@_last_count,@curRank:=@curRank,@curRank:=@_sequence) AS THE_RANK,
-            @_sequence:=@_sequence+1,@_last_count:=$countColumn,
-            $selectClause
-       FROM ($query) AS INNER_QUERY,
-     (SELECT @curRank:=1, @_sequence:=1, @_last_count:=0) AS VARS";
+  return "SELECT RANK() OVER(ORDER BY $countColumn DESC) AS THE_RANK, $selectClause FROM ($query) AS INNER_QUERY";
 }
 
 function addHasherStatusToQuery(string $query) {
