@@ -334,6 +334,9 @@ $app->post('/admin/event/getHashersForEvent',                      'HashEventCon
 
 $app->get('/admin/listOrphanedHashers',                             'AdminController:listOrphanedHashersAction');
 
+$app->get('/admin/legacy',                                          'AdminController:legacy');
+$app->get('/admin/{kennel_abbreviation}/legacy',                    'AdminController:legacy');
+$app->post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController:legacyUpdate');
 $app->get('/admin/roster',                                          'AdminController:roster');
 $app->get('/admin/{kennel_abbreviation}/roster',                    'AdminController:roster');
 $app->get('/admin/awards/{type}',                                   'AdminController:awards');

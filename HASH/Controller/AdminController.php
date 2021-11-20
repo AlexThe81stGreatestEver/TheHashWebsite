@@ -6,6 +6,7 @@ require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -40,7 +41,8 @@ class AdminController extends BaseController
       return $this->render('admin_landing.twig', array (
         'pageTitle' => 'This is the admin landing screen',
         'subTitle1' => 'This is the admin landing screen',
-        'showAwardsPage' => $this->showAwardsPage()
+        'showAwardsPage' => $this->showAwardsPage(),
+        'hasLegacyHashCounts' => $this->hasLegacyHashCounts()
     ));
   }
 
@@ -953,6 +955,81 @@ class AdminController extends BaseController
     ));
     #Return the return value
     return $returnValue;
+  }
+
+  public function legacy(Request $request, string $kennel_abbreviation = null) {
+
+    if($kennel_abbreviation) {
+      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    } else {
+      $kennels = $this->getKennels();
+
+      if(count($kennels) == 1) {
+        $kennelKy = (int) $kennels[0]['KENNEL_KY'];
+        $kennel_abbreviation = $kennels[0]['KENNEL_ABBREVIATION'];
+      } else {
+        return $this->render('admin_select_kennel.twig',array(
+          'kennels' => $kennels,
+          'pageTracking' => 'AdminSelectKennel',
+          'pageTitle' => 'Select Kennel',
+          'urlSuffix' => 'legacy'));
+      }
+    }
+
+    $sql = "
+      SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME,
+             COALESCE(LEGACY_HASHINGS.LEGACY_HASHINGS_COUNT, 0) AS LEGACY_HASHINGS_COUNT
+        FROM HASHERS
+   LEFT JOIN LEGACY_HASHINGS
+          ON LEGACY_HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+       WHERE LEGACY_HASHINGS.KENNEL_KY IS NULL OR LEGACY_HASHINGS.KENNEL_KY = ?
+       ORDER BY HASHERS.HASHER_NAME";
+
+    #Execute the SQL statement; create an array of rows
+    $theList = $this->fetchAll($sql, array($kennelKy));
+
+    # Establish and set the return value
+    $returnValue = $this->render('admin_legacy_hashings.twig',array(
+      'theList' => $theList,
+      'pageTitle' => 'Legacy Hashing Counts',
+      'tableCaption' => 'Legacy Hashing Counts',
+      'kennelAbbreviation' => $kennel_abbreviation
+    ));
+
+    #Return the return value
+    return $returnValue;
+  }
+
+  private function processLegacyCountChange(int $kennelKy, int $k, int $c) {
+    if($c == 0) {
+      $sql = "DELETE FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
+      $this->app['dbs']['mysql_write']->executeUpdate($sql, array($k, $kennelKy));
+    } else {
+      $sql = "UPDATE LEGACY_HASHINGS SET LEGACY_HASHINGS_COUNT = ? WHERE HASHER_KY = ? AND KENNEL_KY = ?";
+      if($this->app['dbs']['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
+        $sql = "SELECT 'exists' AS x FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
+        if($this->fetchOne($sql, array($k, $kennelKy)) != 'exists') {
+          $sql = "INSERT INTO LEGACY_HASHINGS(LEGACY_HASHINGS_COUNT, HASHER_KY, KENNEL_KY) VALUES(?,?,?)";
+          $this->app['dbs']['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy));
+        }
+      }
+    }
+  }
+
+  public function legacyUpdate(Request $request, string $kennel_abbreviation) {
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $k = $request->request->get('k');
+    $c = $request->request->get('c');
+
+    if(is_array($k)) {
+      for($i=0; $i < count($k); $i++) {
+        $this->processLegacyCountChange($kennelKy, $k[$i], $c[$i]);
+      }
+    } else {
+      $this->processLegacyCountChange($kennelKy, $k, $c);
+    }
+    return new Response("OK", 200, array('Content-Type' => 'text/plain'));
   }
 
   private function getKennels() {
