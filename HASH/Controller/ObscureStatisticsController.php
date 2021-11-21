@@ -1520,6 +1520,18 @@ class ObscureStatisticsController extends BaseController {
         GROUP BY DATE_FORMAT(THE_DATE,'%m')";
       $avgEvtParticipationByMonth = $this->fetchAll($sqlAvgEvtParticipationByMonth, array((int) $kennelKy));
 
+      # Obtain the total event attendance by hasher
+      $sqlTotEvtParticipationByHasher = "SELECT
+            HASHERS.HASHER_NAME AS THE_VALUE,
+            COUNT(*) AS THE_COUNT
+            FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
+            JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+            WHERE KENNEL_KY = ?
+            GROUP BY HASHERS.HASHER_NAME
+            HAVING COUNT(*) > 5
+            ORDER BY 2,1";
+      $totEvtParticipationByHasher = $this->fetchAll($sqlTotEvtParticipationByHasher, array((int) $kennelKy));
+
       # Establish and set the return value
       $returnValue = $this->render('event_participation_charts.twig',array(
         'pageTitle' => 'Event Participation Statistics',
@@ -1529,7 +1541,8 @@ class ObscureStatisticsController extends BaseController {
         'AvgTotal_Evt_Participation_By_Year_List' => $avgTotalEvtParticipationByYear,
         'Avg_Evt_Participation_By_YearMonth_List' => $avgEvtParticipationByYearMonth,
         'Avg_Evt_Participation_By_YearQuarter_List' => $avgEvtParticipationByYearQuarter,
-        'Avg_Evt_Participation_By_Month_List' => $avgEvtParticipationByMonth
+        'Avg_Evt_Participation_By_Month_List' => $avgEvtParticipationByMonth,
+        'Tot_Evt_Participation_By_Hasher_List' => $totEvtParticipationByHasher
       ));
 
       # Return the return value
