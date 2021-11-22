@@ -1531,7 +1531,6 @@ class ObscureStatisticsController extends BaseController {
             JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
             WHERE KENNEL_KY = ?
             GROUP BY HASHERS.HASHER_NAME
-            HAVING COUNT(*) > 5
             ORDER BY 2 DESC, 1) X
          LIMIT 100";
       $totEvtParticipationByHasher = $this->fetchAll($sqlTotEvtParticipationByHasher, array((int) $kennelKy));
