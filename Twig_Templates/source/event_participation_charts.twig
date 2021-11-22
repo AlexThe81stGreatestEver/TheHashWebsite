@@ -260,7 +260,7 @@
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: 'Total Attendance By Hasher',
+                      label: 'Hash Count',
                       data: [
                         {% for individualEntry in Tot_Evt_Participation_By_Hasher_List %}
                           {{individualEntry.THE_COUNT}},
@@ -283,7 +283,7 @@
                   },
                   title: {
                     display: true,
-                    text: 'Total Event Attendance By Hasher'
+                    text: 'Total Event Attendance By Hashers (Top 100)'
                   }
               }
           });

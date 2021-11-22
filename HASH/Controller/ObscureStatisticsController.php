@@ -1521,7 +1521,10 @@ class ObscureStatisticsController extends BaseController {
       $avgEvtParticipationByMonth = $this->fetchAll($sqlAvgEvtParticipationByMonth, array((int) $kennelKy));
 
       # Obtain the total event attendance by hasher
-      $sqlTotEvtParticipationByHasher = "SELECT
+      $sqlTotEvtParticipationByHasher =
+        "SELECT *
+          FROM (
+         SELECT
             HASHERS.HASHER_NAME AS THE_VALUE,
             COUNT(*) AS THE_COUNT
             FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
@@ -1529,7 +1532,8 @@ class ObscureStatisticsController extends BaseController {
             WHERE KENNEL_KY = ?
             GROUP BY HASHERS.HASHER_NAME
             HAVING COUNT(*) > 5
-            ORDER BY 2,1";
+            ORDER BY 2 DESC, 1) X
+         LIMIT 100";
       $totEvtParticipationByHasher = $this->fetchAll($sqlTotEvtParticipationByHasher, array((int) $kennelKy));
 
       # Establish and set the return value
