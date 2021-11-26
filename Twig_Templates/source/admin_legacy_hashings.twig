@@ -1,0 +1,79 @@
+{% extends "admin_base.twig" %}
+
+{% block template %}
+
+<script>
+function submitChanges() {
+  var i=0;
+  var u=[];
+  var validationError = false;
+
+  $("input").css('background-color', null);
+
+  while(true) {
+    i=i+1;
+    var o=$("#o"+i);
+    if(o.length === 0) break;
+    var c=$("#c"+i);
+    var cv=c.prop("value").trim();
+    if(!/^[0-9]+$/.test(cv)) {
+      validationError = true;
+      c.css('background-color', 'yellow');
+    }
+    if(o.prop("value") !== cv) {
+      u.push("k[]="+$("#k"+i).prop("value"));
+      u.push("c[]="+cv);
+    }
+  }
+
+  if(validationError) return;
+
+  var data = u.join("&");
+
+  if(data === "") {
+    alert("No changes to submit.");
+    return;
+  }
+
+  $.ajax({
+         url : "/admin/{{kennelAbbreviation}}/legacyUpdate",
+         type: "POST",
+         data : data,
+         dataType : 'text',
+         success: function(data, textStatus, jqXHR){
+           alert(data);
+         },
+         error: function (jqXHR, textStatus, errorThrown){
+           alert("failure");
+         }
+     });
+}
+</script>
+
+<form>
+<table class="table table-condensed table-hover" id="the_main_table">
+  <caption>{{tableCaption}}</caption>
+  <thead>
+    <tr>
+      <th>Hasher Name</th>
+      <td>Legacy Hash Count</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% set i = 0 %}
+    {% for hasher in theList %}
+      {% set i = i + 1 %}
+      <tr>
+        <input type="hidden" id="k{{i}}" value="{{ hasher.HASHER_KY }}"></input>
+        <input type="hidden" id="o{{i}}" value="{{ hasher.LEGACY_HASHINGS_COUNT }}"></input>
+        <td>{{ hasher.HASHER_NAME }}</td>
+        <td><input size="3" type="text" id="c{{i}}" value="{{ hasher.LEGACY_HASHINGS_COUNT }}"></input></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<input type="button" value="Submit Changes" onClick="submitChanges()"></input>
+</form>
+
+{% endblock %}
