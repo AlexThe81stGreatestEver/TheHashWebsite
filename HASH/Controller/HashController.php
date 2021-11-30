@@ -184,7 +184,7 @@ class HashController extends BaseController
 
     $currentStreakers = $this->fetchAll(STREAKERS_LIST." LIMIT 10", array($lastEvent, $kennelKy));
 
-    $tableColors = array( "#d1f2eb", "#d6eaf8", "#d7bde2", "#eaeded", "#fad7a0", "#fdedec" );
+    $tableColors = array( "#d1f2eb", "#d7bde2", "#eaeded", "#fad7a0", "#fdedec" );
 
     #Set the return value
     $returnValue = $this->render('slash2.twig',array(
