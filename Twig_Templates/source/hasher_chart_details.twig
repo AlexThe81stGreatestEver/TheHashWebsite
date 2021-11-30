@@ -243,8 +243,14 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
               align: 'center'
           },
       },
+      tooltip: {
+          formatter: '{b}'
+      },
       series: [{
           type: 'treemap',
+          nodeClick: false,
+          roam: false,
+          breadcrumb: { show: false },
           data: [
             {% for individualValue in hashes_by_county_list %}
               {
@@ -282,8 +288,14 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
               align: 'center'
           },
       },
+      tooltip: {
+	  formatter: '{b}'
+      },
       series: [{
           type: 'treemap',
+          nodeClick: false,
+          roam: false,
+          breadcrumb: { show: false },
           data: [
             {% for individualValue in hashes_by_postal_code_list %}
               {
