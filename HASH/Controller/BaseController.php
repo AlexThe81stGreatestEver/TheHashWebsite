@@ -78,17 +78,20 @@ class BaseController {
   // Add common page arguments, then dispatch to twig to render page
   protected function render(string $template, array $args) {
 
-    $google_analytics_id = $this->getGoogleAnalyticsId();
-    $site_banner = $this->getSiteBanner();
-
-    $args['google_analytics_id'] = $google_analytics_id;
-    $args['site_banner'] = $site_banner;
+    $args['google_analytics_id'] = $this->getGoogleAnalyticsId();
+    $args['site_banner'] = $this->getSiteBanner();
+    $args['use_consolidated_switch_kennel_page'] = $this->useConsolidatedSwitchKennelPage();
 
     return $this->app['twig']->render($template, $args);
   }
 
   protected function hasLegacyHashCounts() {
     $sql = "SELECT value FROM SITE_CONFIG WHERE name='has_legacy_hash_counts'";
+    return $this->fetchOne($sql) == "true";
+  }
+
+  private function useConsolidatedSwitchKennelPage() {
+    $sql = "SELECT value FROM SITE_CONFIG WHERE name='use_consolidated_switch_kennel_page'";
     return $this->fetchOne($sql) == "true";
   }
 

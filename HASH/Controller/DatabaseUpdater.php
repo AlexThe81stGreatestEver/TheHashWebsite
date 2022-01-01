@@ -14,7 +14,7 @@ class DatabaseUpdater {
 
     $databaseVersion = $this->getDatabaseVersion();
 
-    $currentDatabaseVersion = 22;
+    $currentDatabaseVersion = 23;
 
     if($databaseVersion != $currentDatabaseVersion) {
 
@@ -117,6 +117,9 @@ class DatabaseUpdater {
             case 21:
               $this->addNumDaysBeforeConsideredInactiveToSiteConfig();
               $this->setDatabaseVersion(22);
+            case 22:
+              $this->addConsolidatedSwitchKennelPreferenceToSiteConfig();
+              $this->setDatabaseVersion(23);
             default:
               // Overkill, but guarantees the view is up to date with the
               // current database structure.
@@ -210,6 +213,10 @@ class DatabaseUpdater {
 
   private function addDefaultAwardEventHorizonToSiteConfig() {
     $this->insertIntoSiteConfig('default_award_event_horizon', "5", 'Default number of events before being due an award that a hasher is required to have before they will appear on the pending awards page.');
+  }
+
+  private function addConsolidatedSwitchKennelPreferenceToSiteConfig() {
+    $this->insertIntoSiteConfig('use_consolidated_switch_kennel_page', "false", 'If true, use the consolidated switch kennel page at hashstats.org');
   }
 
   private function addAwardsOptionToSiteConfig() {

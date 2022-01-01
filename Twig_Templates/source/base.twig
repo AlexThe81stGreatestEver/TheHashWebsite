@@ -91,7 +91,11 @@
               <li><a href="/{{kennel_abbreviation}}/year_by_year/stats">Yearly Breakdowns</a></li>
               <li><a href="/{{kennel_abbreviation}}/kennel/records">Kennel Records</a></li>
               <li><a href="/{{kennel_abbreviation}}/kennel/general_info">Kennel General Info</a></li>
-              <li><a href="/{{kennel_abbreviation}}/miscellaneous/stats">Switch Kennel</a></li>
+              {% if use_consolidated_switch_kennel_page %}
+                <li><a href="https://hashstats.org/switch_kennel.html">Switch Kennel</a></li>
+              {% else %}
+                <li><a href="/{{kennel_abbreviation}}/miscellaneous/stats">Switch Kennel</a></li>
+              {% endif %}
               <li><a href="/admin/hello">Admin</a></li>
 
             </ul>
