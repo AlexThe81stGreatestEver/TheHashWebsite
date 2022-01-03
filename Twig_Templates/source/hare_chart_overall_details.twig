@@ -573,7 +573,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
               list: [
                 {% for item in cohare_count_list %}
                     [
-                      "{% autoescape false %}{{item.THE_VALUE[:18]}}{% endautoescape %}"
+                      "{% autoescape 'js' %}{{item.THE_VALUE[:18]}}{% endautoescape %}"
                     ,"{{min(80,item.THE_COUNT * 5)}}"],
                 {% endfor %}
               ],
