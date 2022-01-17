@@ -106,7 +106,7 @@ $app->register(new Silex\Provider\SessionServiceProvider());
 
 # Begin: Set the security firewalls --------------------------------------------
 
-$app['debug'] = true;
+$app['debug'] = false;
 
 
 $app->register(new Silex\Provider\SecurityServiceProvider(), array(
