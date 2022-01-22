@@ -10,7 +10,7 @@
     {% for item in top_alltime_hashers %}
       <item>
         <title>Top 10 Hasher: {{item.NAME}}, {{item.VALUE}} runs</title>
-        <link>{{url_prefix}}/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}</link>
+        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
         <description>Detailed Hasher Stats</description>
       </item>
     {% endfor %}
