@@ -7,6 +7,7 @@ require_once "BaseController.php";
 use Silex\Application;
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Datetime;
 
@@ -71,12 +72,34 @@ class HashController extends BaseController
   }
 
   #Define the action
+  public function rssAction(Request $request, string $kennel_abbreviation) {
+    $args = $this->getSlashTwigArgs($kennel_abbreviation);
+
+    $prefix = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?
+      "https" : "http") . "://$_SERVER[HTTP_HOST]";
+
+    $args['url_prefix'] = $prefix . "/" . $kennel_abbreviation;
+
+    $args['url'] = $prefix . $_SERVER[REQUEST_URI];
+
+    $response = new Response($this->render('rss.twig', $args));
+
+    $response->headers->set('Content-Type', 'application/rss+xml');
+
+    return $response;
+  }
+
   public function slashAction(Request $request) {
     return $this->slashKennelAction2($request,$this->getDefaultKennel($this->app));
   }
 
   #Define the action
-  public function slashKennelAction2(Request $request, string $kennel_abbreviation){
+  public function slashKennelAction2(Request $request, string $kennel_abbreviation) {
+    return $this->render('slash2.twig',
+      $this->getSlashTwigArgs($kennel_abbreviation));
+  }
+
+  private function getSlashTwigArgs(string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -187,7 +210,7 @@ class HashController extends BaseController
     $tableColors = array( "#d1f2eb", "#d7bde2", "#eaeded", "#fad7a0", "#fdedec" );
 
     #Set the return value
-    $returnValue = $this->render('slash2.twig',array(
+    return array(
       'pageTitle' => $pageTitle,
       'pageCaption' => "Provide page caption",
       'subTitle1' => 'Standard Statistics',
@@ -219,12 +242,7 @@ class HashController extends BaseController
         count($hareTypes) > 1 ? "Top 10 Overall Hares" : "Top 10 Hares",
       'overall_haring_counts_title' =>
         count($hareTypes) > 1 ? "Overall Haring Counts" : "Haring Counts",
-      'table_colors' => $tableColors
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'table_colors' => $tableColors);
   }
 
   public function listStreakersByHashAction(Request $request, string $kennel_abbreviation, int $hash_id){
