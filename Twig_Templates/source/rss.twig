@@ -3,9 +3,11 @@
 <rss version="2.0">
 
 <channel>
+
   <title>Hash Stats</title>
   <link>{{ url }}</link>
   <description>On on</description>
+
   {% if top_alltime_hashers|length == 10 %}
     {% for item in top_alltime_hashers %}
       <item>
@@ -15,6 +17,20 @@
       </item>
     {% endfor %}
   {% endif %}
+
+  {% for top_hare_data in top_hares %}
+    {% set hares = top_hare_data.data %}
+    {% if hares|length == 10 %}
+      {% for item in hares %}
+        <item>
+          <title>Top 10 {{ top_hare_data.label }} Hare: {{item.NAME}}, {{item.VALUE}} harings</title>
+          <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
+          <description>Detailed Hasher Stats</description>
+        </item>
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+
 </channel>
 
 </rss>
