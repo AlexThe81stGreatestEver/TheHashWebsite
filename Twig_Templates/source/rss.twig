@@ -8,82 +8,117 @@
   <link>{{ url }}</link>
   <description>On on</description>
 
-  {% for item in top_alltime_hashers %}
-    <item>
-      <title>Top 10 Hasher: {{item.NAME}}, {{item.VALUE}} runs</title>
-      <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-      <description>Detailed Hasher Stats</description>
-    </item>
-  {% endfor %}
-
-  {# uncomment for top 10 hares by category
-  {% for top_hare_data in top_hares %}
-    {% set hares = top_hare_data.data %}
-    {% for item in hares %}
-      <item>
-        <title>Top 10 {{ top_hare_data.label }} Hare: {{item.NAME}}, {{item.VALUE}} harings</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
+  {% if top_alltime_hashers|length > 0 %}
+  <item>
+    <title>Top Hashers:
+    {% set out = "" %}
+    {% for item in top_alltime_hashers %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
     {% endfor %}
-  {% endfor %}
-  #}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/hashingCounts</link>
+    <description>Hasher Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_overall_hares %}
-      <item>
-        <title>Top 10 Hare: {{item.NAME}}, {{item.VALUE}} harings</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_overall_hares|length > 0 %}
+  <item>
+    <title>Top Hares:
+    {% set out = "" %}
+    {% for item in top_overall_hares %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/haringCounts</link>
+    <description>Haring Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_hashers_this_year %}
-      <item>
-        <title>Top 10 Hasher This Year: {{item.NAME}}, {{item.VALUE}} runs</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_hashers_this_year|length > 0 %}
+  <item>
+    <title>Top Hashers This Year:
+    {% set out = "" %}
+    {% for item in top_hashers_this_year %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/hashingCounts</link>
+    <description>Hasher Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_hashers_last_year %}
-      <item>
-        <title>Top 10 Hasher Last Year: {{item.NAME}}, {{item.VALUE}} runs</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_hashers_last_year|length > 0 %}
+  <item>
+    <title>Top Hashers Last Year:
+    {% set out = "" %}
+    {% for item in top_hashers_last_year %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/hashingCounts</link>
+    <description>Hasher Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_hares_this_year %}
-      <item>
-        <title>Top 10 Hare This Year: {{item.NAME}}, {{item.VALUE}} harings</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_hares_this_year|length > 0 %}
+  <item>
+    <title>Top Hares This Year:
+    {% set out = "" %}
+    {% for item in top_hares_this_year %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/haringCounts</link>
+    <description>Hasher Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_hares_last_year %}
-      <item>
-        <title>Top 10 Hare Last Year: {{item.NAME}}, {{item.VALUE}} harings</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_hares_last_year|length > 0 %}
+  <item>
+    <title>Top Hares Last Year:
+    {% set out = "" %}
+    {% for item in top_hares_last_year %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/haringCounts</link>
+    <description>Hasher Counts</description>
+  </item>
+  {% endif %}
 
-  {% for item in top_streakers %}
-      <item>
-        <title>Top 10 Streaker: {{item.NAME}}, {{item.VALUE}} consecutive runs</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_KEY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if top_streakers|length > 0 %}
+  <item>
+    <title>Top Streakers:
+    {% set out = "" %}
+    {% for item in top_streakers %}
+      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/longestStreaks</link>
+    <description>Longest Streaks</description>
+  </item>
+  {% endif %}
 
-  {% for item in current_streakers %}
-      <item>
-        <title>Current Streaker: {{item.THE_HASHER_NAME}}, {{item.THE_STREAK_IN_EVENTS}} consecutive runs</title>
-        <link>{{url_prefix}}/hashers/{{item.THE_HASHER_KY}}</link>
-        <description>Detailed Hasher Stats</description>
-      </item>
-  {% endfor %}
+  {% if current_streakers|length > 0 %}
+  <item>
+    <title>Current Streakers:
+    {% set out = "" %}
+    {% for item in current_streakers %}
+      {% set out = out ~ item.THE_HASHER_NAME ~ "(" ~ item.THE_STREAK_IN_EVENTS ~ "), " %}
+    {% endfor %}
+    {{ out|trim(', ') }}
+    </title>
+    <link>{{url_prefix}}/listStreakers/byhash/{{lastEvent}}</link>
+    <description>Current Streakers</description>
+  </item>
+  {% endif %}
 
 </channel>
 
