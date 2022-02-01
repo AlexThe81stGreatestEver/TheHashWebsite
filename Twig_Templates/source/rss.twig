@@ -13,7 +13,7 @@
     <title>Top Hashers:
     {% set out = "" %}
     {% for item in top_alltime_hashers %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -27,7 +27,7 @@
     <title>Top Hares:
     {% set out = "" %}
     {% for item in top_overall_hares %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -41,7 +41,7 @@
     <title>Top Hashers This Year:
     {% set out = "" %}
     {% for item in top_hashers_this_year %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -55,7 +55,7 @@
     <title>Top Hashers Last Year:
     {% set out = "" %}
     {% for item in top_hashers_last_year %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -69,7 +69,7 @@
     <title>Top Hares This Year:
     {% set out = "" %}
     {% for item in top_hares_this_year %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -83,7 +83,7 @@
     <title>Top Hares Last Year:
     {% set out = "" %}
     {% for item in top_hares_last_year %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -97,7 +97,7 @@
     <title>Top Streakers:
     {% set out = "" %}
     {% for item in top_streakers %}
-      {% set out = out ~ item.NAME ~ "(" ~ item.VALUE ~ "), " %}
+      {% set out = out ~ item.NAME ~ " (" ~ item.VALUE ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
@@ -111,7 +111,7 @@
     <title>Current Streakers:
     {% set out = "" %}
     {% for item in current_streakers %}
-      {% set out = out ~ item.THE_HASHER_NAME ~ "(" ~ item.THE_STREAK_IN_EVENTS ~ "), " %}
+      {% set out = out ~ item.THE_HASHER_NAME ~ " (" ~ item.THE_STREAK_IN_EVENTS ~ "), " %}
     {% endfor %}
     {{ out|trim(', ') }}
     </title>
