@@ -3927,7 +3927,7 @@ public function HaresOfTheYearsAction(Request $request, int $hare_type, string $
 }
 
 
-public function getHasherAnalversariesAction(Request $request, int $hasher_id, string $kennel_abbreviation){
+public function getHasherAnalversariesAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -3975,9 +3975,121 @@ public function getHasherAnalversariesAction(Request $request, int $hasher_id, s
     'pageTitle' => $pageTitle,
     'pageSubTitle' => '',
     'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'participant_column_header' => 'Hasher',
-    'overall_boolean' => 'FALSE'
+    'kennel_abbreviation' => $kennel_abbreviation
+  ));
+
+  #Return the return value
+  return $returnValue;
+}
+
+
+public function getHareAnalversariesAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
+
+  #Obtain the kennel key
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+  $sql_hasher_name = "
+      SELECT HASHER_NAME
+        FROM HASHERS
+       WHERE HASHERS.HASHER_KY = ?";
+
+  $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
+
+  # Define the SQL to retrieve all of their hashes
+  $sql_all_hashes_for_this_hasher = "
+      SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
+        FROM HARINGS
+        JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HASHERS.HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE ASC";
+
+  #Retrieve all of this hasher's hashes
+  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array($hasher_id, $kennelKy));
+
+  # Add a count into their list of hashes
+  $destinationArray = array();
+  $tempCounter = 1;
+  foreach ($theInitialListOfHashes as &$individualHash) {
+    $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
+    if(
+      ($tempCounter % 5 == 0) ||
+      ($tempCounter % 69 == 0) ||
+      ($tempCounter % 666 == 0) ||
+      (($tempCounter - 69) % 100 == 0)
+      ){
+      array_push($destinationArray,$individualHash);
+    }
+    $tempCounter ++;
+  }
+
+  # Establish and set the return value
+  $pageTitle = "Haring Analversaries: $hasherName";
+  $returnValue = $this->render('hasher_analversary_list.twig',array(
+    'theList' => $destinationArray,
+    'pageTitle' => $pageTitle,
+    'pageSubTitle' => '',
+    'tableCaption' => '',
+    'kennel_abbreviation' => $kennel_abbreviation
+  ));
+
+  #Return the return value
+  return $returnValue;
+}
+
+public function getHareAnalversariesByHareTypeAction(Request $request, int $hare_type, int $hasher_id, string $kennel_abbreviation) {
+
+  #Obtain the kennel key
+  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+  $hareTypeName = $this->getHareTypeName($hare_type);
+
+  $sql_hasher_name = "
+      SELECT HASHER_NAME
+        FROM HASHERS
+       WHERE HASHERS.HASHER_KY = ?";
+
+  $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
+
+  # Define the SQL to retrieve all of their hashes
+  $sql_all_hashes_for_this_hasher = "
+      SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
+        FROM HARINGS
+        JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HASHERS.HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+         AND HARINGS.HARE_TYPE & ? = ?
+       ORDER BY HASHES.EVENT_DATE ASC";
+
+  #Retrieve all of this hasher's hashes
+  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array($hasher_id, $kennelKy, $hare_type, $hare_type));
+
+  # Add a count into their list of hashes
+  $destinationArray = array();
+  $tempCounter = 1;
+  foreach ($theInitialListOfHashes as &$individualHash) {
+    $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
+    if(
+      ($tempCounter % 5 == 0) ||
+      ($tempCounter % 69 == 0) ||
+      ($tempCounter % 666 == 0) ||
+      (($tempCounter - 69) % 100 == 0)
+      ){
+      array_push($destinationArray,$individualHash);
+    }
+    $tempCounter ++;
+  }
+
+  # Establish and set the return value
+  $pageTitle = $hareTypeName . " Haring Analversaries: $hasherName";
+  $returnValue = $this->render('hasher_analversary_list.twig',array(
+    'theList' => $destinationArray,
+    'pageTitle' => $pageTitle,
+    'pageSubTitle' => '',
+    'tableCaption' => '',
+    'kennel_abbreviation' => $kennel_abbreviation
   ));
 
   #Return the return value
