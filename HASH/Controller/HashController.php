@@ -80,7 +80,7 @@ class HashController extends BaseController
 
     $args['url_prefix'] = $prefix . "/" . $kennel_abbreviation;
 
-    $args['url'] = $prefix . $_SERVER[REQUEST_URI];
+    $args['url'] = $prefix . $_SERVER['REQUEST_URI'];
 
     $response = new Response($this->render('rss.twig', $args));
 
