@@ -1872,6 +1872,8 @@ class HashController extends BaseController
         (int) $hash_id, $kennelKy, (int) $hash_id,
         (int) $hash_id, $kennelKy, (int) $hash_id));
 
+      $centurionAlertList = $this->fetchAll($this->getPendingCenturionsForEvent(), array((int) $hash_id, $kennelKy, (int) $hash_id));
+
       # Declare the SQL used to retrieve this information
       $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
 
@@ -2011,6 +2013,7 @@ class HashController extends BaseController
         'pageTitle' => 'Consolidated Analversaries',
         'pageSubTitle' => $pageSubtitle,
         'houndAnalversaryList' => $houndAnalversaryList,
+        'centurionAlertList' => $centurionAlertList,
         'consolidatedHareAnalversaryList' => $consolidatedHareAnalversaryList,
         'kennel_abbreviation' => $kennel_abbreviation,
         'geolocationHoundAnalversaryList' => $geolocationHoundAnalversaryList,

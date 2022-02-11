@@ -426,6 +426,22 @@ class BaseController {
         ORDER BY ((HARING_COUNT_TEMP_TABLE.HARING_COUNT / HASH_COUNT_TEMP_TABLE.HASH_COUNT) * 100) DESC";
   }
 
+  protected function getPendingCenturionsForEvent() {
+    return "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+                   (COUNT(*)) + ".$this->getLegacyHashingsCountSubquery().
+                   " AS THE_COUNT,
+                   MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+              FROM ((HASHERS
+              JOIN HASHINGS ON ((HASHERS.HASHER_KY = HASHINGS.HASHER_KY)))
+              JOIN HASHES ON ((HASHINGS.HASH_KY = HASHES.HASH_KY)))
+             WHERE HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASHES.HASH_KY = ?) AND
+                   HASHES.KENNEL_KY = ?
+             GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY, HASHES.KENNEL_KY
+            HAVING (((THE_COUNT + 1) % 100) = 0)
+	       AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASHES.HASH_KY = ?)
+             ORDER BY THE_COUNT DESC";
+  }
+
   protected function getHoundAnalversariesForEvent() {
     return "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
                    (COUNT(*)) + ".$this->getLegacyHashingsCountSubquery().
