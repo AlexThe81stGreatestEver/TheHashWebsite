@@ -89,6 +89,37 @@ class HashController extends BaseController
     return $response;
   }
 
+  #Define the action
+  public function eventsRssAction(Request $request, string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $prefix = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?
+      "https" : "http") . "://$_SERVER[HTTP_HOST]";
+
+    $args['url_prefix'] = $prefix . "/" . $kennel_abbreviation;
+
+    $args['url'] = $prefix . $_SERVER['REQUEST_URI'];
+
+    $hashesQuery = "
+      SELECT CONCAT(SPECIAL_EVENT_DESCRIPTION, ' on ',
+             date_format(EVENT_DATE, '%M %D'), ' was attended by ',
+             (SELECT COUNT(*) FROM HASHINGS WHERE HASHINGS.HASH_KY = HASHES.HASH_KY), ' hounds', ' and had ',
+             (SELECT COUNT(*) FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY), ' hare',
+             CASE WHEN (SELECT COUNT(*) FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY) != 1 THEN 's' ELSE '' END) AS TEXT
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       ORDER BY EVENT_DATE DESC LIMIT 10";
+
+    $args['hashes'] = $this->fetchAll($hashesQuery, array($kennelKy));
+
+    $response = new Response($this->render('events_rss.twig', $args));
+
+    $response->headers->set('Content-Type', 'application/rss+xml');
+
+    return $response;
+  }
+
   public function slashAction(Request $request) {
     return $this->slashKennelAction2($request,$this->getDefaultKennel($this->app));
   }

@@ -238,6 +238,7 @@ if (!$schema->tablesExist('USERS')) {
 # Register the URls
 $app->get('/',                                                    'HashController:slashAction')->bind('homepage');
 $app->get('/{kennel_abbreviation}/rss',                           'HashController:rssAction');
+$app->get('/{kennel_abbreviation}/events/rss',                    'HashController:eventsRssAction');
 
 #Admin section logon
 $app->get('/logonscreen',                                         'HashController:logonScreenAction');
