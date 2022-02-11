@@ -363,7 +363,6 @@ $app->get('/admin/eventBudget/{hash_id}','AdminController:eventBudgetPreAction')
 $app->get('/{kennel_abbreviation}/mia',                                       'HashController:miaPreActionJson');
 $app->post('/{kennel_abbreviation}/mia',                                       'HashController:miaPostActionJson');
 
-$app->get('/{kennel_abbreviation}/listhashers2',                                       'HashController:listHashersPreActionJson');
 $app->post('/{kennel_abbreviation}/listhashers2',                                       'HashController:getHasherListJson');
 
 $app->get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController:listVirginHaringsPreActionJson');

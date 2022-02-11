@@ -275,25 +275,6 @@ class HashController extends BaseController
 
   }
 
-
-  #Define the action
-  public function listHashersPreActionJson(Request $request, string $kennel_abbreviation){
-
-    # Establish and set the return value
-    $returnValue = $this->render('hasher_list_json.twig',array(
-      'pageTitle' => 'The List of Hashers',
-      'pageSubTitle' => '',
-      #'theList' => $hasherList,
-      'kennel_abbreviation' => $kennel_abbreviation,
-      'pageCaption' => "",
-      'tableCaption' => ""
-    ));
-
-    #Return the return value
-    return $returnValue;
-
-  }
-
   #Define the action
   public function listVirginHaringsPreActionJson(Request $request, int $hare_type, string $kennel_abbreviation){
 
