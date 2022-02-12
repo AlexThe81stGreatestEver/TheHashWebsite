@@ -2,6 +2,13 @@
 
 {% block template %}
 
+<style type="text/css">
+  .form-button {
+    margin-top: 0px;
+    margin-bottom: 6px;
+  }
+</style>
+
 <link rel = "stylesheet" href="/node_modules/jquery-ui/themes/base/all.css">
 <link rel = "stylesheet" href="/node_modules/jquery-timepicker/jquery.timepicker.css">
 <script type = "text/javascript" src = "/node_modules/jquery-ui/ui/widgets/datepicker.js"></script>
@@ -95,9 +102,47 @@ function formSubmitAction(){
   return false;
 }
 
+function setDateToday() {
+  $("#eventDate").val(new Date().toISOString().slice(0,10));
+}
 
+function setDateTomorrow() {
+  var d = new Date();
+  d.setTime(d.getTime() + 1000 * 60 * 60 * 24);
+  $("#eventDate").val(d.toISOString().slice(0,10));
+}
+
+function setDateDay(day) {
+  var d = new Date();
+  while(d.getDay() != day) {
+    d.setTime(d.getTime() + 1000 * 60 * 60 * 24);
+  }
+  $("#eventDate").val(d.toISOString().slice(0,10));
+}
+
+function setTime(time) {
+  $("#eventTime").val(time);
+}
 
 $(function(){
+
+  $("#eventDate").datepicker({
+    showOn: "focus",
+    dateFormat: "yy-mm-dd"
+  });
+
+  $('#eventTime').timepicker({
+    timeFormat:'HH:mm:ss',
+    interval: 30,
+    minTime:'10:00am',
+    maxTime:'07:00pm',
+    defaultTime: '15:00',
+    startTime: '10:00am',
+    dynamic: false,
+    dropdown: true,
+    scrollbar: true
+  })
+
   var validator = $("#the_form").validate({
     rules:{
       hashEventNumber: {
@@ -202,29 +247,21 @@ $(function(){
     <label for"eventDate" class="col-sm-2 control-label">Event Date</label>
     <div class="col-sm-4">
       <input type="text" class="form-control" id="eventDate" name="eventDate">
-      <script>
-        $("#eventDate").datepicker({
-          showOn: "focus",
-          dateFormat: "yy-mm-dd"
-        });
-      </script>
+      <br>
+      <input type="button" class="form-button" value="Today" onClick="setDateToday()">
+      <input type="button" class="form-button" value="Tomorrow" onClick="setDateTomorrow()">
+      <input type="button" class="form-button" value="Thursday" onClick="setDateDay(4)">
+      <input type="button" class="form-button" value="Friday" onClick="setDateDay(5)">
+      <input type="button" class="form-button" value="Saturday" onClick="setDateDay(6)">
+      <input type="button" class="form-button" value="Sunday" onClick="setDateDay(0)">
     </div>
     <label for"eventTime" class="col-sm-2 control-label">Event Time</label>
     <div class="col-sm-4">
       <input type="text" class="form-control" id="eventTime" name="eventTime">
-      <script>
-        $('#eventTime').timepicker({
-          timeFormat:'HH:mm:ss',
-          interval: 30,
-          minTime:'10:00am',
-          maxTime:'07:00pm',
-          defaultTime: '15:00',
-          startTime: '10:00am',
-          dynamic: false,
-          dropdown: true,
-          scrollbar: true
-        })
-      </script>
+      <br>
+      {% for time in times %}
+        <input type="button" class="form-button" value="{{time.event_time}}" onClick="setTime('{{time.event_time}}')">
+      {% endfor %}
     </div>
   </div>
 

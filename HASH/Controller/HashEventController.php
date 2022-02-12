@@ -90,8 +90,25 @@ class HashEventController extends BaseController {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
+    $timesQuery = "
+      SELECT *
+        FROM (
+              SELECT event_time
+                FROM (
+                      SELECT date_format(EVENT_DATE, '%H:%i:%S') AS event_time, COUNT(*) as counts
+                        FROM `HASHES_TABLE`
+                       WHERE KENNEL_KY = ?
+                       GROUP BY date_format(EVENT_DATE, '%H:%i:%S')
+                     ) AS TIMES_AND_COUNTS
+               ORDER BY counts DESC
+               LIMIT 3) AS results
+       ORDER BY 1";
+
+    $times = $this->fetchAll($timesQuery, array($kennelKy));
+
     $returnValue = $this->render('new_hash_form_ajax.twig', array(
       'pageTitle' => 'Create an Event!',
+      'times' => $times,
       'pageHeader' => 'Page Header',
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
