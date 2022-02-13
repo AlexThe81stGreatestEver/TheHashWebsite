@@ -530,6 +530,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           <div class="col-sm-6">
             <div id="chartBB"></div>
             <script>
+              var chartType = "pie";
               var chartBB = c3.generate({
                   bindto: '#chartBB',
                   data: {
@@ -539,22 +540,24 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                         ['{{individualValue.THE_VALUE}}',{{individualValue.THE_COUNT}}],
                       {% endfor %}
                     ],
-                    type: 'pie'
+                    type: chartType
                   }
               });
 
-            function setTheTimeoutsB(i){
-              var delayValue=4000;
-              setTimeout(function() {chartBB.transform('donut');}, i*delayValue*1);
-              setTimeout(function() {chartBB.transform('bar');}, i*delayValue*2);
-              setTimeout(function() {chartBB.transform('pie');}, i*delayValue*3);
-            }
-
-            for(var i=1; i<2; i++){
-              setTheTimeoutsB(i);
-            }
-
-
+            setInterval(function() {
+               switch(chartType) {
+                 case "pie":
+                   chartType="donut";
+                   break;
+                 case "donut":
+                   chartType="bar";
+                   break;
+                 case "bar":
+                   chartType="pie";
+                   break;
+               }
+               chartBB.transform(chartType);
+            }, 4000);
 
             </script>
 
