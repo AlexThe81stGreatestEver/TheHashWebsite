@@ -24,10 +24,10 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             <a href="/{{kennel_abbreviation}}/basic/stats"  class="list-group-item active"><h4 class="list-group-item-heading">Quick Links</h4></a>
 	    <a class="list-group-item" href='/{{kennel_abbreviation}}/hashingCounts'><h4 class="list-group-item-heading">The Hashers</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes2'><h4 class="list-group-item-heading">The Events</h4>
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading">The Hares</h4></a>
 	    {% for hare_type in hare_types %}
-		<a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{ hare_type.HARE_TYPE}}'><h4 class="list-group-item-heading">{{ hare_type.HARE_TYPE_NAME }} Haring Counts</h4></a>
+		<a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{ hare_type.HARE_TYPE}}'><h4 class="list-group-item-heading">The {{ hare_type.HARE_TYPE_NAME }} Hares</h4></a>
             {% endfor %}
-            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'><h4 class="list-group-item-heading">{{overall_haring_counts_title}}</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/cautionary/stats'><h4 class="list-group-item-heading">Cautionary Stats</h4></a>
             <a class="list-group-item" href='/{{kennel_abbreviation}}/aboutContact'><h4 class="list-group-item-heading">About / Contact</h4></a>
           </div>
