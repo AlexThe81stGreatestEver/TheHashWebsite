@@ -104,12 +104,19 @@ class HashEventController extends BaseController {
                LIMIT 3) AS results
        ORDER BY 1";
 
+    $hashEventNumberQuery = "
+      SELECT MAX(CAST(KENNEL_EVENT_NUMBER AS UNSIGNED)) AS event_number
+        FROM `HASHES_TABLE`
+       WHERE KENNEL_KY = ?
+         AND KENNEL_EVENT_NUMBER REGEXP '^[0-9]+$'";
+
     $times = $this->fetchAll($timesQuery, array($kennelKy));
+    $defaultEventNumber = 1 + (int) $this->fetchOne($hashEventNumberQuery, array($kennelKy));
 
     $returnValue = $this->render('new_hash_form_ajax.twig', array(
       'pageTitle' => 'Create an Event!',
       'times' => $times,
-      'pageHeader' => 'Page Header',
+      'defaultEventNumber' => $defaultEventNumber,
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
       'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey()
