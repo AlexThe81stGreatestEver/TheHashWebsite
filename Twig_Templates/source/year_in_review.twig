@@ -45,10 +45,7 @@
          $(div_value).append(html.join(''));
        },
        error: function (jqXHR, textStatus, errorThrown){
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+         console.log(errorThrown);
        }
    });
   }

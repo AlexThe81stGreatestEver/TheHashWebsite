@@ -40,7 +40,6 @@
 
   });
 
-  //Function to add a hasher to the event
   function updateHasherAward(hasher_key, award_level) {
     var formData = { hasher_key:hasher_key, kennel_key:{{kennel_key}}, award_level: award_level };
     $.ajax({
@@ -52,10 +51,8 @@
             mainTable.row("#" + hasher_key).remove().draw(false);
        },
        error: function (jqXHR, textStatus, errorThrown) {
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+            console.log(errorThrown);
+            location.replace("/admin/hello");
        }
    });
  }

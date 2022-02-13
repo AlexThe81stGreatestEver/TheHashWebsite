@@ -35,7 +35,6 @@
 //Function to add a hasher to the event
 function addTag(tagText){
  var formData = {tag_text:tagText};
- //alert(tagText);
  $.ajax({
      url : "/admin/tags/addneweventtag",
      type: "POST",
@@ -44,12 +43,9 @@ function addTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+     error: function (jqXHR, textStatus, errorThrown) {
+       console.log(errorThrown);
+       location.replace("/admin/hello");
      }
  });
 }
@@ -85,16 +81,13 @@ function addTag(tagText){
 <script type = "text/javascript" language = "javascript">
 
   function onAddTag(tag){
-    //alert("Adding the tag: " + tag);
     addTag(tag);
   }
 
   function onRemoveTag(tag){
-    //alert("Removed the tag: " + tag);
   }
 
   function onChangeTag(input,tag){
-    //alert("Changed a tag: " + tag);
   }
 
   $('#tags').tagsInput({

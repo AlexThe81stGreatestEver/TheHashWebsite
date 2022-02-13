@@ -46,10 +46,7 @@
 
          },
          error: function (jqXHR, textStatus, errorThrown){
-              alert("failure");
-              alert(jqXHR);
-              alert(textStatus);
-              alert(errorThrown);
+              console.log(errorThrown);
          }
      });
    }
@@ -87,10 +84,7 @@
 
         },
         error: function (jqXHR, textStatus, errorThrown){
-             alert("failure");
-             alert(jqXHR);
-             alert(textStatus);
-             alert(errorThrown);
+             console.log(errorThrown);
         }
     });
   }
@@ -130,10 +124,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
      },
      error: function (jqXHR, textStatus, errorThrown){
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+          console.log(errorThrown);
      }
  });
 }
@@ -225,9 +216,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
   function loadCountyChart(){
     // based on prepared DOM, initialize echarts instance
     var chart = document.getElementById('county');
-    //alert(JSON.stringify(chart));
     var myChart = echarts.init(chart);
-    //alert(JSON.stringify(myChart));
 
     // specify chart configuration item and data
     var option = {
@@ -270,9 +259,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
   function loadPostalCodeChart(){
     // based on prepared DOM, initialize echarts instance
     var chart = document.getElementById('postalcode');
-    //alert(JSON.stringify(chart));
     var myChart = echarts.init(chart);
-    //alert(JSON.stringify(myChart));
 
     // specify chart configuration item and data
     var option = {

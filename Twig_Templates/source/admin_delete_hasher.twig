@@ -60,11 +60,8 @@
            displayMessage(data);
        },
        error: function (jqXHR, textStatus, errorThrown){
-            displayMessage(data);
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+            console.log(errorThrown);
+            location.replace("/admin/hello");
        }
    });
  }

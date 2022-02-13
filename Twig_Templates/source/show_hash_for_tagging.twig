@@ -36,7 +36,6 @@ function displayMessage(messageValue){
 //Function to add a tag to the event
 function addTag(tagText){
  var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}};
- //alert("addTag" + tagText);
  $.ajax({
      url : "/admin/tags/addtagtoevent",
      type: "POST",
@@ -45,12 +44,9 @@ function addTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+     error: function (jqXHR, textStatus, errorThrown) {
+       console.log(errorThrown);
+       location.replace("/admin/hello");
      }
  });
 }
@@ -58,7 +54,6 @@ function addTag(tagText){
 //Function to remove a tag from the event
 function removeTag(tagText){
  var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}};
- //alert("removeTag" + tagText);
  $.ajax({
      url : "/admin/tags/removetagfromevent",
      type: "POST",
@@ -67,12 +62,9 @@ function removeTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+     error: function (jqXHR, textStatus, errorThrown) {
+       console.log(errorThrown);
+       location.replace("/admin/hello");
      }
  });
 }
@@ -251,17 +243,14 @@ function removeTag(tagText){
 <script type = "text/javascript" language = "javascript">
 
   function onAddTag(tag){
-    //alert("Adding the tag: " + tag);
     addTag(tag);
   }
 
   function onRemoveTag(tag){
-    //alert("Removed the tag: " + tag);
     removeTag(tag);
   }
 
   function onChangeTag(input,tag){
-    //alert("Changed a tag: " + tag);
   }
 
   $('#tags').tagsInput({

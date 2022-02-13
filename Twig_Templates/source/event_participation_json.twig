@@ -60,10 +60,8 @@ function displayMessage(messageValue){
 
        },
        error: function (jqXHR, textStatus, errorThrown){
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+         console.log(errorThrown);
+         location.replace("/admin/hello");
        }
    });
  }
@@ -101,10 +99,8 @@ function displayMessage(messageValue){
 
       },
       error: function (jqXHR, textStatus, errorThrown){
-           alert("failure");
-           alert(jqXHR);
-           alert(textStatus);
-           alert(errorThrown);
+        console.log(errorThrown);
+        location.replace("/admin/hello");
       }
   });
 }
@@ -138,12 +134,9 @@ function displayMessage(messageValue){
            displayMessage(data);
            clearSearch();
        },
-       error: function (jqXHR, textStatus, errorThrown)
-       {
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+       error: function (jqXHR, textStatus, errorThrown) {
+         console.log(errorThrown);
+         location.replace("/admin/hello");
        }
    });
  }
@@ -166,12 +159,9 @@ function displayMessage(messageValue){
           displayMessage(data);
           clearSearch();
       },
-      error: function (jqXHR, textStatus, errorThrown)
-      {
-           alert("failure");
-           alert(jqXHR);
-           alert(textStatus);
-           alert(errorThrown);
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(errorThrown);
+        location.replace("/admin/hello");
       }
   });
   addHasher(hasher_key, hash_key);
@@ -191,12 +181,9 @@ function deleteHasher(hasher_key, hash_key){
          displayMessage(data);
          clearSearch();
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+     error: function (jqXHR, textStatus, errorThrown) {
+        console.log(errorThrown);
+        location.replace("/admin/hello");
      }
  });
 }
@@ -214,12 +201,9 @@ function deleteHare(hasher_key, hash_key){
          getHares({{hash_key}});
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+     error: function (jqXHR, textStatus, errorThrown) {
+       console.log(errorThrown);
+       location.replace("/admin/hello");
      }
  });
 }

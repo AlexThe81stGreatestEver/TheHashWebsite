@@ -52,12 +52,8 @@ function displayMessage(messageValue){
           $(div_value).empty();
           $(div_value).append(data);
       },
-      error: function (jqXHR, textStatus, errorThrown)
-      {
-           alert("failure");
-           alert(jqXHR);
-           alert(textStatus);
-           alert(errorThrown);
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(errorThrown);
       }
   });
  }
@@ -138,9 +134,7 @@ function formSubmit(){
      alert("Please Select Player Two");
    }else{
      //Sent to a different webpage
-     //{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/
      var theUrl = "/{{kennel_abbreviation}}/hashers/comparison/" + p1 + "/" + p2;
-     //alert(theUrl);
      window.location = theUrl;
    }
 }

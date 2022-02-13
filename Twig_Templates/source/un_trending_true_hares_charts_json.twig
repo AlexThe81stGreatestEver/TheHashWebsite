@@ -20,22 +20,17 @@
              // Extract out the results array
              var dataResultList = data.resultList;
 
-             //alert(JSON.stringify(data, null, 4));
              // Extract out the day count
              var day_count = data.day_count;
-             //alert("day_count:" + day_count);
 
              // Extract out the minimum hash count
              var min_hash_count = data.min_hash_count;
-             //alert("min_hash_count:" + min_hash_count);
 
              // Extract out the maximum percentage value
              var max_percentage_value = data.max_percentage;
-             //alert("max_percentage_value:" + max_percentage_value);
 
              // Extract out the number of rows
              var number_of_rows = data.row_limit;
-             //alert("number_of_rows:" + number_of_rows);
 
              // Obtain the list of hashers
              var hasherList = [];
@@ -64,17 +59,13 @@
                var temp= dataResultList[i].HARING_TO_HASHING_PERCENTAGE;
                haringPercentageList.push(temp);
              }
-             //alert(JSON.stringify(haringPercentageList, null, 4));
              updateTheDivs(day_count,min_hash_count,max_percentage_value,number_of_rows);
              printTheChart(hasherList, hashCountList, haringCountList,haringPercentageList,div_value);
 
 
            },
            error: function (jqXHR, textStatus, errorThrown){
-                alert("failure");
-                alert(jqXHR);
-                alert(textStatus);
-                alert(errorThrown);
+             console.log(errorThrown);
            }
        });
     }
@@ -158,10 +149,6 @@
         var min_hash_count = document.getElementById("min_hash_count_id");
         var max_percentage = document.getElementById("max_percentage_id");
         var row_limit = document.getElementById("row_limit_id");
-        //alert(day_count.value);
-        //alert(min_hash_count.value);
-        //alert(max_percentage.value);
-        //alert(row_limit.value);
 
         //Validating Form
         if(day_count.value==""){
