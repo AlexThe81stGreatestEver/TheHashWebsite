@@ -40,7 +40,7 @@
         location.replace(location.href.split('?')[0] + qs);
       }
 
-  $(document).ready(function() {
+  $().ready(function() {
     //Convert the main table into a data table
     $('#the_main_table').DataTable({
       "paging":   true,
@@ -49,14 +49,19 @@
       "aaSorting": [],
       "responsive": true,
       "autoWidth": false,
-      "processing": true
+      "processing": true,
+      "initComplete" : function(settings, json) {
+        $('#loading').hide();
+        $('#the_main_table').css("visibility", "visible");
+      }
     });
   });
 
     </script>
 
     <h1>{{pageTitle}}</h1>
-    <table id="the_main_table" class="table table-condensed table-hover">
+    <h2 id="loading">Loading...</h2>
+    <table id="the_main_table" style="visibility: hidden;" class="table table-condensed table-hover">
       <caption>{{tableCaption}}</caption>
       <thead>
         <tr>
