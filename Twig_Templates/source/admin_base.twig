@@ -1,10 +1,7 @@
-
-
 {% block meta_tags %}
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!DOCTYPE html>
 {% endblock %}
-
 
 <html lang="en">
   <head>
@@ -27,13 +24,35 @@
         <script type = "text/javascript" src = "/vendor/datatables/datatables/media/js/dataTables.bootstrap.min.js"></script>
         <script type = "text/javascript" src = "/node_modules/datatables.net-responsive/js/dataTables.responsive.js"></script>
 
-
         <script type = "text/javascript" src = "/node_modules/jquery-tags-input/src/jquery.tagsinput.js"></script>
         <link rel = "stylesheet" href="/node_modules/datatables.net-responsive-dt/css/responsive.dataTables.css">
         <link rel = "stylesheet" href="/node_modules/jquery-tags-input/src/jquery.tagsinput.css">
         <link rel = "stylesheet" href="/node_modules/jquery-ui-dist/jquery-ui.min.css">
 
         <script type = "text/javascript">
+	  function displayMessage(messageValue) {
+
+	    // Determine the type of message to display
+	    var indexLocation = messageValue.indexOf("Success!");
+	    var messageType = "";
+	    if(indexLocation >= 0){
+	      messageType = "success";
+	    } else {
+	      messageType = "danger";
+	    }
+
+	    $.bootstrapGrowl(messageValue, {
+	      ele: 'body', // which element to append to
+	      type: messageType, // (null, 'info', 'error', 'success')
+	      offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
+	      align: 'center', // ('left', 'right', or 'center')
+	      width: 'auto', // (integer, or 'auto')
+	      delay: 4000,
+	      allow_dismiss: true,
+	      stackup_spacing: 10 // spacing between consecutively stacked growls.
+	    });
+	  }
+
           function handleAjaxError(jqXHR, textStatus, errorThrown) {
             if(jqXHR.responseText && (jqXHR.responseText.indexOf("You seem not to be logged in.") != -1)) {
               location.replace("/admin/hello");

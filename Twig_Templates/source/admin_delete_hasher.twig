@@ -4,30 +4,6 @@
 
 <script type = "text/javascript" language = "javascript">
 
-  function displayMessage(messageValue){
-
-    //Determine the type of message to display
-    var indexLocation = messageValue.indexOf("Success!");
-    var messageType = "";
-    if(indexLocation >= 0){
-      messageType = "success";
-    }else {
-      messageType = "danger";
-    }
-
-    $.bootstrapGrowl(messageValue, {
-      ele: 'body', // which element to append to
-      type: messageType, // (null, 'info', 'error', 'success')
-      offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-      align: 'center', // ('left', 'right', or 'center')
-      width: 'auto', // (integer, or 'auto')
-      delay: 4000,
-      allow_dismiss: true,
-      stackup_spacing: 10 // spacing between consecutively stacked growls.
-    });
-
-  }
-
   //Call these functions upon page load
   $(document).ready(function() {
     //Convert the main table into a data table
@@ -84,8 +60,6 @@
   {% else %}
     This hasher has vanished.
   {% endif %}
-
-
 
   {% if hasher_exists == TRUE %}
     <div class="table-responsive">

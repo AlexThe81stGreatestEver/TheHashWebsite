@@ -14,36 +14,10 @@
 <script type = "text/javascript" src = "/node_modules/jquery-ui/ui/widgets/datepicker.js"></script>
 <script type = "text/javascript" src = "/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 <script type = "text/javascript" src = "/node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
-<script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
 <script>
 
 function resetTheForm(){
   $('#the_form')[0].reset();
-}
-
-function displayMessage(messageValue){
-
-  //Determine the type of message to display
-  var indexLocation = messageValue.indexOf("Success!");
-  var messageType = "";
-  if(indexLocation >= 0){
-    messageType = "success";
-    resetTheForm();
-  }else {
-    messageType = "danger";
-  }
-
-  $.bootstrapGrowl(messageValue, {
-    ele: 'body', // which element to append to
-    type: messageType, // (null, 'info', 'error', 'success')
-    offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-    align: 'center', // ('left', 'right', or 'center')
-    width: 400, // (integer, or 'auto')
-    delay: 4000,
-    allow_dismiss: true,
-    stackup_spacing: 10 // spacing between consecutively stacked growls.
-  });
-
 }
 
 function convertFormToJson(theForm){
