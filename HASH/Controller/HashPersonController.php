@@ -52,7 +52,7 @@ class HashPersonController extends BaseController
       'hasher_id' => $hasher_id,
       'hasher_value' => $hasherValue,
       'hasher_exists' => $hasherExists,
-      'csrf_token' => $this->getCsrfToken('delete')
+      'csrf_token' => $this->getCsrfToken('delete'.$hasher_id)
     ));
 
     #Return the return value
@@ -69,7 +69,7 @@ class HashPersonController extends BaseController
 
     #Obtain the csrf token
     $token = $request->request->get('csrf_token');
-    $this->validateCsrfToken('delete', $token);
+    $this->validateCsrfToken('delete'.$hasherKey, $token);
 
     #Validate the post values; ensure that they are both numbers
     if(ctype_digit($hasherKey)){
@@ -356,7 +356,4 @@ class HashPersonController extends BaseController
       $returnValue =  $this->app->json($returnMessage, 200);
       return $returnValue;
     }
-
-
-
 }
