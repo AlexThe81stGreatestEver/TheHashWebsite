@@ -880,6 +880,11 @@ class AdminController extends BaseController
     $listOfKennelsSQL = "SELECT * FROM KENNELS WHERE IN_RECORD_KEEPING = 1";
     $kennelValues = $this->fetchAll($listOfKennelsSQL);
 
+    if(count($kennelValues) == 1) {
+      return $this->app->redirect("/" .
+        $kennelValues[0]['KENNEL_ABBREVIATION'] .  "/hashers/" . $hasher_id);
+    }
+
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
