@@ -626,4 +626,19 @@ class BaseController {
     return "The most recent hash was: $theMostRecentHashValue[KENNEL_EVENT_NUMBER]
       at $theMostRecentHashValue[EVENT_LOCATION]";
   }
+
+  private function getCsrfKeyForUser(string $key) {
+    return $key."-".$this->app['user'].username;
+  }
+
+  protected function getCsrfToken(string $key) {
+    return $this->app['csrf.token_manager']->getToken(
+      $this->getCsrfKeyForUser($key));
+  }
+
+  protected function validateCsrfToken(string $key, string $token) {
+    if($token != $this->getCsrfToken($key)) {
+      throw new \Exception("Bad request");
+    }
+  }
 }

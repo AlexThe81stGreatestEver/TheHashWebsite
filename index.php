@@ -23,6 +23,7 @@ use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Silex\Provider\SecurityServiceProvider;
 use Silex\Provider\FormServiceProvider;
+use Silex\Provider\CsrfServiceProvider;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,6 +40,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 $app = new Silex\Application();
 
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
+
+$app->register(new CsrfServiceProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app); };

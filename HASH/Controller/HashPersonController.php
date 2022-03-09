@@ -5,7 +5,6 @@ namespace HASH\Controller;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -13,8 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-
-
 
 class HashPersonController extends BaseController
 {
@@ -44,9 +41,6 @@ class HashPersonController extends BaseController
     # Obtain all of their harings (all kennels)
     $allHarings = $this->fetchAll(ALL_HARINGS_IN_ALL_KENNELS_FOR_HASHER, array((int)$hasher_id));
 
-    # Obtain the number of newbie hyper hares
-    # $newOverallHaresCount = count($newOverallHares);
-
     # Establish the return value
     $returnValue = $this->render('admin_delete_hasher.twig',array(
       'pageTitle' => 'Hasher Deletion',
@@ -57,16 +51,15 @@ class HashPersonController extends BaseController
       'theirHashingCount' => count($allHashings),
       'hasher_id' => $hasher_id,
       'hasher_value' => $hasherValue,
-      'hasher_exists' => $hasherExists
+      'hasher_exists' => $hasherExists,
+      'csrf_token' => $this->getCsrfToken('delete')
     ));
 
     #Return the return value
     return $returnValue;
   }
 
-
-
-  public function deleteHashPersonAjaxAction (Request $request){
+  public function deleteHashPersonAjaxAction(Request $request){
 
     #Establish the return message
     $returnMessage = "This has not been set yet...";
@@ -75,18 +68,8 @@ class HashPersonController extends BaseController
     $hasherKey = $request->request->get('hasher_key');
 
     #Obtain the csrf token
-    $csrfToken = $request->request->get('csrf_token');
-
-    #Check if the csrf token is valid
-    /*
-    if($this->isCsrfTokenValid('delete',$csrfToken)){
-      $returnValue =  $this->app->json("valid", 200);
-      return $returnValue;
-    }else{
-      $returnValue =  $this->app->json("not valid", 200);
-      return $returnValue;
-    }
-    */
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('delete', $token);
 
     #Validate the post values; ensure that they are both numbers
     if(ctype_digit($hasherKey)){
@@ -149,25 +132,21 @@ class HashPersonController extends BaseController
             #Define the return message
             $returnMessage = "Oh crap. Something bad happened.";
           }
-
-
-        }else{
+        } else {
           $returnMessage = "Hasher has $hashingCount hashings and $haringCount harings. You cannot delete them.";
         }
 
-      }else{
+      } else {
         $returnMessage = "The hasher ($hasherKey) does not exist.";
       }
 
     } else {
       $returnMessage = "The hasher key ($hasherKey) is invalid.";
-
     }
 
     #Set the return value
     $returnValue =  $this->app->json($returnMessage, 200);
     return $returnValue;
-
   }
 
 

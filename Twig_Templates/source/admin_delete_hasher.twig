@@ -50,7 +50,7 @@
 
   //Function to add a hasher to the event
   function deleteHasher(hasher_key){
-    var csrfToken = '{{csrf_token('delete')}}';
+    var csrfToken = '{{csrf_token}}';
     var formData = {hasher_key:hasher_key,csrf_token:csrfToken};
     $.ajax({
        url : "/admin/deleteHasherPost",
@@ -58,11 +58,10 @@
        data : formData,
        dataType : 'json',
        success: function(data, textStatus, jqXHR){
-           displayMessage(data);
+           location.replace("/admin/hello");
        },
        error: function (jqXHR, textStatus, errorThrown){
-            console.log(errorThrown);
-            location.replace("/admin/hello");
+           displayMessage(errorThrown);
        }
    });
  }
