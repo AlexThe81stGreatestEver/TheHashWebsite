@@ -33,6 +33,15 @@
         <link rel = "stylesheet" href="/node_modules/jquery-tags-input/src/jquery.tagsinput.css">
         <link rel = "stylesheet" href="/node_modules/jquery-ui-dist/jquery-ui.min.css">
 
+        <script type = "text/javascript">
+          function handleAjaxError(jqXHR, textStatus, errorThrown) {
+            if(jqXHR.responseText && (jqXHR.responseText.indexOf("You seem not to be logged in.") != -1)) {
+              location.replace("/admin/hello");
+            }
+	    displayMessage(errorThrown);
+          }
+        </script>
+
         {% block extrahead %}
         {% endblock %}
 

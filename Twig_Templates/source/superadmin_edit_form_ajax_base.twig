@@ -85,10 +85,7 @@ function formSubmitAction(){
       success: function(data, textStatus, jqXHR){
         displayMessage(data);
       },
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.log(errorThrown);
-        location.replace("/superadmin/hello");
-      }
+      error: handleAjaxError
   });
 
   return false;

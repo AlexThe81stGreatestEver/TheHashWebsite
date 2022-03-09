@@ -32,7 +32,6 @@
 
   }
 
-//Function to add a hasher to the event
 function addTag(tagText){
  var formData = {tag_text:tagText};
  $.ajax({
@@ -43,18 +42,11 @@ function addTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown) {
-       console.log(errorThrown);
-       location.replace("/admin/hello");
-     }
+     error: handleAjaxError
  });
 }
 
-
-
-
 </script>
-
 
 <h2>{{pageTitle}}</a></h2>
 <h3>{{pageSubTitle}}</a></h3>

@@ -56,13 +56,8 @@ function displayMessage(messageValue){
          //Update the hare count div
          var hareCount = data.length;
          $('#hareCount').empty().append('Hares: ' + hareCount);
-
-
        },
-       error: function (jqXHR, textStatus, errorThrown){
-         console.log(errorThrown);
-         location.replace("/admin/hello");
-       }
+       error: handleAjaxError
    });
  }
 
@@ -98,10 +93,7 @@ function displayMessage(messageValue){
         $('#hasherCount').empty().append('Hounds: ' + hasherCount);
 
       },
-      error: function (jqXHR, textStatus, errorThrown){
-        console.log(errorThrown);
-        location.replace("/admin/hello");
-      }
+      error: handleAjaxError
   });
 }
 
@@ -134,10 +126,7 @@ function displayMessage(messageValue){
            displayMessage(data);
            clearSearch();
        },
-       error: function (jqXHR, textStatus, errorThrown) {
-         console.log(errorThrown);
-         location.replace("/admin/hello");
-       }
+       error: handleAjaxError
    });
  }
 
@@ -159,10 +148,7 @@ function displayMessage(messageValue){
           displayMessage(data);
           clearSearch();
       },
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.log(errorThrown);
-        location.replace("/admin/hello");
-      }
+      error: handleAjaxError
   });
   addHasher(hasher_key, hash_key);
 }
@@ -181,10 +167,7 @@ function deleteHasher(hasher_key, hash_key){
          displayMessage(data);
          clearSearch();
      },
-     error: function (jqXHR, textStatus, errorThrown) {
-        console.log(errorThrown);
-        location.replace("/admin/hello");
-     }
+     error: handleAjaxError
  });
 }
 
@@ -201,10 +184,7 @@ function deleteHare(hasher_key, hash_key){
          getHares({{hash_key}});
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown) {
-       console.log(errorThrown);
-       location.replace("/admin/hello");
-     }
+     error: handleAjaxError
  });
 }
 

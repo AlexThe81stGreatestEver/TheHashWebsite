@@ -49,7 +49,7 @@
   });
 
   //Function to add a hasher to the event
-  function deleteHasher(hasher_key){
+  function deleteHasher(hasher_key) {
     var csrfToken = '{{csrf_token}}';
     var formData = {hasher_key:hasher_key,csrf_token:csrfToken};
     $.ajax({
@@ -57,19 +57,14 @@
        type: "POST",
        data : formData,
        dataType : 'json',
-       success: function(data, textStatus, jqXHR){
-           location.replace("/admin/hello");
+       success: function(data, textStatus, jqXHR) {
+         location.replace("/admin/hello");
        },
-       error: function (jqXHR, textStatus, errorThrown){
-           displayMessage(errorThrown);
-       }
+       error: handleAjaxError
    });
  }
 
-
-
 </script>
-
 
   <h1>{{pageTitle}}</h1>
   <h3>{{pageSubTitle}}</h3>

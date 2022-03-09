@@ -44,10 +44,7 @@ function addTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown) {
-       console.log(errorThrown);
-       location.replace("/admin/hello");
-     }
+     error: handleAjaxError
  });
 }
 
@@ -62,10 +59,7 @@ function removeTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown) {
-       console.log(errorThrown);
-       location.replace("/admin/hello");
-     }
+     error: handleAjaxError
  });
 }
 
