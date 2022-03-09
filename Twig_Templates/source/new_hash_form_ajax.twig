@@ -44,12 +44,13 @@ function formSubmitAction(){
   // Serialize the form
   var theFormSerialized = theForm.serializeArray();
 
+  theFormSerialized.push({ name: 'csrf_token', value : '{{csrf_token}}' });
+
   // Convert form fields into json object
   var jsonifiedForm = convertFormToJson(theFormSerialized);
 
   // Re-disable the form fields
   theDisabledFields.attr('disabled','disabled');
-
 
   $.ajax({
       url : "/admin/{{kennel_abbreviation}}/newhash/ajaxform",
@@ -61,7 +62,6 @@ function formSubmitAction(){
       },
       error: handleAjaxError
   });
-
 
   return false;
 }

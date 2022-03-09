@@ -78,7 +78,8 @@ class HashEventController extends BaseController {
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
       'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey(),
-      'eventDetails' => $eventDetails
+      'eventDetails' => $eventDetails,
+      'csrf_token' => $this->getCsrfToken('create_event')
     ));
 
     #Return the return value
@@ -119,7 +120,8 @@ class HashEventController extends BaseController {
       'defaultEventNumber' => $defaultEventNumber,
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
-      'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey()
+      'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey(),
+      'csrf_token' => $this->getCsrfToken('create_event')
     ));
 
     #Return the return value
@@ -127,6 +129,9 @@ class HashEventController extends BaseController {
   }
 
     public function adminCreateHashAjaxPostAction(Request $request, $kennel_abbreviation) {
+
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('create_event', $token);
 
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
