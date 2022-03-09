@@ -318,16 +318,18 @@ class HashEventController extends BaseController {
         'hashTypes' => $this->getHashTypes($hashValue['KENNEL_KY'], 0),
         'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey(),
         'hashValue' => $hashValue,
-        'hashKey' => $hash_id
+        'hashKey' => $hash_id,
+        'csrf_token' => $this->getCsrfToken('modify_event'.$hash_id)
       ));
 
       #Return the return value
       return $returnValue;
-
     }
 
 
     public function adminModifyHashAjaxPostAction(Request $request, int $hash_id){
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('modify_event'.$hash_id, $token);
 
       #Establish the return message
       $returnMessage = "This has not been set yet...";
@@ -403,7 +405,6 @@ class HashEventController extends BaseController {
 
       }
 
-
       if($passedValidation){
 
         $sql = "
@@ -472,8 +473,6 @@ class HashEventController extends BaseController {
     }
 
     public function hashParticipationJsonPreAction(Request $request, int $hash_id){
-
-
       #Define the SQL to execute
       $hasherListSQL = "SELECT *
         FROM HASHINGS
@@ -484,7 +483,6 @@ class HashEventController extends BaseController {
         FROM HARINGS
         JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
         WHERE HARINGS.HARINGS_HASH_KY = ?";
-
 
       #Obtain hash event information
       $hashEventInfoSQL = "SELECT *, EVENT_DATE < NOW() AS SHOW_EVENT_LINK FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
@@ -511,16 +509,15 @@ class HashEventController extends BaseController {
         'hash_key'=> $hash_id,
         'kennel_abbreviation' => $kennelAbbreviation,
         'kennel_event_number' => $kennelEventNumber,
-        'show_event_link' => $hashEvent['SHOW_EVENT_LINK']
+        'show_event_link' => $hashEvent['SHOW_EVENT_LINK'],
+        'csrf_token' => $this->getCsrfToken('participation'.$hash_id)
       ));
 
       #Return the return value
       return $returnValue;
-
     }
 
-    #Test function
-    public function addHashParticipant (Request $request){
+    public function addHashParticipant(Request $request) {
 
       #Establish the return message
       $returnMessage = "This has not been set yet...";
@@ -528,6 +525,9 @@ class HashEventController extends BaseController {
       #Obtain the post values
       $hasherKey = $request->request->get('hasher_key');
       $hashKey = $request->request->get('hash_key');
+
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('participation'.$hashKey, $token);
 
       #Validate the post values; ensure that they are both numbers
       if(ctype_digit($hasherKey)  && ctype_digit($hashKey)){
@@ -600,7 +600,6 @@ class HashEventController extends BaseController {
       return $returnValue;
     }
 
-    #Test function
     public function addHashOrganizer (Request $request){
 
       #Establish the return message
@@ -610,6 +609,9 @@ class HashEventController extends BaseController {
       $hasherKey = $request->request->get('hasher_key');
       $hashKey = $request->request->get('hash_key');
       $hareType = $request->request->get('hare_type');
+
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('participation'.$hashKey, $token);
 
       #Validate the post values; ensure that they are both numbers
       if(ctype_digit($hasherKey)  && ctype_digit($hashKey) && ctype_digit($hareType)){
@@ -694,6 +696,9 @@ class HashEventController extends BaseController {
       $hasherKey = $request->request->get('hasher_key');
       $hashKey = $request->request->get('hash_key');
 
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('participation'.$hashKey, $token);
+
       #Validate the post values; ensure that they are both numbers
       if(ctype_digit($hasherKey)  && ctype_digit($hashKey)){
 
@@ -744,8 +749,6 @@ class HashEventController extends BaseController {
 
     }
 
-
-    #Delete a participant from a hash
     public function deleteHashOrganizer (Request $request){
 
       #Establish the return message
@@ -754,6 +757,9 @@ class HashEventController extends BaseController {
       #Obtain the post values
       $hasherKey = $request->request->get('hasher_key');
       $hashKey = $request->request->get('hash_key');
+
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('participation'.$hashKey, $token);
 
       #Validate the post values; ensure that they are both numbers
       if(ctype_digit($hasherKey)  && ctype_digit($hashKey)){
@@ -850,8 +856,6 @@ class HashEventController extends BaseController {
       return $returnValue;
     }
 
-
-
     #Define the action
     public function listHashesPreActionJson(Request $request, string $kennel_abbreviation) {
 
@@ -868,11 +872,6 @@ class HashEventController extends BaseController {
       #Return the return value
       return $returnValue;
     }
-
-
-
-
-
 
     public function listHashesPostActionJson(Request $request, string $kennel_abbreviation){
 
