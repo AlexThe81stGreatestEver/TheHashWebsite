@@ -1110,8 +1110,7 @@ class SuperAdminController extends BaseController {
 
     $this->auditTheThings($request, $actionType, $actionDescription);
 
-    header("Location: /superadmin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
   public function deleteHashType(Request $request) {
@@ -1137,8 +1136,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    header("Location: /superadmin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
   public function deleteHareType(Request $request) {
@@ -1164,8 +1162,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    header("Location: /superadmin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
   public function integrityChecks(Request $request) {
