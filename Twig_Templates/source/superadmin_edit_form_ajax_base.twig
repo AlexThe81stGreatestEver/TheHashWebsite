@@ -48,6 +48,8 @@ function formSubmitAction(){
   // Serialize the form
   var theFormSerialized = theForm.serializeArray();
 
+  theFormSerialized.push({ name: 'csrf_token', value : '{{csrf_token}}' });
+
   // Convert form fields into json object
   var jsonifiedForm = convertFormToJson(theFormSerialized);
 

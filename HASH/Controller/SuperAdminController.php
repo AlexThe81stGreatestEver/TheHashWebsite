@@ -87,7 +87,8 @@ class SuperAdminController extends BaseController {
         'hare_types' => $hareTypes,
         'hash_types' => $hashTypes,
         'site_config' => $siteConfig,
-        'ridiculous' => $ridiculous));
+	'ridiculous' => $ridiculous,
+        'csrf_token' => $this->getCsrfToken('superadmin')));
   }
 
   #Define the action
@@ -171,7 +172,8 @@ class SuperAdminController extends BaseController {
       'awardLevels' => $awardLevels,
       'hare_types' => $hareTypes,
       'hash_types' => $hashTypes,
-      'showAwardsPage' => $this->showAwardsPage()
+      'showAwardsPage' => $this->showAwardsPage(),
+      'csrf_token' => $this->getCsrfToken('kennel'.$kennel_abbreviation)
     ));
 
     #Return the return value
@@ -179,6 +181,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifyKennelAjaxPostAction(Request $request, string $kennel_abbreviation) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('kennel'.$kennel_abbreviation, $token);
 
     $theKennelName = trim(strip_tags($request->request->get('kennelName')));
     $theKennelAbbreviation = trim(strip_tags($request->request->get('kennelAbbreviation')));
@@ -296,7 +301,8 @@ class SuperAdminController extends BaseController {
       'awardLevels' => $awardLevels,
       'hare_types' => $hareTypes,
       'hash_types' => $hashTypes,
-      'showAwardsPage' => $this->showAwardsPage()
+      'showAwardsPage' => $this->showAwardsPage(),
+      'csrf_token' => $this->getCsrfToken('kennel')
     ));
 
     #Return the return value
@@ -304,6 +310,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function newKennelAjaxPostAction(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('kennel', $token);
 
     $theKennelName = trim(strip_tags($request->request->get('kennelName')));
     $theKennelAbbreviation = trim(strip_tags($request->request->get('kennelAbbreviation')));
@@ -387,7 +396,8 @@ class SuperAdminController extends BaseController {
     $returnValue = $this->render('edit_hare_type_form_ajax.twig', array(
       'pageTitle' => 'Modify a Hare Type!',
       'hareTypeValue' => $hareTypeValue,
-      'hare_type' => $hare_type
+      'hare_type' => $hare_type,
+      'csrf_token' => $this->getCsrfToken('mod_hare_type'.$hare_type)
     ));
 
     #Return the return value
@@ -395,6 +405,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifyHareTypeAjaxPostAction(Request $request, int $hare_type) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('mod_hare_type'.$hare_type, $token);
 
     $theHareTypeName = trim(strip_tags($request->request->get('hareTypeName')));
     $theSequence = trim(strip_tags($request->request->get('sequence')));
@@ -451,7 +464,8 @@ class SuperAdminController extends BaseController {
     $returnValue = $this->render('edit_hare_type_form_ajax.twig', array(
       'pageTitle' => 'Create a Hare Type!',
       'hareTypeValue' => $hareTypeValue,
-      'hare_type' => -1
+      'hare_type' => -1,
+      'csrf_token' => $this->getCsrfToken('hare_type')
     ));
 
     #Return the return value
@@ -459,6 +473,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function newHareTypeAjaxPostAction(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('hare_type', $token);
 
     $theHareTypeName = trim(strip_tags($request->request->get('hareTypeName')));
     $theSequence = trim(strip_tags($request->request->get('sequence')));
@@ -528,7 +545,8 @@ class SuperAdminController extends BaseController {
       'pageTitle' => 'Modify a Hash Type!',
       'hashTypeValue' => $hashTypeValue,
       'hash_type' => $hash_type,
-      'hare_types' => $hareTypes
+      'hare_types' => $hareTypes,
+      'csrf_token' => $this->getCsrfToken('mod_hash_type'.$hash_type)
     ));
 
     #Return the return value
@@ -536,6 +554,8 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifyHashTypeAjaxPostAction(Request $request, int $hash_type) {
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('mod_hash_type'.$hash_type, $token);
 
     $theHashTypeName = trim(strip_tags($request->request->get('hashTypeName')));
     $theSequence = trim(strip_tags($request->request->get('sequence')));
@@ -604,7 +624,8 @@ class SuperAdminController extends BaseController {
       'pageTitle' => 'Create a Hash Type!',
       'hashTypeValue' => $hashTypeValue,
       'hash_type' => -1,
-      'hare_types' => $hareTypes
+      'hare_types' => $hareTypes,
+      'csrf_token' => $this->getCsrfToken('hash_type')
     ));
 
     #Return the return value
@@ -612,6 +633,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function newHashTypeAjaxPostAction(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('hash_type', $token);
 
     $theHashTypeName = trim(strip_tags($request->request->get('hashTypeName')));
     $theSequence = trim(strip_tags($request->request->get('sequence')));
@@ -678,7 +702,8 @@ class SuperAdminController extends BaseController {
     $returnValue = $this->render('edit_user_form_ajax.twig', array(
       'pageTitle' => 'Modify a User!',
       'userValue' => $userValue,
-      'user_id' => $user_id
+      'user_id' => $user_id,
+      'csrf_token' => $this->getCsrfToken('mod_user'.$user_id)
     ));
 
     #Return the return value
@@ -686,6 +711,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifyUserAjaxPostAction(Request $request, int $user_id) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('mod_user'.$user_id, $token);
 
     $theUsername = trim(strip_tags($request->request->get('username')));
     $thePassword = trim(strip_tags($request->request->get('password')));
@@ -775,7 +803,8 @@ class SuperAdminController extends BaseController {
 
     $returnValue = $this->render('edit_site_config_form_ajax.twig', array(
       'pageTitle' => 'Modify a Configuration Variable: '.$name,
-      'item' => $item
+      'item' => $item,
+      'csrf_token' => $this->getCsrfToken('mod_'.$name)
     ));
 
     #Return the return value
@@ -783,6 +812,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifySiteConfigAjaxPostAction(Request $request, string $name) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('mod_'.$name, $token);
 
     $theValue = trim($request->request->get('value'));
 
@@ -829,7 +861,8 @@ class SuperAdminController extends BaseController {
 
     $returnValue = $this->render('edit_ridiculous_form_ajax.twig', array(
       'pageTitle' => 'Edit Ridiculous Stat',
-      'item' => $item
+      'item' => $item,
+      'csrf_token' => $this->getCsrfToken('mod_'.$item['NAME'])
     ));
 
     #Return the return value
@@ -837,6 +870,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function modifyRidiculousAjaxPostAction(Request $request, string $ridiculous) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('mod_'.$ridiculous, $token);
 
     $theValue = trim($request->request->get('value'));
 
@@ -885,7 +921,8 @@ class SuperAdminController extends BaseController {
 
     $returnValue = $this->render('edit_ridiculous_form_ajax.twig', array(
       'pageTitle' => 'Create New Ridiculous Stat',
-      'item' => $item
+      'item' => $item,
+      'csrf_token' => $this->getCsrfToken('ridic')
     ));
 
     #Return the return value
@@ -893,6 +930,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function newRidiculousAjaxPostAction(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('ridic', $token);
 
     $theValue = trim($request->request->get('value'));
 
@@ -939,7 +979,8 @@ class SuperAdminController extends BaseController {
     $returnValue = $this->render('edit_user_form_ajax.twig', array(
       'pageTitle' => 'Add a User!',
       'userValue' => $userValue,
-      'user_id' => -1
+      'user_id' => -1,
+      'csrf_token' => $this->getCsrfToken('newUser')
     ));
 
     #Return the return value
@@ -947,6 +988,9 @@ class SuperAdminController extends BaseController {
   }
 
   public function newUserAjaxPostAction(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('newUser', $token);
 
     $theUsername = trim(strip_tags($request->request->get('username')));
     $thePassword = trim(strip_tags($request->request->get('password')));
@@ -1004,7 +1048,12 @@ class SuperAdminController extends BaseController {
     return $returnValue;
   }
 
-  public function deleteRidiculous(Request $request, string $ridiculous) {
+  public function deleteRidiculous(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('superadmin', $token);
+
+    $ridiculous = $request->request->get('id');
     if(substr($ridiculous, 0, strlen("ridiculous")) == "ridiculous") {
 
       $sql = "DELETE FROM SITE_CONFIG WHERE NAME = ?";
@@ -1016,12 +1065,17 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    header("Location: /superadmin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
-  public function deleteUser(Request $request, int $user_id) {
-    if($user_id != $this->app['user'].username) {
+  public function deleteUser(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('superadmin', $token);
+
+    $user_id = $request->request->get('id');
+
+    if($user_id != $this->app['user'].'username') {
 
       $sql = "SELECT username FROM USERS WHERE ID = ?";
       $username = $this->fetchOne($sql, array($user_id));
@@ -1035,11 +1089,15 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    header("Location: /superadmin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
-  public function deleteKennel(Request $request, int $kennel_ky) {
+  public function deleteKennel(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('superadmin', $token);
+
+    $kennel_ky = $request->request->get('id');
 
     $sql = "SELECT KENNEL_ABBREVIATION FROM KENNELS WHERE KENNEL_KY = ?";
     $kennel = $this->fetchOne($sql, array($kennel_ky));
@@ -1056,7 +1114,12 @@ class SuperAdminController extends BaseController {
     return $this->app->json("", 302);
   }
 
-  public function deleteHashType(Request $request, int $hash_type) {
+  public function deleteHashType(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('superadmin', $token);
+
+    $hash_type = $request->request->get('id');
 
     $sql = "SELECT EXISTS(SELECT 1 FROM HASHES_TABLE WHERE HASHES_TABLE.HASH_TYPE & ? = HASHES_TABLE.HASH_TYPE) AS IN_USE";
     $in_use = $this->fetchOne($sql, array($hash_type));
@@ -1078,7 +1141,12 @@ class SuperAdminController extends BaseController {
     return $this->app->json("", 302);
   }
 
-  public function deleteHareType(Request $request, int $hare_type) {
+  public function deleteHareType(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('superadmin', $token);
+
+    $hare_type = $request->request->get('id');
 
     $sql = "SELECT EXISTS(SELECT 1 FROM HARINGS WHERE HARINGS.HARE_TYPE & ? = HARINGS.HARE_TYPE) AS IN_USE";
     $in_use = $this->fetchOne($sql, array($hare_type));

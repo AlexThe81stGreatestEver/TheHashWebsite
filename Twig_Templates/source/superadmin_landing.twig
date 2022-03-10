@@ -6,7 +6,13 @@
 
 function doDelete(id, description, urlSuffix) {
   if(window.confirm("Danger! Danger! Danger!  This cannot be undone!  Click OK to permanently remove the " + description + ".")) {
-    document.location="/superadmin/" + id + "/delete" + urlSuffix;
+    $.post("/superadmin/delete" + urlSuffix, {
+        id: id, csrf_token: '{{csrf_token}}'
+      }).done(function() {
+      document.location = "/superadmin/hello";
+    }).fail(function() {
+      alert("Fail");
+    });
   }
 }
 

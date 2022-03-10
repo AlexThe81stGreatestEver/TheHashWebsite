@@ -266,11 +266,11 @@ $app->get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminC
 $app->post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController:modifySiteConfigAjaxPostAction');
 $app->get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController:modifyRidiculousAjaxPreAction');
 $app->post('/superadmin/{ridiculous}/editridiculous/ajaxform',      'SuperAdminController:modifyRidiculousAjaxPostAction');
-$app->get('/superadmin/{ridiculous}/deleteridiculous',              'SuperAdminController:deleteRidiculous');
-$app->get('/superadmin/{user_id}/deleteuser',                       'SuperAdminController:deleteUser');
-$app->get('/superadmin/{kennel_ky}/deletekennel',                   'SuperAdminController:deleteKennel');
-$app->get('/superadmin/{hash_type}/deletehashtype',                 'SuperAdminController:deleteHashType');
-$app->get('/superadmin/{hare_type}/deleteharetype',                 'SuperAdminController:deleteHareType');
+$app->post('/superadmin/deleteridiculous',                          'SuperAdminController:deleteRidiculous');
+$app->post('/superadmin/deleteuser',                                'SuperAdminController:deleteUser');
+$app->post('/superadmin/deletekennel',                              'SuperAdminController:deleteKennel');
+$app->post('/superadmin/deletehashtype',                            'SuperAdminController:deleteHashType');
+$app->post('/superadmin/deleteharetype',                            'SuperAdminController:deleteHareType');
 $app->get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController:newRidiculousAjaxPreAction');
 $app->post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController:newRidiculousAjaxPostAction');
 $app->get('/superadmin/newuser/ajaxform',                           'SuperAdminController:newUserAjaxPreAction');
