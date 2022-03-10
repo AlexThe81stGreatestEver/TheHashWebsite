@@ -628,7 +628,7 @@ class BaseController {
   }
 
   private function getCsrfKeyForUser(string $key) {
-    return $key."-".$this->app['user'].username;
+    return $key."-".$this->app['user'].'username';
   }
 
   protected function getCsrfToken(string $key) {
