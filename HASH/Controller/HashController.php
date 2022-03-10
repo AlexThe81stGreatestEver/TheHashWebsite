@@ -20,16 +20,11 @@ class HashController extends BaseController
   #Define the action
   public function logonScreenAction(Request $request){
 
-    #$this->app['monolog']->addDebug('Entering the logonScreenAction');
-
     # Establisht the last error
     $lastError = $this->app['security.last_error']($request);
-    #$this->app['monolog']->addDebug($lastError);
 
     # Establish the last username
     $lastUserName = $this->app['session']->get('_security.last_username');
-    #$lastUserName = $this->app['session']->get('_security.last_username');
-    #$this->app['monolog']->addDebug($lastUserName);
 
     # Establish the return value
     $returnValue =  $this->render('logon_screen.twig', array (
@@ -39,36 +34,8 @@ class HashController extends BaseController
       'last_username' => $lastUserName,
     ));
 
-    #$this->app['monolog']->addDebug('Leaving the logonScreenAction');
-
     # Return the return value;
     return $returnValue;
-  }
-
-  public function logoutAction(Request $request){
-
-    # Invalidate the session
-    $this->app['session']->invalidate();
-
-    # Redirect the user to the root url
-    return $this->app->redirect('/');
-
-  }
-
-  #Define the action
-  public function helloAction(Request $request){
-
-      return $this->render('admin_landing.twig', array (
-        'pageTitle' => 'This is the admin landing screen',
-        'subTitle1' => 'This is the admin landing screen'));
-  }
-
-  #Define the action
-  public function adminHelloAction(Request $request){
-
-      return $this->render('admin_landing.twig', array (
-        'pageTitle' => 'This is the admin hello landing screen (page title)',
-        'subTitle1' => 'This is the admin hello landing screen (sub title 1)'));
   }
 
   #Define the action
