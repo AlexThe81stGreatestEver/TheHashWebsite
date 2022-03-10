@@ -128,18 +128,15 @@ class AdminController extends BaseController
   public function newPasswordAction(Request $request){
 
 
-    $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class, $data)
-
+    $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class)
       ->add('Current_Password', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 3)))))
       ->add('New_Password_Initial', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))))
       ->add('New_Password_Confirmation', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))));
-
 
     $formFactoryThing->add('save', SubmitType::class, array('label' => 'Change your password!'));
     $formFactoryThing->setAction('#');
     $formFactoryThing->setMethod('POST');
     $form=$formFactoryThing->getForm();
-
 
     $form->handleRequest($request);
 
@@ -170,7 +167,6 @@ class AdminController extends BaseController
           $encodedCurrentPassword = $encoder->encodePassword($tempCurrentPassword, $userid->getSalt());
 
 
-
           #Check if the current password is valid
           # Declare the SQL used to retrieve this information
           $sql = "SELECT * FROM USERS WHERE USERNAME = ? AND PASSWORD = ?";
@@ -178,7 +174,6 @@ class AdminController extends BaseController
           # Make a database call to obtain the hasher information
           $retrievedUserValue = $this->fetchAssoc($sql, array((string) $userid, (string) $encodedCurrentPassword));
           $sizeOfRetrievedUserValueArray = sizeof($retrievedUserValue);
-
 
           # If there are more than one columns, then it is valid
           $foundValidationError=FALSE;
@@ -198,7 +193,6 @@ class AdminController extends BaseController
             $this->app['session']->getFlashBag()->add('danger', 'Wrong! The new passwords do not match.');
             $foundValidationError=TRUE;
           }
-
 
           #Check if the new password matches password complexity requirements
           $validPasswordComplexity = FALSE;
@@ -246,11 +240,7 @@ class AdminController extends BaseController
 
     #Return the return value
     return $returnValue;
-
   }
-
-
-
 
   #Define the action
   public function viewAuditRecordsPreActionJson(Request $request){
