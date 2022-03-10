@@ -16,7 +16,7 @@
   });
 
   function updateHasherAward(hasher_key, award_level) {
-    var formData = { hasher_key:hasher_key, kennel_key:{{kennel_key}}, award_level: award_level };
+    var formData = { hasher_key:hasher_key, kennel_key:{{kennel_key}}, award_level: award_level, csrf_token: '{{csrf_token}}' };
     $.ajax({
        url : "/admin/updateHasherAward",
        type: "POST",

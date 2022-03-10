@@ -35,20 +35,22 @@ function submitChanges() {
     return;
   }
 
+  data += "&csrf_token={{csrf_token}}";
+
   $.ajax({
          url : "/admin/{{kennelAbbreviation}}/legacyUpdate",
          type: "POST",
          data : data,
          dataType : 'text',
-         success: function(data, textStatus, jqXHR){
-           alert(data);
+         success: function(data, textStatus, jqXHR) {
+           if(jqXHR.responseText && (jqXHR.responseText.indexOf("You seem not to be logged in.") != -1)) {
+             alert("Session expired - open another browser window, log in as an admin, then come back here, reload this page, and try again");
+           } else {
+             alert(data);
+           }
          },
          error: function (jqXHR, textStatus, errorThrown) {
-            if(jqXHR.responseText && (jqXHR.responseText.indexOf("You seem not to be logged in.") != -1)) {
-              alert("Session expired - open another browser window, log in as an admin, then come back here and try again");
-            } else {
-              alert(errorThrown);
-            }
+           alert(errorThrown);
          }
      });
 }

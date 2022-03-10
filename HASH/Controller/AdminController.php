@@ -404,7 +404,12 @@ class AdminController extends BaseController
     return $returnValue;
   }
 
-  public function deleteHash(Request $request, int $hash_id) {
+  public function deleteHash(Request $request) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('admin', $token);
+
+    $hash_id = $request->request->get('id');
 
     $sql = "SELECT KENNEL_EVENT_NUMBER, KENNEL_ABBREVIATION FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
     $eventDetails = $this->fetchAssoc($sql, array($hash_id));
@@ -419,8 +424,7 @@ class AdminController extends BaseController
 
     $this->auditTheThings($request, $actionType, $actionDescription);
 
-    header("Location: /admin/hello");
-    return $this->app->json("", 302);
+    return $this->app->json("", 200);
   }
 
   #Define the action
@@ -439,7 +443,7 @@ class AdminController extends BaseController
           'kennels' => $kennels,
           'pageTracking' => 'AdminSelectKennel',
           'pageTitle' => 'Select Kennel',
-          'urlSuffix' => 'listhashes2'));
+	  'urlSuffix' => 'listhashes2'));
       }
     }
 
@@ -464,7 +468,8 @@ class AdminController extends BaseController
       'kennel_abbreviation' => $kennel_abbreviation,
       'totalHashes' => $theUnfilteredCount,
       'totalHashesToUpdate' => $theFilteredCount,
-      'showBudgetPage' => $this->showBudgetPage()
+      'showBudgetPage' => $this->showBudgetPage(),
+      'csrf_token' => $this->getCsrfToken('admin')
     ));
 
     #Return the return value
@@ -998,7 +1003,8 @@ class AdminController extends BaseController
       'theList' => $theList,
       'pageTitle' => 'Legacy Hashing Counts',
       'tableCaption' => 'Legacy Hashing Counts',
-      'kennelAbbreviation' => $kennel_abbreviation
+      'kennelAbbreviation' => $kennel_abbreviation,
+      'csrf_token' => $this->getCsrfToken('legacy')
     ));
 
     #Return the return value
@@ -1006,6 +1012,7 @@ class AdminController extends BaseController
   }
 
   private function processLegacyCountChange(int $kennelKy, int $k, int $c) {
+
     if($c == 0) {
       $sql = "DELETE FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
       $this->app['dbs']['mysql_write']->executeUpdate($sql, array($k, $kennelKy));
@@ -1022,6 +1029,10 @@ class AdminController extends BaseController
   }
 
   public function legacyUpdate(Request $request, string $kennel_abbreviation) {
+
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('legacy', $token);
+
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     $k = $request->request->get('k');
@@ -1105,7 +1116,8 @@ class AdminController extends BaseController
       'kennel_key' => $kennelKy,
       'pageTracking' => 'Hasher Awards',
       'type' => $type,
-      'horizon' => $horizon
+      'horizon' => $horizon,
+      'csrf_token' => $this->getCsrfToken('awards')
     ));
 
     #Return the return value
@@ -1114,6 +1126,10 @@ class AdminController extends BaseController
 
   public function updateHasherAwardAjaxAction(Request $request) {
 
+    $token = $request->request->get('csrf_token');
+    $this->validateCsrfToken('awards', $token);
+
+    $user_id = $request->request->get('id');
     #Establish the return message
     $returnMessage = "This has not been set yet...";
 
@@ -1121,20 +1137,6 @@ class AdminController extends BaseController
     $hasherKey = $request->request->get('hasher_key');
     $kennelKey = $request->request->get('kennel_key');
     $awardLevel = $request->request->get('award_level');
-
-    #Obtain the csrf token
-    $csrfToken = $request->request->get('csrf_token');
-
-    #Check if the csrf token is valid
-    /*
-    if($this->isCsrfTokenValid('delete',$csrfToken)){
-      $returnValue =  $this->app->json("valid", 200);
-      return $returnValue;
-    }else{
-      $returnValue =  $this->app->json("not valid", 200);
-      return $returnValue;
-    }
-    */
 
     #Validate the post values; ensure that they are both numbers
     if(ctype_digit($hasherKey) & ctype_digit($kennelKey)) {

@@ -359,7 +359,7 @@ $app->post('/admin/listhashers2',                                   'AdminContro
 $app->post('/admin/listhashers3',                                   'AdminController:getHashersParticipationListJson');
 
 $app->get('/admin/hasherDetailsKennelSelection/{hasher_id}',        'AdminController:hasherDetailsKennelSelection');
-$app->get('/admin/{hash_id}/deleteHash',                            'AdminController:deleteHash');
+$app->post('/admin/deleteHash',                                     'AdminController:deleteHash');
 
 #The per event budget screen
 $app->get('/admin/eventBudget/{hash_id}','AdminController:eventBudgetPreAction');

@@ -51,7 +51,13 @@ function doDuplicateHash(id) {
 
 function doDeleteHash(eventNumber, id) {
   if(window.confirm("Danger! Danger! Danger!  This cannot be undone!  Click OK to permanently remove event " + eventNumber + ".")) {
-    document.location="/admin/" + id + "/deleteHash";
+    $.post("/admin/deleteHash", {
+        id: id, csrf_token: '{{csrf_token}}'
+      }).done(function() {
+      document.location = "/admin/hello";
+    }).fail(function() {
+      alert("Fail");
+    });
   }
 }
 </script>
