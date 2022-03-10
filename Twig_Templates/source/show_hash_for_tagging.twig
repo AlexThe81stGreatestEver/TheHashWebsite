@@ -9,7 +9,7 @@
 
 //Function to add a tag to the event
 function addTag(tagText){
- var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}};
+ var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/tags/addtagtoevent",
      type: "POST",
@@ -24,7 +24,7 @@ function addTag(tagText){
 
 //Function to remove a tag from the event
 function removeTag(tagText){
- var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}};
+ var formData = {tag_text:tagText,event_key:{{hashValue.HASH_KY}}, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/tags/removetagfromevent",
      type: "POST",

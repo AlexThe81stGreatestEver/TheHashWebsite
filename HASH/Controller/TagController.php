@@ -39,7 +39,8 @@ class TagController extends BaseController
         'pageTitle' => "Event Tags",
         'pageSubTitle' => 'Create Event Tags. (Add them to the events sometime later).',
         'pageHeader' => 'Why is this so complicated ?',
-        'tagList' => $eventTagList
+        'tagList' => $eventTagList,
+        'csrf_token' => $this->getCsrfToken('tag')
       ));
 
       #Return the return value
@@ -134,6 +135,9 @@ private function addNewEventTagAfterDbChecking(Request $request, string $theTagT
 
 public function addNewEventTag(Request $request){
 
+        $token = $request->request->get('csrf_token');
+        $this->validateCsrfToken('tag', $token);
+
         #Establish the return message
         $returnMessage = null;
 
@@ -209,7 +213,8 @@ public function addNewEventTag(Request $request){
         'hashValue' => $hashValue,
         'hashKey' => $hash_id,
         'tagList' => $eventTagList,
-        'hashTypes' => $this->getHashTypes($hashValue['KENNEL_KY'], 0)
+        'hashTypes' => $this->getHashTypes($hashValue['KENNEL_KY'], 0),
+        'csrf_token' => $this->getCsrfToken('tag')
       ));
 
       #Return the return value
@@ -228,6 +233,9 @@ public function addNewEventTag(Request $request){
       #Obtain the post values
       $theTagText = trim($request->request->get('tag_text'));
       $theEventKey = intval($request->request->get('event_key'));
+
+      $token = $request->request->get('csrf_token');
+      $this->validateCsrfToken('tag', $token);
 
       #Determine if the tag text is valid (as in, doesn't have sql injection in it)
       $tagTextIsValid = $this->isTagTextValid($theTagText);
@@ -289,6 +297,9 @@ public function addNewEventTag(Request $request){
 
 
     public function removeTagFromEventJsonAction(Request $request){
+
+            $token = $request->request->get('csrf_token');
+            $this->validateCsrfToken('tag', $token);
 
             #Establish the return message
             $returnMessage = "This has not been set yet...";

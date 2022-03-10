@@ -5,7 +5,7 @@
   <script type = "text/javascript" language = "javascript">
 
 function addTag(tagText){
- var formData = {tag_text:tagText};
+ var formData = {tag_text:tagText, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/tags/addneweventtag",
      type: "POST",
