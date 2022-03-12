@@ -96,21 +96,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_alltime_hashers %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -126,21 +119,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
                 {% set colorNum = colorNum + 1 %}
 		<div class="row">
-		  <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-		  <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-		  <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-		  <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+		  <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+		  <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
 		</div>
 
 		{% for item in hares %}
 		  <div class="row">
-		    <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-		    <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-		      <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-		    </div>
-		    <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-		    <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		    <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+		    <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		      <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
 		    </div>
 		  </div>
@@ -155,31 +141,20 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Hare</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hare</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hare</div>
               </div>
 
               {% for item in top_overall_hares %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
               {% endfor %}
           </div></div>
         {% endif %}
-
-
-
-
 
         {% for quickest_hare_data in quickest_hares %}
           {% set hares = quickest_hare_data.data %}
@@ -189,21 +164,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
                 {% set colorNum = colorNum + 1 %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                  <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                  <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Days</div>
+                  <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
                 </div>
 
                 {% for item in hares %}
                   <div class="row">
-                    <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                    <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                    </div>
-                    <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                    <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                    <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
                     </div>
                   </div>
@@ -218,21 +186,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Days</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in the_slowest_to_x_results %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
                   </div>
                 </div>
@@ -246,21 +207,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Days</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in the_quickest_to_x_results %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
                   </div>
                 </div>
@@ -268,28 +222,20 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           </div></div>
         {% endif %}
 
-
         {% if the_quickest_to_y_results|length == 10 %}
           <div class="col-lg-3" ><div style="padding:2">
             <h4><a href="/{{kennel_abbreviation}}/{{the_quickest_to_y_number}}/quickest/to/reach/bydays">Quickest To Reach {{the_quickest_to_y_number}} Hashes</a></h4>
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row">
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">hasher</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Days</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Days</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in the_quickest_to_y_results %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.DAYS_TO_REACH_ANALVERSARY}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a>
                   </div>
                 </div>
@@ -303,21 +249,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_hashers_this_year %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -331,21 +270,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_hashers_last_year %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -359,21 +291,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_hares_this_year %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -387,21 +312,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_hares_last_year %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -415,21 +333,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in top_streakers %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.VALUE}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a>
                   </div>
                 </div>
@@ -443,21 +354,14 @@ h4 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               {% set bgcolor = table_colors[colorNum % table_colors|length ] %}
               {% set colorNum = colorNum + 1 %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 visible-xs"  style="background-color:{{headerColor}};">Ct.</div>
-                <div class="col-xs-8 col-md-8 visible-xs"  style="background-color:{{headerColor}};">Name</div>
-
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Count</div>
-                <div class="col-xs-8 col-md-8 hidden-xs"  style="background-color:{{headerColor}};">Hasher</div>
+                <div class="col-xs-4 col-md-4"  style="background-color:{{headerColor}};">Count</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}};">Hasher</div>
               </div>
 
               {% for item in current_streakers %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">{{item.THE_STREAK_IN_EVENTS}}</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_HASHER_KY}}">{{item.THE_HASHER_NAME}}</a>
-                  </div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.THE_STREAK_IN_EVENTS}}</div>
-                  <div class="col-xs-8 col-md-8 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-4 col-md-4"    style="background-color:{{bgcolor}};">{{item.THE_STREAK_IN_EVENTS}}</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <a href="/{{kennel_abbreviation}}/hashers/{{item.THE_HASHER_KY}}">{{item.THE_HASHER_NAME}}</a>
                   </div>
                 </div>
