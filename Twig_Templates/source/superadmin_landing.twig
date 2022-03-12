@@ -58,17 +58,16 @@ function deleteHareType(id) {
               {% set bgcolor = "#d1f2eb" %}
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Name</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Role</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Actions</div>
+                <div class="col-xs-6 col-md-5"  style="background-color:{{headerColor}};">Name</div>
+                <div class="col-md-5 hidden-xs" style="background-color:{{headerColor}};">Role</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}};">Actions</div>
               </div>
 
               {% for item in user_list %}
                 <div class="row">
-                  <div class="col-xs-12 col-md-4 visible-xs"  style="background-color:{{headerColor}};">{{item.username}}</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.username}}</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.roles}}</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-xs-6 col-md-5"    style="background-color:{{bgcolor}};">{{item.username}}</div>
+                  <div class="col-md-5 hidden-xs"   style="background-color:{{bgcolor}};">{{item.roles}}</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.id}}/edituser/ajaxform">Modify</a>
                     {% if app.user.username != item.username %}
                     |
@@ -88,12 +87,12 @@ function deleteHareType(id) {
 
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
-                <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Location</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Abbreviation</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">In Record Keeping</div>
-                <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Address</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+                <div class="col-xs-6 col-md-3"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Location</div>
+                <div class="col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Abbreviation</div>
+                <div class="col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">In Record Keeping</div>
+                <div class="col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Address</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in kennel_list %}
@@ -105,18 +104,18 @@ function deleteHareType(id) {
                   {% set bgcolor = "#d6eaf8" %}
                 {% endif %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_NAME}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_DESCRIPTION}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_ABBREVIATION}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-6 col-md-3"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_NAME}}&nbsp;</div>
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_DESCRIPTION}}&nbsp;</div>
+                  <div class="col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_ABBREVIATION}}&nbsp;</div>
+                  <div class="col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     {% if item.IN_RECORD_KEEPING == 0 %}
                       No
                     {% elseif item.IN_RECORD_KEEPING == 1 %}
                       Yes
                     {% endif %}
                   </div>
-                  <div class="col-xs-4 col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SITE_ADDRESS}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SITE_ADDRESS}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.KENNEL_ABBREVIATION}}/editkennel/ajaxform">Modify</a>
                     {% if not item.IN_USE %}
                     |
@@ -138,16 +137,16 @@ function deleteHareType(id) {
 
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
+                <div class="col-xs-6 col-md-8"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in hash_types %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HASH_TYPE_NAME}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HASH_TYPE_NAME}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.HASH_TYPE}}/edithashtype/ajaxform">Modify</a>
                     {% if not item.IN_USE %}
                     |
@@ -167,18 +166,18 @@ function deleteHareType(id) {
 
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
-                <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chart Color</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
+                <div class="col-xs-6 col-md-6"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chart Color</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in hare_types %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HARE_TYPE_NAME}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.CHART_COLOR}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-6"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HARE_TYPE_NAME}}&nbsp;</div>
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.CHART_COLOR}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.HARE_TYPE}}/editharetype/ajaxform">Modify</a>
                     {% if not item.IN_USE %}
                     |
@@ -198,16 +197,16 @@ function deleteHareType(id) {
 
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
-                <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+                <div class="col-xs-6 col-md-4"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-6 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in site_config %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.NAME}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-xs-6 col-md-4"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.NAME}}&nbsp;</div>
+                  <div class="col-md-6 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.NAME}}/editsiteconfig/ajaxform">Modify</a>
                   </div>
                 </div>
@@ -221,14 +220,14 @@ function deleteHareType(id) {
 
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+                <div class="col-xs-6 col-md-10"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
+                <div class="col-xs-6 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in ridiculous %}
                 <div class="row">
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}};">
+                  <div class="col-xs-6 col-md-10"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
+                  <div class="col-xs-6 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.NAME}}/editridiculous/ajaxform">Modify</a>
                     |
                     <a href="javascript:deleteRidiculous('{{item.NAME}}')">
