@@ -133,11 +133,17 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}'>View Hound Details</a></i> |
         {% endif %}
         {% for hare_type in hare_types %}
+	  {% for harings in hareCounts %}
+          {% if harings.type == hare_type.HARE_TYPE_NAME %}
+          {% if harings.total > 0 %}
           {% if google_analytics_id != 'none' %}
             <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
           {% else %}
             <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
           {% endif %}
+          {% endif %}
+          {% endif %}
+          {% endfor %}
         {% endfor %}
         {{overall_hare_details}}
 

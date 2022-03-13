@@ -1721,6 +1721,16 @@ class HashController extends BaseController
       $legacy_run_count = 0;
     }
 
+    $hareCounts = array();
+
+    foreach ($hareTypes as &$hareType) {
+        $total = $this->fetchAssoc(PERSONS_HARING_TYPE_COUNT,
+          array((int) $hasher_id, $kennelKy, (int) $hareType['HARE_TYPE']));
+      array_push($hareCounts, array(
+        'type' => $hareType['HARE_TYPE_NAME'],
+        'total' => $total['THE_COUNT']));
+    }
+
     # Establish and set the return value
     $returnValue = $this->render('hasher_chart_details.twig',array(
       'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
@@ -1734,6 +1744,7 @@ class HashController extends BaseController
       'hasherValue' => $hasher,
       'hashCount' => $hashCountValue['THE_COUNT'],
       'hareCount' => $hareCountValue['THE_COUNT'],
+      'hareCounts' => $hareCounts,
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashes_by_year_list' => $hashesByYearList,
       'harings_by_year_list' => $haringsByYearList,
