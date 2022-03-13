@@ -329,7 +329,27 @@ class ObscureStatisticsController extends BaseController {
       #Set the return value
       $returnValue = $this->app->json($theirVirginHash,200);
       return $returnValue;
+    }
 
+    #Obtain the first haring of a given hasher
+    public function getHashersVirginHare(Request $request, string $kennel_abbreviation){
+
+      #Obtain the kennel key
+      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+      #Obtain the post values
+      $theHasherKey = $request->request->get('hasher_id');
+      $theHareType = (int) $request->request->get('hare_type');
+
+      #Define the sql statement to execute
+      $theSql = SELECT_HASHERS_VIRGIN_HARE;
+
+      #Query the database
+      $theirVirginHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
+
+      #Set the return value
+      $returnValue = $this->app->json($theirVirginHash,200);
+      return $returnValue;
     }
 
     public function getKennelsVirginHash(Request $request, string $kennel_abbreviation){
@@ -346,7 +366,6 @@ class ObscureStatisticsController extends BaseController {
       #Set the return value
       $returnValue = $this->app->json($theirVirginHash,200);
       return $returnValue;
-
     }
 
     #Obtain the latest hash of a given hasher
@@ -367,7 +386,27 @@ class ObscureStatisticsController extends BaseController {
       #Set the return value
       $returnValue = $this->app->json($theirLatestHash,200);
       return $returnValue;
+    }
 
+    #Obtain the latest haring of a given hasher
+    public function getHashersLatestHare(Request $request, string $kennel_abbreviation){
+
+      #Obtain the post values
+      $theHasherKey = $request->request->get('hasher_id');
+      $theHareType = (int) $request->request->get('hare_type');
+
+      #Obtain the kennel key
+      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+      #Define the sql statement to execute
+      $theSql = SELECT_HASHERS_MOST_RECENT_HARE;
+
+      #Query the database
+      $theirLatestHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
+
+      #Set the return value
+      $returnValue = $this->app->json($theirLatestHash,200);
+      return $returnValue;
     }
 
     public function getKennelsLatestHash(Request $request, string $kennel_abbreviation){

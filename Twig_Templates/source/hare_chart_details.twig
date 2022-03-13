@@ -8,9 +8,9 @@
 
     //Function to get hares for the event
     function getVirginHash(hasher_id){
-     var formData = {hasher_id:hasher_id};
+     var formData = {hasher_id:hasher_id, hare_type: {{hare_type}}};
      $.ajax({
-         url : "/{{kennel_abbreviation}}/statistics/hasher/firstHash",
+         url : "/{{kennel_abbreviation}}/statistics/hasher/firstHare",
          type: "POST",
          data : formData,
          dataType : 'json',
@@ -45,9 +45,9 @@
 
    //Function to get hares for the event
    function getMostRecentHash(hasher_id){
-    var formData = {hasher_id:hasher_id};
+    var formData = {hasher_id:hasher_id, hare_type:{{hare_type}}};
     $.ajax({
-        url : "/{{kennel_abbreviation}}/statistics/hasher/mostRecentHash",
+        url : "/{{kennel_abbreviation}}/statistics/hasher/mostRecentHare",
         type: "POST",
         data : formData,
         dataType : 'json',
@@ -173,7 +173,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         </div>
 
         <div class="col-xs-12 col-md-6" style="background-color:silver;">
-          <h3>Their harings</h3>
+          <h3>Their Harings</h3>
           <dl class="dl-horizontal">
             <a href='/{{kennel_abbreviation}}/coharelist/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohares</a><br>
             <a href='/{{kennel_abbreviation}}/coharecount/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohare Count </a><br>
@@ -185,6 +185,50 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
             {% endfor %}
             &nbsp;<br>
             </span>
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:yellow">
+          <h3>Their First {{hare_type_name}} Haring</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+                <div data-role="content" id="virgin_hashing_elapsed_time"></div>
+            </dd>
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:#ee8888">
+          <h3>Their Latest {{hare_type_name}} Haring</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+              <div data-role="content" id="latest_hashing_elapsed_time"></div>
+            </dd>
           </dl>
         </div>
       </div>
