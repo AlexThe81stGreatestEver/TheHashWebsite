@@ -8,10 +8,6 @@
 <script type="text/javascript" src="/node_modules/c3/c3.min.js"></script>
 <link href="/node_modules/c3/c3.css" rel="stylesheet" type="text/css">
 
-
-
-
-
 <script type = "text/javascript" language = "javascript">
     //Function to get hares for the event
     function getVirginHash(hasher_id){
@@ -74,7 +70,6 @@
          $('#latest_hash_location').empty();
          $('#latest_hash_location').append(latest_hash_location);
 
-
          var years_elapsed = data.YEARS_SINCE_EVENT;
          var months_elapsed = data.MONTHS_SINCE_EVENT;
          var days_elapsed = data.DAYS_SINCE_EVENT;
@@ -88,12 +83,6 @@
         }
     });
   }
-
-
-
-
-
-
 
 //Generic function to retrieve data
 function getListData(hasher_id,url_value,div_value, column_one_header, column_two_header){
@@ -111,8 +100,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
        $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
        $(div_value).append('</thead>');
 
-
-
        $.each(data, function(key,row) {
          $(div_value).append('<tr>');
          $(div_value).append('<td><b>'+ row.THE_VALUE + '</b></td>');
@@ -128,7 +115,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
      }
  });
 }
-
 
   function  loadQuarterMonthSunburst(){
     var chart = document.getElementById('quartermonthsunburst');
@@ -210,7 +196,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
     // use configuration item and data specified to show chart
     myChart.setOption(option);
-
   }
 
   function loadCountyChart(){
@@ -252,9 +237,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
     // use configuration item and data specified to show chart
     myChart.setOption(option);
-
   }
-
 
   function loadPostalCodeChart(){
     // based on prepared DOM, initialize echarts instance
@@ -312,14 +295,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
    </script>
 
-
-
-
-
-
-
-
-
     <div class="container">
       <h1>{{pageTitle}}</h1>
       {% if hareCount > 0 %}
@@ -340,13 +315,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
       </h5>
       {% endif %}
 
-
-
-
-
-      <div class="row" style="display: flex;">
-
-        <div class="col-sm-5" style="background-color:lime;">
+      <div class="row marketing">
+        <div class="col-xs-12 col-md-6" style="background-color:lime;">
           <h3>Basic Details</h3>
           <dl class="dl-horizontal">
               {% autoescape %}
@@ -364,10 +334,10 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           </dl>
         </div>
 
-        <div class="col-sm-7" style="background-color:silver;">
+        <div class="col-xs-12 col-md-6" style="background-color:silver;">
           <h3>Their hashings</h3>
           <dl class="dl-horizontal">
-            {% if legacy_run_count > 0 %}
+            {% if legacy_run_count != 0 %}
               Number of runs before electronic record keeping: {{legacy_run_count}}<br/>
             {% endif %}
             <a href='/{{kennel_abbreviation}}/listhashes/byhasher/{{hasherValue.HASHER_KY}}'>Their hashings</a><br>
@@ -375,16 +345,17 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
             <a href='/{{kennel_abbreviation}}/getProjectedHasherAnalversaries/{{hasherValue.HASHER_KY}}'>Their *predicted* hashing analversaries</a><br>
             <a href='/{{kennel_abbreviation}}/hashedWith/{{hasherValue.HASHER_KY}}'>Hounds who have hashed with them<br>
             <a href='/{{kennel_abbreviation}}/attendanceRecordForHasher/{{hasherValue.HASHER_KY}}'>Attendance Record</a>
+            <span class="hidden-sm hidden-xs">
+            {% if legacy_run_count == 0 %}
+              &nbsp;<br/>
+            {% endif %}
+            &nbsp;<br/>
+            &nbsp;<br/>
+            </span>
           </dl>
         </div>
 
-
-
-      </div>
-
-      <div class="row" style="display: flex;">
-
-        <div class="col-sm-6" style="background-color:yellow">
+        <div class="col-xs-12 col-md-6" style="background-color:yellow">
           <h3>Their first hashing</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
@@ -406,8 +377,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           </dl>
         </div>
 
-
-        <div class="col-sm-6" style="background-color:silver">
+        <div class="col-xs-12 col-md-6" style="background-color:#ee8888">
           <h3>Their latest hashing</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
@@ -429,8 +399,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           </dl>
         </div>
       </div>
-
-
 
         <div class="row">
           <div class="col-sm-12">

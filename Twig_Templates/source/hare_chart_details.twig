@@ -29,7 +29,6 @@
           $('#virgin_hash_location').empty();
           $('#virgin_hash_location').append(virgin_hash_location);
 
-
           var years_elapsed = data.YEARS_SINCE_EVENT;
           var months_elapsed = data.MONTHS_SINCE_EVENT;
           var days_elapsed = data.DAYS_SINCE_EVENT;
@@ -67,7 +66,6 @@
          $('#latest_hash_location').empty();
          $('#latest_hash_location').append(latest_hash_location);
 
-
          var years_elapsed = data.YEARS_SINCE_EVENT;
          var months_elapsed = data.MONTHS_SINCE_EVENT;
          var days_elapsed = data.DAYS_SINCE_EVENT;
@@ -81,12 +79,6 @@
         }
     });
   }
-
-
-
-
-
-
 
 //Generic function to retrieve data
 function getListData(hasher_id,url_value,div_value, column_one_header, column_two_header){
@@ -104,8 +96,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
        $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
        $(div_value).append('</thead>');
 
-
-
        $.each(data, function(key,row) {
          $(div_value).append('<tr>');
          $(div_value).append('<td><b>'+ row.THE_VALUE + '</b></td>');
@@ -122,7 +112,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
  });
 }
 
-
    //Call these functions upon page load
    $(document).ready(function() {
       getVirginHash({{hasherValue.HASHER_KY}});
@@ -135,9 +124,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
     });
 
    </script>
-
-
-
 
     <div class="container">
       <h1>{{pageTitle}}</h1>
@@ -165,9 +151,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         {% endif %}
       </h5>
 
-      <div class="row" style="display: flex;">
-
-        <div class="col-sm-5" style="background-color:lime;">
+      <div class="row marketing">
+        <div class="col-xs-12 col-md-6" style="background-color:lime;">
           <h3>Basic Details</h3>
           <dl class="dl-horizontal">
               {% autoescape %}
@@ -187,25 +172,24 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
           </dl>
         </div>
 
-
-
-        <div class="col-sm-7" style="background-color:silver;">
+        <div class="col-xs-12 col-md-6" style="background-color:silver;">
           <h3>Their harings</h3>
           <dl class="dl-horizontal">
             <a href='/{{kennel_abbreviation}}/coharelist/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohares</a><br>
             <a href='/{{kennel_abbreviation}}/coharecount/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohare Count </a><br>
             <a href='/{{kennel_abbreviation}}/getHareAnalversaries/{{hare_type}}/{{hasherValue.HASHER_KY}}'>All of their {{ hare_type_name }} Haring Analversaries</a><br>
             <a href='/{{kennel_abbreviation}}/getHasherCountsByHare/{{hasherValue.HASHER_KY}}/{{hare_type}}'>Hounds who have hashed their {{ hare_type_name }} harings</a><br>
+            <span class="hidden-sm hidden-xs">
+	    {% for harings in hareCounts %}
+            &nbsp;<br>
+            {% endfor %}
+            &nbsp;<br>
+            </span>
           </dl>
         </div>
-
       </div>
 
-
-
       <div class="row">
-
-
         <div class="col-sm-6">
 
           <canvas id="myChart2" width="25" height="25"></canvas>
