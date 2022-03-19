@@ -8,6 +8,13 @@
 </p>
 
 <script type="text/javascript">
+
+function rot13(message) {
+  return message.replace(/[a-z]/gi,
+    letter => String.fromCharCode(letter.charCodeAt(0) +
+      (letter.toLowerCase() <= 'm' ? 13 : -13)));
+}
+
 function e(a) {
   document.write(a.join(""));
 }
@@ -36,7 +43,15 @@ e(["<p>Dirty can be reached at <a href=\"ma",
 </script>
 
 <h1>Contact Local Administrators</h1>
-<p>If you see any errors in the stats (someone didn't get credit for being at a hash, an event time/location was entered in wrong, etc), you can contact the administrators of this instance at <a href="mailto:{{adminEmail}}">{{adminEmail}}</a>.</p>
+<p>
+If you see any errors in the stats (someone didn't get credit for being at
+a hash, an event time/location was entered in wrong, etc), you can contact
+the administrators of this instance at
+<script type="text/javascript">
+document.write("<a href=\"mailto:" + rot13("{{adminEmail}}") +
+  "\">" + rot13("{{adminEmail}}") + "</a>.");
+</script>
+</p>
 
 <h4>Version: v1.1.0-alpha</h4>
 
