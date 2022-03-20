@@ -7,35 +7,10 @@
 <script type = "text/javascript" src = "/node_modules/jquery-ui/ui/widgets/datepicker.js"></script>
 <script type = "text/javascript" src = "/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 <script type = "text/javascript" src = "/node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
-<script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
 <script>
 
 function resetTheForm(){
   $('#the_form')[0].reset();
-}
-
-function displayMessage(messageValue){
-
-  //Determine the type of message to display
-  var indexLocation = messageValue.indexOf("Success!");
-  var messageType = "";
-  if(indexLocation >= 0){
-    messageType = "success";
-  }else {
-    messageType = "danger";
-  }
-
-  $.bootstrapGrowl(messageValue, {
-    ele: 'body', // which element to append to
-    type: messageType, // (null, 'info', 'error', 'success')
-    offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-    align: 'center', // ('left', 'right', or 'center')
-    width: 400, // (integer, or 'auto')
-    delay: 4000,
-    allow_dismiss: true,
-    stackup_spacing: 10 // spacing between consecutively stacked growls.
-  });
-
 }
 
 function convertFormToJson(theForm){
@@ -62,12 +37,13 @@ function formSubmitAction(){
   // Serialize the form
   var theFormSerialized = theForm.serializeArray();
 
+  theFormSerialized.push({ name: 'csrf_token', value : '{{csrf_token}}' });
+
   // Convert form fields into json object
   var jsonifiedForm = convertFormToJson(theFormSerialized);
 
   // Re-disable the form fields
   theDisabledFields.attr('disabled','disabled');
-
 
   $.ajax({
       url : "/admin/edithash/ajaxform/{{hashKey}}",
@@ -75,34 +51,17 @@ function formSubmitAction(){
       data : jsonifiedForm,
       dataType : 'json',
       success: function(data, textStatus, jqXHR){
-        //alert("success");
         displayMessage(data);
-        //alert(jqXHR);
-        //alert(textStatus);
       },
-      error: function (jqXHR, textStatus, errorThrown)
-      {
-           //alert("failure, except nothing happened :)");
-           displayMessage("Unknown system error");
-           //alert(jqXHR);
-           //alert(textStatus);
-           //alert(errorThrown);
-      }
+      error: handleAjaxError
   });
-
 
   return false;
 }
 
-
-
 $(function(){
   var validator = $("#the_form").validate({
     rules:{
-      kennelName: {
-        required:true,
-        minlength:1
-      },
       hashEventDescription: {
         required:true,
         minlength:3
@@ -117,10 +76,6 @@ $(function(){
       }
     },
     messages:{
-      kennelName: {
-        required: "Thou shalt provide a kennel name",
-        minlength: jQuery.validator.format("Enter at least {0} characters")
-      },
       hashEventDescription: {
           required: "Thou shalt provide a hash event description",
           minlength: jQuery.validator.format("Enter at least {0} characters")
@@ -169,22 +124,12 @@ $(function(){
   <div class="form-group">
     <label for"kennelName" class="col-sm-2 control-label">Kennel Name</label>
     <div class="col-sm-4">
-      <select class="form-control" id="kennelName" name="kennelName">
-        {% for abbreviation,kennelKey in kennelList %}
-          <option
-            {% if hashValue.KENNEL_KY == kennelKey %}
-              selected="selected"
-            {% endif %}
-            value="{{kennelKey}}">
-            {{abbreviation}}
-          </option>
-          {% endfor %}
-        </select>
+      {{hashValue.KENNEL_ABBREVIATION}}
     </div>
 
     <label for"hashEventNumber" class="col-sm-2 control-label">Hash Event Number</label>
     <div class="col-sm-4">
-      {{hashValue.KENNEL_EVENT_NUMBER}}
+      <input type="text" class="form-control" id="hashEventNumber" name="hashEventNumber" value="{{hashValue.KENNEL_EVENT_NUMBER}}">
     </div>
   </div>
 
@@ -194,33 +139,19 @@ $(function(){
       <input type="text" class="form-control" id="hashEventDescription" name="hashEventDescription" value="{{hashValue.SPECIAL_EVENT_DESCRIPTION}}">
     </div>
 
-    <label for"hyperIndicator" class="col-sm-2 control-label">Is a Hyper Hash</label>
+    <label for"hashType" class="col-sm-2 control-label">Hash Type</label>
     <div class="col-sm-4">
-      <label class="radio-inline">
-        <input
-          type="radio"
-          name="hyperIndicator"
-          id="hyperIndicator"
-          value="0"
-          {% if(hashValue.IS_HYPER == 0) %}
-            checked="checked"
-          {% endif %}
-          >
-          No
-        </input>
-      </label>
-
-      <label class="radio-inline">
-        <input
-          type="radio"
-          name="hyperIndicator"
-          id="hyperIndicator"
-          {% if (hashValue.IS_HYPER == 1) %}
-            checked="checked"
-          {% endif %}
-          value="1">
-          Yes
-        </input>
+      <select class="form-control" id="hashType" name="hashType">
+        {% for hashType in hashTypes %}
+          <option
+            {% if hashValue.HASH_TYPE == hashType.HASH_TYPE %}
+              selected="selected"
+            {% endif %}
+            value="{{hashType.HASH_TYPE}}">
+            {{hashType.HASH_TYPE_NAME}}
+          </option>
+          {% endfor %}
+        </select>
       </label>
     </div>
   </div>

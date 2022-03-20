@@ -16,7 +16,7 @@
         <tbody>
           {% for item in theList %}
             <tr>
-              <td>{{item.HASHER_NAME}}</td>
+              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">{{item.HASHER_NAME}}</a></td>
               <td>{{item.THE_COUNT_INCREMENTED}}</td>
               <td>{{item.YEARS_ABSENCE}}</td>
             </tr>

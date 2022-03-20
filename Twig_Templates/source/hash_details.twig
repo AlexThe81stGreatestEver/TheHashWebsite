@@ -41,14 +41,8 @@
             </div>
 
             <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hyper Hash ?</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">
-                {% if hashValue.IS_HYPER == "0000000000" %}
-                  No, regular hash
-                {% else %}
-                  Yes, hyper hash
-                {% endif %}
-              </div>
+              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hash Type</b></div>
+              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.HASH_TYPE_NAME}}</div>
               <div class="col-xs-12 visible-xs"></br></div>
             </div>
 
@@ -99,7 +93,9 @@
       <div class="col-sm-6">
         <a href="#" class="list-group-item active">Analversaries, Streakers, and Backsliders</a>
         <a class="list-group-item" href='/{{kennel_abbreviation}}/consolidatedEventAnalversaries/{{hashValue.HASH_KY}}'>Consolidated Analversaries</a>
-        <a class="list-group-item" href='/{{kennel_abbreviation}}/omniAnalversariesForEvent/{{hashValue.HASH_KY}}'>OmniAnalversary List</a>
+        {% if showOmniAnalversaryPage %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/omniAnalversariesForEvent/{{hashValue.HASH_KY}}'>OmniAnalversary List</a>
+        {% endif %}
         <a class="list-group-item" href='/{{kennel_abbreviation}}/listStreakers/byhash/{{hashValue.HASH_KY}}'>Streakers By Events, Days, and Date</a>
         <a class="list-group-item" href='/{{kennel_abbreviation}}/backSlidersForEventV2/{{hashValue.HASH_KY}}'>Backsliders</a>
         <br>
@@ -221,13 +217,6 @@
               <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.LNG}} &nbsp</div>
               <div class="col-xs-12 visible-xs"></br></div>
             </div>
-
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Place ID</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.PLACE_ID}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
-            </div>
-
 
           </div>
         </div>

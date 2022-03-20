@@ -8,10 +8,10 @@
             <a href="#1" class="list-group-item active">Hashes where bad things happened</a>
             {% for randomKey in randomKeysForRidiculousStats %}
               {% if (loop.index0 is even) %}
-                <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes/byhasher/{{hareKeys[loop.index0].HARE_KEY}}'>{{listOfRidiculousness[randomKey]}}</a>
+                <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes/byhasher/{{hareKeys[loop.index0].HARE_KEY}}'>{{listOfRidiculousness[randomKey].VALUE}}</a>
               {% endif %}
               {% if (loop.index0 is odd) %}
-                <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes/byhare/{{hareKeys[loop.index0].HARE_KEY}}'>{{listOfRidiculousness[randomKey]}}</a>
+                <a class="list-group-item" href='/{{kennel_abbreviation}}/listhashes/byhare/{{hareKeys[loop.index0].HARE_KEY}}'>{{listOfRidiculousness[randomKey].VALUE}}</a>
               {% endif %}
             {% endfor %}
           </div>

@@ -2,40 +2,10 @@
 
 {% block template %}
 
-  <script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
-
   <script type = "text/javascript" language = "javascript">
 
-
-
-  function displayMessage(messageValue){
-
-    //Determine the type of message to display
-    var indexLocation = messageValue.indexOf("Success!");
-    var messageType = "";
-    if(indexLocation >= 0){
-      messageType = "success";
-    }else {
-      messageType = "danger";
-    }
-
-    $.bootstrapGrowl(messageValue, {
-      ele: 'body', // which element to append to
-      type: messageType, // (null, 'info', 'error', 'success')
-      offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-      align: 'center', // ('left', 'right', or 'center')
-      width: 'auto', // (integer, or 'auto')
-      delay: 4000,
-      allow_dismiss: true,
-      stackup_spacing: 10 // spacing between consecutively stacked growls.
-    });
-
-  }
-
-//Function to add a hasher to the event
 function addTag(tagText){
- var formData = {tag_text:tagText};
- //alert(tagText);
+ var formData = {tag_text:tagText, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/tags/addneweventtag",
      type: "POST",
@@ -44,21 +14,11 @@ function addTag(tagText){
      success: function(data, textStatus, jqXHR){
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
-     }
+     error: handleAjaxError
  });
 }
 
-
-
-
 </script>
-
 
 <h2>{{pageTitle}}</a></h2>
 <h3>{{pageSubTitle}}</a></h3>
@@ -85,16 +45,13 @@ function addTag(tagText){
 <script type = "text/javascript" language = "javascript">
 
   function onAddTag(tag){
-    //alert("Adding the tag: " + tag);
     addTag(tag);
   }
 
   function onRemoveTag(tag){
-    //alert("Removed the tag: " + tag);
   }
 
   function onChangeTag(input,tag){
-    //alert("Changed a tag: " + tag);
   }
 
   $('#tags').tagsInput({

@@ -1,0 +1,102 @@
+{% extends "superadmin_edit_form_ajax_base.twig" %}
+
+{% block template %}
+
+{% if is_granted('ROLE_SUPERADMIN') %}
+
+<script>
+
+{% if hash_type == -1 %}
+submitUrl = "/superadmin/newhashtype/ajaxform";
+{% else %}
+submitUrl = "/superadmin/{{hash_type}}/edithashtype/ajaxform";
+{% endif %}
+
+$(function() {
+  var validator = $("#the_form").validate({
+    rules:{
+      hashTypeName: {
+        required:true,
+        minlength:3
+      },
+      sequence: {
+        required:true,
+        minlength:1,
+        numberFormat:true
+      },
+      hareTypes: {
+        required:true
+      },
+    },
+    messages:{
+      hashTypeName: {
+          required: "Thou shalt provide a hash type name",
+          minlength: jQuery.validator.format("Enter at least {0} characters")
+      },
+      sequence: {
+          required: "Thou shalt provide a sequence number",
+          minlength: jQuery.validator.format("Enter at least {0} characters"),
+          numberFormat: "Numbers only"
+      },
+      hareTypes: {
+          required: "Thou shalt select at least one hare type"
+      },
+    },
+    errorPlacement: function(error,element){
+      error.appendTo(element.parent());
+    },
+    submitHandler: function(){
+      formSubmitAction();
+    }
+  });
+
+  $.validator.addMethod("numberFormat",function(value,element){
+      var regEx =  /^[0-9][0-9]*$/;
+      return(value.match(regEx));
+  });
+
+});
+</script>
+
+<div class="table-responsive">
+<h3>{{pageTitle}}</h3>
+
+<form class="form-horizontal" id="the_form">
+
+  <div class="form-group">
+    <label for"sequence" class="col-sm-1 control-label">Sequence</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="sequence" name="sequence" value="{{hashTypeValue.SEQ}}"/>
+    </div>
+
+    <label for"hashTypeName" class="col-sm-1 control-label">Hash Type Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="hashTypeName" name="hashTypeName" value="{{hashTypeValue.HASH_TYPE_NAME}}"/>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"hareTypes" class="col-sm-1 control-label">Hare Types</label>
+    <div class="col-sm-4">
+      <select class="form-control" id="hareTypes" name="hareTypes" multiple="multiple">
+        {% for hare_type in hare_types %}
+          <option value="{{hare_type.HARE_TYPE}}"
+          {% if hare_type.SELECTED %}
+            selected=selected
+          {% endif %}
+          >{{hare_type.HARE_TYPE_NAME}}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+</div>
+
+{% else %}
+    You seem not to be logged in.
+    <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
+{% endif %}
+
+{% endblock %}

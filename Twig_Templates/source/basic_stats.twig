@@ -6,7 +6,7 @@
         <div class="col-lg-4">
           <div class="list-group">
             <a href="#1" class="list-group-item active">Standard Statistics</a>
-            <a class="list-group-item" href="/{{kennel_abbreviation}}/listhashers2"><b>List of All Hashers (People and dogs)</b></a>
+            <a class="list-group-item" href="/{{kennel_abbreviation}}/hashingCounts"><b>List of All Hashers (People and dogs)</b></a>
             <a class="list-group-item" href="/{{kennel_abbreviation}}/listhashes2"><b>List of All Hashes (Events)</b></a>
             <a class="list-group-item" href="/{{kennel_abbreviation}}/jumboCountsTable">Jumbo Counts List</a>
             <a class="list-group-item" href="/{{kennel_abbreviation}}/jumboPercentagesTable">Jumbo Percentages List</a>
@@ -27,9 +27,10 @@
         <div class="col-lg-4">
           <div class="list-group">
             <a href="#3" class="list-group-item active">Haring Details</a>
-            <a class="list-group-item" href="/{{kennel_abbreviation}}/haringCounts">Overall Haring Counts</a>
-            <a class="list-group-item" href="/{{kennel_abbreviation}}/nonHyperharingCounts">True Haring Counts</a>
-            <a class="list-group-item" href="/{{kennel_abbreviation}}/hyperharingCounts">Hyper Haring Counts</a>
+            {% for hare_type in hare_types %}
+	      <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts/{{hare_type.HARE_TYPE}}'>{{hare_type.HARE_TYPE_NAME}} Haring Counts </a>
+            {% endfor %}
+            <a class="list-group-item" href='/{{kennel_abbreviation}}/haringCounts'>{{overall}}Haring Counts</a>
           </div>
         </div>
       </div>
@@ -39,8 +40,8 @@
           <div class="col-lg-6">
             <div class="list-group">
               <a href="#1" class="list-group-item active">Absurd Statistics</a>
-              <a class="list-group-item" href="/{{kennel_abbreviation}}/hasherNameAnalysis">Hashername Substring Fequency Analysis (Version 1)</a>
-              <a class="list-group-item" href="/{{kennel_abbreviation}}/hasherNameAnalysis2">Hashername Substring Fequency Analysis (Version 2)</a>
+              <a class="list-group-item" href="/{{kennel_abbreviation}}/hasherNameAnalysis">Hashername Substring Frequency Analysis (Version 1)</a>
+              <a class="list-group-item" href="/{{kennel_abbreviation}}/hasherNameAnalysis2">Hashername Substring Frequency Analysis (Version 2)</a>
               <a class="list-group-item" href="/{{kennel_abbreviation}}/longestStreaks">Longest Streaks!</a>
             </div>
           </div>

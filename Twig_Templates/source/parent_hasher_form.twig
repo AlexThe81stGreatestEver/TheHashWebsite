@@ -1,5 +1,14 @@
 {% extends "admin_base.twig" %}
 
+{% block extrahead %}
+<style type="text/css">
+dl { display: table; }
+dl div { display: table-row; }
+dl div label { padding: 0.5em; display: table-cell;}
+dl div input { display: table-cell;}
+</style>
+{% endblock %}
+
 {% block template %}
   <h1>{{pageTitle}}</h1>
 

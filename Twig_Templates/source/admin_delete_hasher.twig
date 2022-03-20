@@ -4,30 +4,6 @@
 
 <script type = "text/javascript" language = "javascript">
 
-  function displayMessage(messageValue){
-
-    //Determine the type of message to display
-    var indexLocation = messageValue.indexOf("Success!");
-    var messageType = "";
-    if(indexLocation >= 0){
-      messageType = "success";
-    }else {
-      messageType = "danger";
-    }
-
-    $.bootstrapGrowl(messageValue, {
-      ele: 'body', // which element to append to
-      type: messageType, // (null, 'info', 'error', 'success')
-      offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-      align: 'center', // ('left', 'right', or 'center')
-      width: 'auto', // (integer, or 'auto')
-      delay: 4000,
-      allow_dismiss: true,
-      stackup_spacing: 10 // spacing between consecutively stacked growls.
-    });
-
-  }
-
   //Call these functions upon page load
   $(document).ready(function() {
     //Convert the main table into a data table
@@ -49,30 +25,22 @@
   });
 
   //Function to add a hasher to the event
-  function deleteHasher(hasher_key){
-    var formData = {hasher_key:hasher_key};
+  function deleteHasher(hasher_key) {
+    var csrfToken = '{{csrf_token}}';
+    var formData = {hasher_key:hasher_key,csrf_token:csrfToken};
     $.ajax({
        url : "/admin/deleteHasherPost",
        type: "POST",
        data : formData,
        dataType : 'json',
-       success: function(data, textStatus, jqXHR){
-           displayMessage(data);
+       success: function(data, textStatus, jqXHR) {
+         location.replace("/admin/hello");
        },
-       error: function (jqXHR, textStatus, errorThrown){
-            displayMessage(data);
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
-       }
+       error: handleAjaxError
    });
  }
 
-
-
 </script>
-
 
   <h1>{{pageTitle}}</h1>
   <h3>{{pageSubTitle}}</h3>
@@ -92,8 +60,6 @@
   {% else %}
     This hasher has vanished.
   {% endif %}
-
-
 
   {% if hasher_exists == TRUE %}
     <div class="table-responsive">

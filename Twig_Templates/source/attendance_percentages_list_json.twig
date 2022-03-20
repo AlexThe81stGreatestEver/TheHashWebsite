@@ -9,52 +9,6 @@
       return encodeURIComponent(str).replace(/[!'()*]/g, escape);
   }
 
-  function maskName (str) {
-
-    //Establish the return value
-    var returnValue = "";
-
-    if(!str){
-      returnValue = "";
-    }else{
-      for (var i = 0, len = str.length; i < len; i++) {
-        if(i==0){
-          returnValue +=(str[i]);
-        }else{
-          returnValue +="*";
-        }
-      }
-    }
-
-    //Return the return value
-    return returnValue;
-  }
-
-  function maskEmail (str) {
-
-    //Establish the return value
-    var returnValue = "";
-
-    if(!str){
-      returnValue = "";
-    }else{
-      for (var i = 0, len = str.length; i < len; i++) {
-        if(i==0){
-          returnValue +=(str[i]);
-        }else if(str[i]=="@"){
-          returnValue +="@";
-        }else if(str[i]=="."){
-          returnValue +=".";
-        }else{
-          returnValue +="*";
-        }
-      }
-    }
-
-    //Return the return value
-    return returnValue;
-  }
-
   //Call these functions upon page load
   $(document).ready(function() {
     //Convert the main table into a data table
@@ -75,7 +29,11 @@
         {
           "data": "HASHER_NAME",
           "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-            $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.HASHER_KY1+"?name="+ rfc3986EncodeURIComponent(oData.HASHER_NAME)+"'>"+oData.HASHER_NAME+"</a>");
+            {% if google_analytics_id != 'none' %}
+              $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.HASHER_KY1+"?name="+ rfc3986EncodeURIComponent(oData.HASHER_NAME)+"'>"+oData.HASHER_NAME+"</a>");
+            {% else %}
+              $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.HASHER_KY1+"'>"+oData.HASHER_NAME+"</a>");
+            {% endif %}
           }
         },
         { "data": "OVERALL_PERCENTAGE" },

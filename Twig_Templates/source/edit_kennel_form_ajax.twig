@@ -1,0 +1,178 @@
+{% extends "superadmin_edit_form_ajax_base.twig" %}
+
+{% block template %}
+
+{% if is_granted('ROLE_SUPERADMIN') %}
+
+<script>
+
+{% if kennel_abbreviation == "_none" %}
+submitUrl = "/superadmin/newkennel/ajaxform";
+{% else %}
+submitUrl = "/superadmin/{{kennel_abbreviation}}/editkennel/ajaxform";
+{% endif %}
+
+$(function(){
+  var validator = $("#the_form").validate({
+    rules:{
+      kennelName: {
+        required:true,
+        minlength:6
+      },
+      kennelAbbreviation: {
+        required:true,
+        minlength:3,
+        kennelAbbrevFormat:true
+      },
+      kennelDescription: {
+        required:true,
+        minlength:6
+      },
+      awardLevels: {
+        required:true,
+        minlength:6,
+        awardLevelsFormat:true
+      },
+      hashTypes: {
+        required:true
+      },
+      hareTypes: {
+        required:true
+      },
+    },
+    messages:{
+      kennelName: {
+          required: "Thou shalt provide a kennel name",
+          minlength: jQuery.validator.format("Enter at least {0} characters")
+      },
+      kennelAbbreviation: {
+          required: "Thou shalt provide a kennel abbreviation",
+          minlength: jQuery.validator.format("Enter at least {0} characters"),
+          kennelAbbrevFormat: "Numbers and Uppercase Letters Only"
+      },
+      kennelDescription: {
+          required: "Thou shalt provide a kennel location",
+          minlength: jQuery.validator.format("Enter at least {0} characters")
+      },
+      awardLevels: {
+          required: "Thou shalt provide award levels",
+          minlength: jQuery.validator.format("Enter at least {0} characters"),
+          awardLevelsFormat: "Comma-separated list of integers"
+      },
+      hashTypes: {
+          required: "Thou shalt select at least one hash type"
+      },
+      hareTypes: {
+          required: "Thou shalt select at least one hare type"
+      },
+    },
+    errorPlacement: function(error,element){
+      error.appendTo(element.parent());
+    },
+    submitHandler: function(){
+      formSubmitAction();
+    }
+  });
+
+  $.validator.addMethod("kennelAbbrevFormat",function(value,element){
+      var regEx =  /^[A-Z][A-Z0-9]*$/;
+      return(value.match(regEx));
+  });
+
+  $.validator.addMethod("awardLevelsFormat",function(value,element){
+      value = value.replace(/ *, */g, ',').trim();
+      var regEx =  /^[0-9]+(,[0-9]+)*$/;
+      return(value.match(regEx));
+  });
+
+});
+</script>
+
+<div class="table-responsive">
+<h3>{{pageTitle}}</h3>
+
+<form class="form-horizontal" id="the_form">
+
+  <div class="form-group">
+    <label for"kennelName" class="col-sm-1 control-label">Kennel Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="kennelName" name="kennelName" value="{{kennelValue.KENNEL_NAME}}"/>
+    </div>
+
+    <label for"kennelAbbreviation" class="col-sm-1 control-label">Kennel Abbreviation</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="kennelAbbreviation" name="kennelAbbreviation" value="{{kennelValue.KENNEL_ABBREVIATION}}"/>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"kennelDescription" class="col-sm-1 control-label">Kennel Location</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="kennelDescription" name="kennelDescription" value="{{kennelValue.KENNEL_DESCRIPTION}}"/>
+    </div>
+
+    <label for"siteAddress" class="col-sm-1 control-label">External Website URL</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="siteAddress" name="siteAddress" value="{{kennelValue.SITE_ADDRESS}}"/>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"inRecordKeeping" class="col-sm-1 control-label">In Record Keeping</label>
+    <div class="col-sm-4">
+      <input type="checkbox" class="form-control" id="inRecordKeeping" name="inRecordKeeping" value="1" 
+        {% if kennelValue.IN_RECORD_KEEPING == 1 %}
+        checked="checked"
+        {% endif %}
+      />
+    </div>
+    
+    {% if showAwardsPage %}
+      <label for"awardLevels" class="col-sm-1 control-label">Award Levels</label>
+      <div class="col-sm-4">
+          <input type="text" class="form-control" id="awardLevels" name="awardLevels" value="{{awardLevels}}"/>
+      </div>
+    {% else %}
+      <input type="hidden" id="awardLevels" name="awardLevels" value="{{awardLevels}}"/>
+    {% endif %}
+    <input type="hidden" id="origAwardLevels" name="origAwardLevels" value="{{awardLevels}}"/>
+  </div>
+
+  <div class="form-group">
+    <label for"hashTypes" class="col-sm-1 control-label">Hash Types</label>
+    <div class="col-sm-4">
+      <select class="form-control" id="hashTypes" name="hashTypes" multiple="multiple">
+        {% for hash_type in hash_types %}
+          <option value="{{hash_type.HASH_TYPE}}"
+          {% if hash_type.SELECTED %}
+            selected=selected
+          {% endif %}
+          >{{hash_type.HASH_TYPE_NAME}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <label for"hareTypes" class="col-sm-1 control-label">Hare Types</label>
+    <div class="col-sm-4">
+      <select class="form-control" id="hareTypes" name="hareTypes" multiple="multiple">
+        {% for hare_type in hare_types %}
+          <option value="{{hare_type.HARE_TYPE}}"
+          {% if hare_type.SELECTED %}
+            selected=selected
+          {% endif %}
+          >{{hare_type.HARE_TYPE_NAME}}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+</div>
+
+{% else %}
+    You seem not to be logged in.
+    <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
+{% endif %}
+
+{% endblock %}

@@ -39,10 +39,7 @@
 
          },
          error: function (jqXHR, textStatus, errorThrown){
-              alert("failure");
-              alert(jqXHR);
-              alert(textStatus);
-              alert(errorThrown);
+           console.log(errorThrown);
          }
      });
    }
@@ -80,10 +77,7 @@
 
         },
         error: function (jqXHR, textStatus, errorThrown){
-             alert("failure");
-             alert(jqXHR);
-             alert(textStatus);
-             alert(errorThrown);
+          console.log(errorThrown);
         }
     });
   }
@@ -123,10 +117,7 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
 
      },
      error: function (jqXHR, textStatus, errorThrown){
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+       console.log(errorThrown);
      }
  });
 }
@@ -176,15 +167,10 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
 
    </script>
 
-
-
-
     <div class="container">
       <h1>{{pageTitle}}</h1>
 
-
-
-      <div class="row">
+      <div class="row" style="display: flex;">
 
         <div class="col-sm-6" style="background-color:lime;">
           <h3>Basic Details</h3>
@@ -198,11 +184,12 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
         </div>
 
         <div class="col-sm-6" style="background-color:gold;">
-          <h3>Their hashings</h3>
+          <h3>Hasher Totals</h3>
           <dl class="dl-horizontal">
             <dt># of hashers</dt><dd> <a href="/{{kennel_abbreviation}}/hashingCounts">{{distinct_hasher_count}}</a></dd>
-            <dt># of "True" hares</dt><dd> <a href="/{{kennel_abbreviation}}/nonHyperharingCounts">{{distinct_true_hare_count}} </a></dd>
-            <dt># of "Hyper" hares</dt><dd> <a href="/{{kennel_abbreviation}}/hyperharingCounts">{{distinct_hyper_hare_count}}</a></dd>
+            {% for hareType in hareTypes %}
+              <dt># of "{{hareType.HARE_TYPE_NAME}}" hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts/{{hareType.HARE_TYPE}}">{{distinct_hare_counts[hareType.HARE_TYPE_NAME]}} </a></dd>
+            {% endfor %}
             <dt># of "Overall" hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts">{{distinct_overall_hare_count}}</a></dd>
           </dl>
         </div>
@@ -211,10 +198,10 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
 
       </div>
 
-      <div class="row">
+      <div class="row" style="display: flex;">
 
         <div class="col-sm-6" style="background-color:yellow">
-          <h3>First</h3>
+          <h3>First Hash</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
             <dd>
@@ -237,7 +224,7 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
 
 
         <div class="col-sm-6" style="background-color:silver">
-          <h3>Latest hashing</h3>
+          <h3>Latest hash</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
             <dd>
@@ -650,9 +637,9 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
       </div>
 
       <div class="row">
-        <div id = "surrounding_div" class="col-sm-12" style="width:100%;height:600px">
+        <div id = "surrounding_div" class="col-sm-12" style="width:100%;">
           <h4>Hashes By City</h4>
-          <canvas id="my_canvas" class="wordcloud"></canvas>
+          <canvas id="my_canvas" style="height: 600px;" class="wordcloud"></canvas>
         </div>
       </div>
 
@@ -688,11 +675,10 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
       <div class="row">
         <div id="map" class="col-sm-12"></div>
           <style>
-          #map{
-            height: 100%;
+          #map {
+            height: 600px;
           }
           </style>
-        </div>
       </div>
 
 

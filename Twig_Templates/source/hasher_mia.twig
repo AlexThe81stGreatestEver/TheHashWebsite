@@ -28,7 +28,11 @@
       "columns": [
         { "data": "HASHER_NAME",
           "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-            $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.THE_KEY+"?name="+ rfc3986EncodeURIComponent(oData.HASHER_NAME)+"'>"+oData.HASHER_NAME+"</a>");
+            {% if google_analytics_id != 'none' %}
+              $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.THE_KEY+"?name="+ rfc3986EncodeURIComponent(oData.HASHER_NAME)+"'>"+oData.HASHER_NAME+"</a>");
+            {% else %}
+              $(nTd).html("<a href='/{{kennel_abbreviation}}/hashers/"+oData.THE_KEY+"'>"+oData.HASHER_NAME+"</a>");
+            {% endif %}
           }
         },
         { "data": "LAST_SEEN_EVENT",

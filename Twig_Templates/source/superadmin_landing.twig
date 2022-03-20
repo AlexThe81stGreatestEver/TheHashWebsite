@@ -2,54 +2,97 @@
 
 {% block template %}
 
+<script>
+
+function doDelete(id, description, urlSuffix) {
+  if(window.confirm("Danger! Danger! Danger!  This cannot be undone!  Click OK to permanently remove the " + description + ".")) {
+    $.post("/superadmin/delete" + urlSuffix, {
+        id: id, csrf_token: '{{csrf_token}}'
+      }).done(function() {
+      document.location = "/superadmin/hello";
+    }).fail(function() {
+      alert("Fail");
+    });
+  }
+}
+
+function deleteRidiculous(id) {
+  doDelete(id, "ridiculous stat", "ridiculous");
+}
+
+function deleteUser(id) {
+  doDelete(id, "user", "user");
+}
+
+function deleteKennel(id) {
+  doDelete(id, "kennel", "kennel");
+}
+
+function deleteHashType(id) {
+  doDelete(id, "hash type", "hashtype");
+}
+
+function deleteHareType(id) {
+  doDelete(id, "hare type", "haretype");
+}
+
+
+</script>
+
     <h1>{{pageTitle}}</h1>
     <h3>{{subTitle1}}</h3>
 
     {% if is_granted('ROLE_SUPERADMIN') %}
         Role: ROLE_SUPERADMIN.<br>
         User:{{ app.user.username }}<br>
-        <a href="{{ path('superadmin_logoutaction') }}">Log out (Admin)</a><br>
+        <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
+
+        <div><h3>
+          <a href="/superadmin/integrity">Run Database Integrity Checks</a> |
+          <a href="/superadmin/export">Download Database Backup</a>
+        </h3></div>
 
         <div class="row marketing">
           <div class="col-lg-12"><div style="padding:2">
-            <h4>Admin Users (Create New Users)</h4>
+            <h4>Admin Users (<a href="/superadmin/newuser/ajaxform">Create New User</a>)</h4>
               {% set bgcolor = "#d1f2eb" %}
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Name</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Role</div>
-                <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerColor}};">Actions</div>
+                <div class="col-xs-8 col-md-5"  style="background-color:{{headerColor}};">Name</div>
+                <div class="col-md-5 hidden-xs" style="background-color:{{headerColor}};">Role</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}};">Actions</div>
               </div>
 
               {% for item in user_list %}
                 <div class="row">
-                  <div class="col-xs-12 col-md-4 visible-xs"  style="background-color:{{headerColor}};">{{item.username}}</div>
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">Role</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}};">{{item.roles}}</div>
-                  <div class="col-xs-4 col-md-4 visible-xs"    style="background-color:{{bgcolor}};">Actions</div>
-                  <div class="col-xs-8 col-md-8 visible-xs"    style="background-color:{{bgcolor}};">Modify | Delete</div>
-                  <div class="col-xs-12 visible-xs"></br></div>
-
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.username}}</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">{{item.roles}}</div>
-                  <div class="col-xs-4 col-md-4 hidden-xs"    style="background-color:{{bgcolor}};">Modify | Delete</div>
+                  <div class="col-xs-8 col-md-5"    style="background-color:{{bgcolor}};">{{item.username}}</div>
+                  <div class="col-md-5 hidden-xs"   style="background-color:{{bgcolor}};">{{item.roles}}</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.id}}/edituser/ajaxform">Modify</a>
+                    {% if app.user.username != item.username %}
+                    |
+                    <a href="javascript:deleteUser({{item.id}})">
+                    Delete
+                    </a>
+                    {% endif %}
+                    </div>
                 </div>
               {% endfor %}
           </div></div>
         </div>
 
-
         <div class="row marketing">
           <div class="col-lg-12"><div style="padding:2">
-            <h4>Kennels (Create New Kennel)</h4>
-              
+            <h4>Kennels (<a href="/superadmin/newkennel/ajaxform">Create New Kennel</a>)</h4>
+
               {% set headerColor = "#d3d3d3" %}
               <div class="row" >
-                <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ">Name</div>
-                <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Description</div>
-                <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Abbreviation</div>
-                <div class="col-xs-4 col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">In Record Keeping</div>
-                <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Address</div>
+                <div class="col-xs-8 col-md-3"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Location</div>
+                <div class="col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Abbreviation</div>
+                <div class="col-md-1 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">In Record Keeping</div>
+                <div class="col-md-3 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Address</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
               </div>
 
               {% for item in kennel_list %}
@@ -61,36 +104,26 @@
                   {% set bgcolor = "#d6eaf8" %}
                 {% endif %}
                 <div class="row">
-                  <div class="col-xs-12 col-md-4 visible-xs"  style="background-color:{{headerColor}};">{{item.KENNEL_NAME}}</div>
-                  <div class="col-xs-6 col-md-4 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Description</div>
-                  <div class="col-xs-6 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_DESCRIPTION}}&nbsp;</div>
-                  <div class="col-xs-6 col-md-4 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Abbreviation</div>
-                  <div class="col-xs-6 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_ABBREVIATION}}&nbsp;</div>
-                  <div class="col-xs-6 col-md-4 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">In Record Keeping</div>
-                  <div class="col-xs-6 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div class="col-xs-8 col-md-3"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_NAME}}&nbsp;</div>
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_DESCRIPTION}}&nbsp;</div>
+                  <div class="col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_ABBREVIATION}}&nbsp;</div>
+                  <div class="col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     {% if item.IN_RECORD_KEEPING == 0 %}
                       No
                     {% elseif item.IN_RECORD_KEEPING == 1 %}
                       Yes
                     {% endif %}
                   </div>
-                  <div class="col-xs-6 col-md-4 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Address</div>
-                  <div class="col-xs-6 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SITE_ADDRESS}}&nbsp;</div>
-                  <div class="col-xs-6 col-md-4 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
-                  <div class="col-xs-6 col-md-8 visible-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Modify | Delete&nbsp;</div>
-                  <div class="col-xs-12 visible-xs"></br></div>
-
-                  <div class="col-xs-4 col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_NAME}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_DESCRIPTION}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.KENNEL_ABBREVIATION}}&nbsp;</div>
-                  <div class="col-xs-4 col-md-1 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {% if item.IN_RECORD_KEEPING == 0 %}
-                      No
-                    {% elseif item.IN_RECORD_KEEPING == 1 %}
-                      Yes
+                  <div class="col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SITE_ADDRESS}}&nbsp;</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.KENNEL_ABBREVIATION}}/editkennel/ajaxform">Modify</a>
+                    {% if not item.IN_USE %}
+                    |
+                    <a href="javascript:deleteKennel({{item.KENNEL_KY}})">
+                    Delete
+                    </a>
                     {% endif %}
-                  </div>
-                  <div class="col-xs-4 col-md-3 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SITE_ADDRESS}}&nbsp;</div>
+                    </div>
                 </div>
               {% endfor %}
           </div></div>
@@ -98,9 +131,118 @@
 
         <h2>Manage system settings</h2>
 
+        <div class="row marketing">
+          <div class="col-lg-12"><div style="padding:2">
+            <h4>Hash Types (<a href="/superadmin/newhashtype/ajaxform">Create New Hash Type</a>)</h4>
+
+              {% set headerColor = "#d3d3d3" %}
+              <div class="row" >
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
+                <div class="col-xs-8 col-md-8"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+              </div>
+
+              {% for item in hash_types %}
+                <div class="row">
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
+                  <div class="col-xs-8 col-md-8"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HASH_TYPE_NAME}}&nbsp;</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.HASH_TYPE}}/edithashtype/ajaxform">Modify</a>
+                    {% if not item.IN_USE %}
+                    |
+                    <a href="javascript:deleteHashType({{item.HASH_TYPE}})">
+                    Delete
+                    </a>
+                    {% endif %}
+                    </div>
+                </div>
+              {% endfor %}
+          </div></div>
+        </div>
+
+        <div class="row marketing">
+          <div class="col-lg-12"><div style="padding:2">
+            <h4>Hare Types (<a href="/superadmin/newharetype/ajaxform">Create New Hare Type</a>)</h4>
+
+              {% set headerColor = "#d3d3d3" %}
+              <div class="row" >
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sequence</div>
+                <div class="col-xs-8 col-md-6"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-2 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chart Color</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+              </div>
+
+              {% for item in hare_types %}
+                <div class="row">
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.SEQ}}&nbsp;</div>
+                  <div class="col-xs-8 col-md-6"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.HARE_TYPE_NAME}}&nbsp;</div>
+                  <div class="col-md-2 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.CHART_COLOR}}&nbsp;</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.HARE_TYPE}}/editharetype/ajaxform">Modify</a>
+                    {% if not item.IN_USE %}
+                    |
+                    <a href="javascript:deleteHareType({{item.HARE_TYPE}})">
+                    Delete
+                    </a>
+                    {% endif %}
+                    </div>
+                </div>
+              {% endfor %}
+          </div></div>
+        </div>
+
+        <div class="row marketing">
+          <div class="col-lg-12"><div style="padding:2">
+            <h4>System Configuration Details</h4>
+
+              {% set headerColor = "#d3d3d3" %}
+              <div class="row" >
+                <div class="col-xs-8 col-md-4"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Name</div>
+                <div class="col-md-6 hidden-xs"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+              </div>
+
+              {% for item in site_config %}
+                <div class="row">
+                  <div class="col-xs-8 col-md-4"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.NAME}}&nbsp;</div>
+                  <div class="col-md-6 hidden-xs"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.NAME}}/editsiteconfig/ajaxform">Modify</a>
+                  </div>
+                </div>
+              {% endfor %}
+          </div></div>
+        </div>
+
+        <div class="row marketing">
+          <div class="col-lg-12"><div style="padding:2">
+            <h4>Ridiculous Stats (<a href="/superadmin/newridiculous/ajaxform">Create New Ridiculous Stat</a>)</h4>
+
+              {% set headerColor = "#d3d3d3" %}
+              <div class="row" >
+                <div class="col-xs-8 col-md-10"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Value</div>
+                <div class="col-xs-4 col-md-2"  style="background-color:{{headerColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actions</div>
+              </div>
+
+              {% for item in ridiculous %}
+                <div class="row">
+                  <div class="col-xs-8 col-md-10"    style="background-color:{{bgcolor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.VALUE}}&nbsp;</div>
+                  <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                    <a href="/superadmin/{{item.NAME}}/editridiculous/ajaxform">Modify</a>
+                    |
+                    <a href="javascript:deleteRidiculous('{{item.NAME}}')">
+                    Delete
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+          </div></div>
+        </div>
+
     {% else %}
         You seem not to be logged in.
         <a href="{{ path('superadmin_logoutaction') }}">Log out (Admin)</a><br>
     {% endif %}
 
+  <div>&nbsp;</div>
 {% endblock %}

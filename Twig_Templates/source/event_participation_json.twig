@@ -2,34 +2,7 @@
 
 {% block template %}
 
-  <script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
   <script type = "text/javascript" language = "javascript">
-
-
-
-function displayMessage(messageValue){
-
-  //Determine the type of message to display
-  var indexLocation = messageValue.indexOf("Success!");
-  var messageType = "";
-  if(indexLocation >= 0){
-    messageType = "success";
-  }else {
-    messageType = "danger";
-  }
-
-  $.bootstrapGrowl(messageValue, {
-    ele: 'body', // which element to append to
-    type: messageType, // (null, 'info', 'error', 'success')
-    offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-    align: 'center', // ('left', 'right', or 'center')
-    width: 'auto', // (integer, or 'auto')
-    delay: 4000,
-    allow_dismiss: true,
-    stackup_spacing: 10 // spacing between consecutively stacked growls.
-  });
-
-}
 
   //Function to get hares for the event
   function getHares(hash_key){
@@ -44,11 +17,11 @@ function displayMessage(messageValue){
          $('#hare-list').empty();
 
          $.each(data, function(key,row) {
-           $('#hare-list').append('<dt>'+ row.HASHER_NAME + '</dt>');
-           var linkOne = "<a href=/admin/hasherDetailsKennelSelection/" +row.HASHER_KY+ ">Details</a>";
-           var linkTwo = '<a href="javascript:deleteHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">Delete Hare</a>';
-           var linkThree = '<a href="javascript:addHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">Add Hasher</a>';
-           $('#hare-list').append('<dd>' + linkOne + ' | ' + linkTwo + ' | ' + linkThree + '</dd>');
+           $('#hare-list').append('<dt><a href="/admin/hasherDetailsKennelSelection/' + row.HASHER_KY + '">' +
+               row.HASHER_NAME + '</a> (' + row.HARE_TYPE_NAMES +')</dt>');
+           var linkTwo = '<a href="javascript:deleteHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">-Hare</a>';
+           var linkThree = '<a href="javascript:addHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">+Hound</a>';
+           $('#hare-list').append('<dd>' + linkTwo + ' | ' + linkThree + '</dd>');
 
          });
          //$('#hare-list').listview('refresh');
@@ -56,15 +29,8 @@ function displayMessage(messageValue){
          //Update the hare count div
          var hareCount = data.length;
          $('#hareCount').empty().append('Hares: ' + hareCount);
-
-
        },
-       error: function (jqXHR, textStatus, errorThrown){
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
-       }
+       error: handleAjaxError
    });
  }
 
@@ -80,12 +46,16 @@ function displayMessage(messageValue){
         $('#hasher-list').empty();
 
         $.each(data, function(key,row) {
-          $('#hasher-list').append('<dt>'+ row.HASHER_NAME + '</dt>');
-          var linkOne = "<a href=/admin/hasherDetailsKennelSelection/" +row.HASHER_KY+ ">Details</a>";
-          var linkTwo = '<a href="javascript:deleteHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">Delete Hasher</a>';
-          var linkThree = '<a href="javascript:addHare('+row.HASHER_KY+ ',' + {{hash_key}} +');">Add Hare</a>';
-          var linkFour = '<a target="_new" href="/admin/modifyhasher/form/'+row.HASHER_KY+'">Modify Hasher</a>';
-          $('#hasher-list').append('<dd>' + linkOne + ' | ' + linkTwo + ' | ' + linkThree + ' | ' + linkFour + '</dd>');
+          $('#hasher-list').append('<dt><a href="/admin/hasherDetailsKennelSelection/' + row.HASHER_KY + '">' +
+               row.HASHER_NAME + '</a></dt>');
+          var linkTwo = '<a href="javascript:deleteHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">-Hound</a>';
+          var linkThree =
+          {% for hareType in hareTypes %}
+            "<a href='javascript:addHare("+row.HASHER_KY+"," +{{hareType.HARE_TYPE}} + ",{{hash_key}});'>+{{hareType.HARE_TYPE_NAME}} Hare</a> | " +
+          {% endfor %}
+            "";
+          var linkFour = '<a target="_new" href="/admin/modifyhasher/form/'+row.HASHER_KY+'">Edit Hasher</a>';
+          $('#hasher-list').append('<dd>' + linkTwo + ' | ' + linkThree + linkFour + '</dd>');
 
         });
         //$('#hasher-list').listview('refresh');
@@ -93,15 +63,10 @@ function displayMessage(messageValue){
         //Update the hasher count div
         var hasherCount = data.length;
         //$('#hasherCount').empty();
-        $('#hasherCount').empty().append('Hashers: ' + hasherCount);
+        $('#hasherCount').empty().append('Hounds: ' + hasherCount);
 
       },
-      error: function (jqXHR, textStatus, errorThrown){
-           alert("failure");
-           alert(jqXHR);
-           alert(textStatus);
-           alert(errorThrown);
-      }
+      error: handleAjaxError
   });
 }
 
@@ -123,7 +88,7 @@ function displayMessage(messageValue){
 
   //Function to add a hasher to the event
   function addHasher(hasher_key, hash_key){
-   var formData = {hasher_key:hasher_key,hash_key:hash_key};
+   var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
    $.ajax({
        url : "/admin/event/addHasherToHash",
        type: "POST",
@@ -134,13 +99,7 @@ function displayMessage(messageValue){
            displayMessage(data);
            clearSearch();
        },
-       error: function (jqXHR, textStatus, errorThrown)
-       {
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
-       }
+       error: handleAjaxError
    });
  }
 
@@ -149,8 +108,8 @@ function displayMessage(messageValue){
  }
 
  //Function to add a hare to the event
- function addHare(hasher_key, hash_key){
-  var formData = {hasher_key:hasher_key,hash_key:hash_key};
+ function addHare(hasher_key, hare_type, hash_key){
+  var formData = {hasher_key:hasher_key,hare_type:hare_type,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
   $.ajax({
       url : "/admin/event/addHareToHash",
       type: "POST",
@@ -162,20 +121,15 @@ function displayMessage(messageValue){
           displayMessage(data);
           clearSearch();
       },
-      error: function (jqXHR, textStatus, errorThrown)
-      {
-           alert("failure");
-           alert(jqXHR);
-           alert(textStatus);
-           alert(errorThrown);
-      }
+      error: handleAjaxError
   });
+  addHasher(hasher_key, hash_key);
 }
 
 
 //Function to delete hasher from the event
 function deleteHasher(hasher_key, hash_key){
- var formData = {hasher_key:hasher_key,hash_key:hash_key};
+ var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/event/deleteHasherFromHash",
      type: "POST",
@@ -184,20 +138,15 @@ function deleteHasher(hasher_key, hash_key){
      success: function(data, textStatus, jqXHR){
          getHashers({{hash_key}});
          displayMessage(data);
+         clearSearch();
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
-     }
+     error: handleAjaxError
  });
 }
 
 //Function to delete hare from the event
 function deleteHare(hasher_key, hash_key){
- var formData = {hasher_key:hasher_key,hash_key:hash_key};
+ var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
  $.ajax({
      url : "/admin/event/deleteHareFromHash",
      type: "POST",
@@ -208,13 +157,7 @@ function deleteHare(hasher_key, hash_key){
          getHares({{hash_key}});
          displayMessage(data);
      },
-     error: function (jqXHR, textStatus, errorThrown)
-     {
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
-     }
+     error: handleAjaxError
  });
 }
 
@@ -234,14 +177,22 @@ $(document).ready(function() {
     "processing": true,
     "serverSide": true,
     "ajax": {
-        "url": "/admin/listhashers2",
-        "type": "POST"
+        "url": "/admin/listhashers3",
+        "type": "POST",
+        "data": { 
+            "kennel_abbreviation" : "{{kennel_abbreviation}}",
+            "hash_key" : {{hash_key}}
+        }
     },
     "columns": [
       {
         "data": "THE_KEY",
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> | <a href='javascript:addHare("+oData.THE_KEY+",{{hash_key}});'>+ Hare</a> | " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
+          $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> " +
+          {% for hareType in hareTypes %}
+            "| <a href='javascript:addHare("+oData.THE_KEY+"," + {{hareType.HARE_TYPE}} + ",{{hash_key}});'>+ {{hareType.HARE_TYPE_NAME}} Hare</a> " +
+          {% endfor %}
+          "| " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
         }
      }
     ]
@@ -294,6 +245,7 @@ $(document).ready(function() {
       <tbody>
     </table>
     </div>
+    <h4><a target="_new" href="/admin/newhasher/form">Click to create a hasher!</a></h4>
 
 
 <br><br><br><br>

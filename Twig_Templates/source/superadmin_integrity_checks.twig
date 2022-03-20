@@ -1,0 +1,29 @@
+{% extends "superadmin_edit_form_ajax_base.twig" %}
+
+{% block template %}
+
+{% if is_granted('ROLE_SUPERADMIN') %}
+
+<div class="table-responsive">
+<h3>{{pageTitle}}</h3>
+
+{% for report in reports %}
+<div>
+  <hr/>
+  <h4>{{ report.KENNEL_NAME }}</h4>
+  <div>
+  {% for message in report.MESSAGES %}
+    {{ message }}<br/>
+  {% endfor %}
+  </div>
+</div>
+{% endfor %}
+
+<hr/>
+
+{% else %}
+    You seem not to be logged in.
+    <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
+{% endif %}
+
+{% endblock %}

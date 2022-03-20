@@ -21,20 +21,18 @@
                 {% set listGroupItemType = "list-group-item-info" %}
               {% endif %}
 
-              {% if kennelValue.IN_RECORD_KEEPING == 0 %}
-                {% set externalIndicator = "*" %}
+              {% if kennelValue.EXTERNAL == "*" %}
                 {% set targetHtml = "target = newtab" %}
                 {% set openTag = "<i>" %}
                 {% set closingTag = "</i>" %}
                 {% set listGroupItemType = "list-group-item-warning" %}
               {% else %}
-                {% set externalIndicator = "" %}
                 {% set targetHtml = "" %}
               {% endif %}
 
               <a class="list-group-item {{listGroupItemType}}"  {{targetHtml}} href="{{kennelValue.SITE_ADDRESS}}/{{kennelValue.KENNEL_ABBREVIATION}}">
                 {{openTag|raw}}
-                  {{kennelValue.KENNEL_ABBREVIATION}} ({{kennelValue.KENNEL_NAME}}){{externalIndicator}}
+                  {{kennelValue.KENNEL_ABBREVIATION}} ({{kennelValue.KENNEL_NAME}}){{kennelValue.EXTERNAL}}
                 {{closingTag|raw}}
               </a>
 

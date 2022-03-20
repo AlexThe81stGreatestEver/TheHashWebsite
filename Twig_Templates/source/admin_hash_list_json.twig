@@ -17,17 +17,24 @@ $(document).ready(function() {
     "processing": true,
     "serverSide": true,
     "ajax": {
-        "url": "/admin/listhashes2",
+        "url": "/admin/{{kennel_abbreviation}}/listhashes2",
         "type": "POST"
     },
     "columns": [
 
       { "data": "KENNEL_EVENT_NUMBER" },
-      { "data": "KENNEL_ABBREVIATION" },
       {
         "data": "HASH_KY",
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-          $(nTd).html("<a href='/admin/edithash/ajaxform/"+oData.HASH_KY+"'>Event </a> | <a href='/admin/event/manageparticipation2/"+oData.HASH_KY+"'>Participation</a> | <a href='/admin/eventBudget/"+oData.HASH_KY+"'>Budget</a> | <a href='/admin/tags/eventscreen/"+oData.HASH_KY+"'>Tagging!</a>");
+          $(nTd).html("<a href='/admin/edithash/ajaxform/"+oData.HASH_KY+"'>Event </a> | <a href='/admin/event/manageparticipation2/"+oData.HASH_KY+"'>Participation</a> | " +
+            {% if showBudgetPage %}
+              "<a href='/admin/eventBudget/"+oData.HASH_KY+"'>Budget</a> | " +
+            {% endif %}
+            "<a href='/admin/tags/eventscreen/"+oData.HASH_KY+"'>Tagging!</a> | " +
+            (oData.CAN_DELETE == 1 ?
+              "<a href='javascript:doDeleteHash(\"" + oData.KENNEL_EVENT_NUMBER + "\", " + oData.HASH_KY + ")'>Delete</a>" :
+              "<a href='javascript:doDuplicateHash(" + oData.HASH_KY + ")'>Duplicate</a>")
+          );
         }
 
      },
@@ -36,23 +43,37 @@ $(document).ready(function() {
       { "data": "SPECIAL_EVENT_DESCRIPTION"}
     ]
   });
-
 });
+
+function doDuplicateHash(id) {
+  document.location="/admin/" + id + "/duplicateHash";
+}
+
+function doDeleteHash(eventNumber, id) {
+  if(window.confirm("Danger! Danger! Danger!  This cannot be undone!  Click OK to permanently remove event " + eventNumber + ".")) {
+    $.post("/admin/deleteHash", {
+        id: id, csrf_token: '{{csrf_token}}'
+      }).done(function() {
+      document.location = "/admin/hello";
+    }).fail(function() {
+      alert("Fail");
+    });
+  }
+}
 </script>
 
 
 <div class="table-responsive">
 <h3>{{pageTitle}}</h3>
 {% if totalHashesToUpdate > 0 %}
-<h4>{{totalHashesToUpdate}} of {{totalHashes}} are left to update</hf>
+<h4>{{totalHashesToUpdate}} of {{totalHashes}} events are missing location details</hf>
 {% endif %}
-<h4><a href="/admin/newhash/ajaxform"><b>Click to create an event !</b></a></h4>
+<h4><a href="/admin/{{kennel_abbreviation}}/newhash/ajaxform"><b>Click to create an event !</b></a></h4>
 
 <table class="table table-condensed table-hover" id="the_main_table">
   <thead>
     <tr>
       <th>#</th>
-      <td>Kennel</td>
       <td>Actions</td>
       <td>Date</td>
       <td>Location</td>

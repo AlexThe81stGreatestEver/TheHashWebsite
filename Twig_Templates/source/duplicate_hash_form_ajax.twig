@@ -1,0 +1,377 @@
+{% extends "admin_base.twig" %}
+
+{% block template %}
+
+<link rel = "stylesheet" href="/node_modules/jquery-ui/themes/base/all.css">
+<link rel = "stylesheet" href="/node_modules/jquery-timepicker/jquery.timepicker.css">
+<script type = "text/javascript" src = "/node_modules/jquery-ui/ui/widgets/datepicker.js"></script>
+<script type = "text/javascript" src = "/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
+<script type = "text/javascript" src = "/node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
+<script>
+
+function resetTheForm(){
+  $('#the_form')[0].reset();
+}
+
+function convertFormToJson(theForm){
+  // Establish the return value
+  var returnValue = {};
+
+  jQuery.each(theForm, function(){
+    returnValue[this.name] = this.value || '';
+  });
+
+  // Return the return value
+  return returnValue;
+}
+
+function formSubmitAction(){
+
+  // Get the form
+  var theForm = $('#the_form');
+
+  // Find the disabled fields
+  var theDisabledFields = theForm.find(':input:disabled').removeAttr('disabled');
+
+  // Serialize the form
+  var theFormSerialized = theForm.serializeArray();
+
+  theFormSerialized.push({ name: 'csrf_token', value : '{{csrf_token}}' });
+
+  // Convert form fields into json object
+  var jsonifiedForm = convertFormToJson(theFormSerialized);
+
+  // Re-disable the form fields
+  theDisabledFields.attr('disabled','disabled');
+
+  $.ajax({
+      url : "/admin/{{kennel_abbreviation}}/newhash/ajaxform",
+      type: "POST",
+      data : jsonifiedForm,
+      dataType : 'json',
+      success: function(data, textStatus, jqXHR){
+        displayMessage(data);
+      },
+      error: handleAjaxError
+  });
+
+  return false;
+}
+
+$(function(){
+  var validator = $("#the_form").validate({
+    rules:{
+      hashEventNumber: {
+        required:true,
+        minlength:1
+      },
+      hashEventDescription: {
+        required:true,
+        minlength:3
+      },
+      eventDate: {
+        required:true,
+        dateFormat:true
+      },
+      eventTime: {
+        required:true,
+        timeFormat:true
+      }
+    },
+    messages:{
+      hashEventNumber: {
+          required: "Thou shalt provide a hash event number",
+          minlength: jQuery.validator.format("Enter at least {0} characters")
+      },
+      hashEventDescription: {
+          required: "Thou shalt provide a hash event description",
+          minlength: jQuery.validator.format("Enter at least {0} characters")
+      },
+      eventDate:{
+          required: "Provide a date",
+          dateFormat: "Provide the right format"
+      },
+      eventTime:{
+          required: "Provide a time",
+          timeFormat: "Provide the right format"
+      }
+    },
+    errorPlacement: function(error,element){
+      /*if(element.is(":radio")){
+        error.appendTo(element.parent().next().next());
+      } else if (element.is(":checkbox")){
+        error.appentTo(element.next());
+      }else{
+        error.appendTo(element.parent().next());
+      }*/
+      error.appendTo(element.parent());
+    },
+    submitHandler: function(){
+      formSubmitAction();
+    }
+  });
+  });
+
+  $.validator.addMethod("dateFormat",function(value,element){
+      var regEx =  /^\d{4}\-\d{2}\-\d{2}$/;
+      return(value.match(regEx));
+  });
+
+  $.validator.addMethod("timeFormat",function(value,element){
+      var regEx =  /^([01]\d|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
+      return(value.match(regEx));
+  });
+</script>
+
+<div class="table-responsive">
+<h3>{{pageTitle}}</h3>
+
+<form class="form-horizontal" id="the_form">
+
+  <input type="hidden" name="eventToCopy" value="{{eventDetails.HASH_KY}}">
+
+  <div class="form-group">
+    <label for"kennelName" class="col-sm-2 control-label">Kennel Name</label>
+    <div class="col-sm-4">
+      {{ kennel_abbreviation }}
+    </div>
+
+    <label for"hashEventNumber" class="col-sm-2 control-label">Hash Event Number</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="hashEventNumber" name="hashEventNumber">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"hashEventDescription" class="col-sm-2 control-label">Hash Event Description</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="hashEventDescription" name="hashEventDescription" value="{{eventDetails.SPECIAL_EVENT_DESCRIPTION}}">
+    </div>
+
+    <label for"hashType" class="col-sm-2 control-label">Hash Type</label>
+    <div class="col-sm-4">
+      <select class="form-control" id="hashType" name="hashType">
+        {% for hashType in hashTypes %}
+          <option value="{{hashType.HASH_TYPE}}"
+          {% if hashType.HASH_TYPE == eventDetails.HASH_TYPE %}
+            selected="selected"
+          {% endif %}
+          >
+            {{hashType.HASH_TYPE_NAME}}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"eventDate" class="col-sm-2 control-label">Event Date</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="eventDate" name="eventDate" value="{{eventDetails.THE_EVENT_DATE}}">
+      <script>
+        $("#eventDate").datepicker({
+          showOn: "focus",
+          dateFormat: "yy-mm-dd"
+        });
+      </script>
+    </div>
+    <label for"eventTime" class="col-sm-2 control-label">Event Time</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="eventTime" name="eventTime" value="{{eventDetails.THE_EVENT_TIME}}">
+      <script>
+        $('#eventTime').timepicker({
+          timeFormat:'HH:mm:ss',
+          interval: 30,
+          minTime:'10:00am',
+          maxTime:'07:00pm',
+          defaultTime: '15:00',
+          startTime: '10:00am',
+          dynamic: false,
+          dropdown: true,
+          scrollbar: true
+        })
+      </script>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"locationDescription" class="col-sm-2 control-label">Location Description</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="locationDecription" name="locationDescription" value="{{eventDetails.EVENT_LOCATION}}">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for"autocomplete" class="col-sm-2 control-label">Start typing the address...</label>
+    <div class="col-sm-10">
+      <input name="autocomplete" class="form-control" id="autocomplete" placeholder="Start typing the location..." onFocus="geolocate()" type="text"></input>
+    </div>
+  </div>
+
+  <div style="background:#D3D3D3">
+    <div class="form-group">
+      <label for"street_number" class="col-sm-2 control-label">Street Number</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="street_number" name="street_number" disabled="true" value="{{eventDetails.STREET_NUMBER}}">
+      </div>
+      <label for"route" class="col-sm-2 control-label">Route</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="route" name="route" disabled="true" value="{{eventDetails.ROUTE}}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for"locality" class="col-sm-2 control-label">City</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="locality" name="locality" disabled="true" value="{{eventDetails.EVENT_CITY}}">
+      </div>
+
+      <label for"administrative_area_level_1" class="col-sm-2 control-label">State</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="administrative_area_level_1" name="administrative_area_level_1" disabled="true" value="{{eventDetails.EVENT_STATE}}">
+      </div>
+
+
+    </div>
+
+    <div class="form-group">
+      <label for"administrative_area_level_2" class="col-sm-2 control-label">Administrative Level 2</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="administrative_area_level_2" name="administrative_area_level_2" disabled="true" value="{{eventDetails.COUNTY}}">
+      </div>
+
+      <label for"postal_code" class="col-sm-2 control-label">Postal Code</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="postal_code" name="postal_code" disabled="true" value="{{eventDetails.POSTAL_CODE}}">
+      </div>
+
+
+    </div>
+
+    <div class="form-group">
+      <label for"neighborhood" class="col-sm-2 control-label">Neighborhood</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="neighborhood" name="neighborhood" disabled="true" value="{{eventDetails.NEIGHBORHOOD}}">
+      </div>
+
+      <label for"country" class="col-sm-2 control-label">Country</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="country" name="country" disabled="true" value="{{eventDetails.COUNTRY}}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for"lat" class="col-sm-2 control-label">Lat</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="lat" name="lat" disabled="true" value="{{eventDetails.LAT}}">
+      </div>
+
+      <label for"lng" class="col-sm-2 control-label">Long</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="lng" name="lng" disabled="true" value="{{eventDetails.LNG}}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for"formatted_address" class="col-sm-2 control-label">Formatted Address</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="formatted_address" name="formatted_address" disabled="true" value="{{eventDetails.FORMATTED_ADDRESS}}">
+      </div>
+
+      <label for"place_id" class="col-sm-2 control-label">Place ID</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="place_id" name="place_id" disabled="true" value="{{eventDetails.PLACE_ID}}">
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+</div>
+
+
+<script>
+  // This example displays an address form, using the autocomplete feature
+  // of the Google Places API to help users fill in the information.
+
+  // This example requires the Places library. Include the libraries=places
+  // parameter when you first load the API. For example:
+  // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+  var placeSearch, autocomplete;
+  var componentForm = {
+    street_number: 'short_name',
+    route: 'long_name',
+    locality: 'long_name',
+    administrative_area_level_1: 'short_name',
+    administrative_area_level_2: 'short_name',
+    //sublocality: 'short_name',
+    country: 'long_name',
+    postal_code: 'short_name',
+    neighborhood: 'short_name'
+  };
+
+  function initAutocomplete() {
+    // Create the autocomplete object, restricting the search to geographical
+    // location types.
+    autocomplete = new google.maps.places.Autocomplete(
+        /** @type {!HTMLInputElement} */(document.getElementById('autocomplete')),
+        {types: []});
+
+    // When the user selects an address from the dropdown, populate the address
+    // fields in the form.
+    autocomplete.addListener('place_changed', fillInAddress);
+  }
+
+  function fillInAddress() {
+    // Get the place details from the autocomplete object.
+    var place = autocomplete.getPlace();
+    var lat = place.geometry.location.lat();
+    var lng = place.geometry.location.lng();
+    var formattedAddress = place.formatted_address;
+    var placeid = place.place_id;
+
+    document.getElementById("lat").value=lat;
+    document.getElementById("lng").value=lng;
+    document.getElementById("formatted_address").value=formattedAddress;
+    document.getElementById("place_id").value=placeid;
+    for (var component in componentForm) {
+      document.getElementById(component).value = '';
+      //document.getElementById(component).disabled = false;
+    }
+
+    // Get each component of the address from the place details
+    // and fill the corresponding field on the form.
+    for (var i = 0; i < place.address_components.length; i++) {
+      var addressType = place.address_components[i].types[0];
+      if (componentForm[addressType]) {
+        var val = place.address_components[i][componentForm[addressType]];
+        document.getElementById(addressType).value = val;
+        //document.getElementById(addressType).disabled= true;
+      }
+    }
+  }
+
+  // Bias the autocomplete object to the user's geographical location,
+  // as supplied by the browser's 'navigator.geolocation' object.
+  function geolocate() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var geolocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        var circle = new google.maps.Circle({
+          center: geolocation,
+          radius: position.coords.accuracy
+        });
+        autocomplete.setBounds(circle.getBounds());
+      });
+    }
+  }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{geocode_api_value}}&libraries=places&callback=initAutocomplete"
+    async defer></script>
+
+
+{% endblock %}

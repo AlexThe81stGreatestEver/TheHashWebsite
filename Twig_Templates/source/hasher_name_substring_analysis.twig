@@ -31,7 +31,11 @@
           <tr>
           <td><b>{{key}}:</b>
             {% for subValue in value%}
-              <a href="/{{kennel_abbreviation}}/hashers/{{subValue.KEY}}?name={{subValue.NAME}}&src=hasherNameSubstringAnalysis">{{subValue.NAME}}</a>  |
+              {% if google_analytics_id != 'none' %}
+                <a href="/{{kennel_abbreviation}}/hashers/{{subValue.KEY}}?name={{subValue.NAME}}&src=hasherNameSubstringAnalysis">{{subValue.NAME}}</a>  |
+              {% else %}
+                <a href="/{{kennel_abbreviation}}/hashers/{{subValue.KEY}}">{{subValue.NAME}}</a>  |
+              {% endif %}
             {% endfor %}
           </td>
         </tr>

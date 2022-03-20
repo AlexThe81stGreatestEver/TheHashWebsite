@@ -8,9 +8,9 @@
 
     //Function to get hares for the event
     function getVirginHash(hasher_id){
-     var formData = {hasher_id:hasher_id};
+     var formData = {hasher_id:hasher_id, hare_type: {{hare_type}}};
      $.ajax({
-         url : "/{{kennel_abbreviation}}/statistics/hasher/firstHash",
+         url : "/{{kennel_abbreviation}}/statistics/hasher/firstHare",
          type: "POST",
          data : formData,
          dataType : 'json',
@@ -29,7 +29,6 @@
           $('#virgin_hash_location').empty();
           $('#virgin_hash_location').append(virgin_hash_location);
 
-
           var years_elapsed = data.YEARS_SINCE_EVENT;
           var months_elapsed = data.MONTHS_SINCE_EVENT;
           var days_elapsed = data.DAYS_SINCE_EVENT;
@@ -39,19 +38,16 @@
 
          },
          error: function (jqXHR, textStatus, errorThrown){
-              alert("failure");
-              alert(jqXHR);
-              alert(textStatus);
-              alert(errorThrown);
+           console.log(errorThrown);
          }
      });
    }
 
    //Function to get hares for the event
    function getMostRecentHash(hasher_id){
-    var formData = {hasher_id:hasher_id};
+    var formData = {hasher_id:hasher_id, hare_type:{{hare_type}}};
     $.ajax({
-        url : "/{{kennel_abbreviation}}/statistics/hasher/mostRecentHash",
+        url : "/{{kennel_abbreviation}}/statistics/hasher/mostRecentHare",
         type: "POST",
         data : formData,
         dataType : 'json',
@@ -70,7 +66,6 @@
          $('#latest_hash_location').empty();
          $('#latest_hash_location').append(latest_hash_location);
 
-
          var years_elapsed = data.YEARS_SINCE_EVENT;
          var months_elapsed = data.MONTHS_SINCE_EVENT;
          var days_elapsed = data.DAYS_SINCE_EVENT;
@@ -80,19 +75,10 @@
 
         },
         error: function (jqXHR, textStatus, errorThrown){
-             alert("failure");
-             alert(jqXHR);
-             alert(textStatus);
-             alert(errorThrown);
+          console.log(errorThrown);
         }
     });
   }
-
-
-
-
-
-
 
 //Generic function to retrieve data
 function getListData(hasher_id,url_value,div_value, column_one_header, column_two_header){
@@ -110,8 +96,6 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
        $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
        $(div_value).append('</thead>');
 
-
-
        $.each(data, function(key,row) {
          $(div_value).append('<tr>');
          $(div_value).append('<td><b>'+ row.THE_VALUE + '</b></td>');
@@ -123,72 +107,58 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
      },
      error: function (jqXHR, textStatus, errorThrown){
-          alert("failure");
-          alert(jqXHR);
-          alert(textStatus);
-          alert(errorThrown);
+       console.log(errorThrown);
      }
  });
 }
-
 
    //Call these functions upon page load
    $(document).ready(function() {
       getVirginHash({{hasherValue.HASHER_KY}});
       getMostRecentHash({{hasherValue.HASHER_KY}});
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/year","#hasherHashesByYear-list","Year","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/quarter","#hasherHashesByQuarter-list","Quarter","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/month","#hasherHashesByMonth-list","Month","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/dayname","#hasherHashesByDay-list","Day Name","Count");
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/city","#hasherHashesByCity-list","City","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/state","#hasherHashesByState-list","State","Count");
-
-
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/year","#hasherHaringsByYear-list","Year","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/quarter","#hasherHaringsByQuarter-list","Quarter","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/month","#hasherHaringsByMonth-list","Month","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/dayname","#hasherHaringsByDay-list","Day Name","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/city","#hasherHaringsByCity-list","City","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/all/harings/by/state","#hasherHaringsByState-list","State","Count");
-
-
-
-
-
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/nonhyper/harings/by/year","#hasherNonHyperHaringsByYear-list","Year","Count");
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/nonhyper/harings/by/quarter","#hasherNonHyperHaringsByQuarter-list","Quarter","Count");
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/nonhyper/harings/by/month","#hasherNonHyperHaringsByMonth-list","Month","Count");
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/nonhyper/harings/by/state","#hasherNonHyperHaringsByState-list","State","Count");
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/nonhyper/harings/by/city","#hasherNonHyperHaringsByCity-list","City","Count");
-
-
-      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/coharecount/byhare/nonhypers","#cohareCountByHareNonHypers-list","Hasher","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/coharecount/byhare/onlyhypers","#cohareCountByHareOnlyHypers-list","Hasher","Count");
-      //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/coharecount/byhare/allhashes","#cohareCountByHareAllHashes-list","Hasher","Count");
-
-
+      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/{{hare_type}}/harings/by/quarter","#hasherNonHyperHaringsByQuarter-list","Quarter","Count");
+      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/{{hare_type}}/harings/by/month","#hasherNonHyperHaringsByMonth-list","Month","Count");
+      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/{{hare_type}}/harings/by/state","#hasherNonHyperHaringsByState-list","State","Count");
+      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/{{hare_type}}/harings/by/city","#hasherNonHyperHaringsByCity-list","City","Count");
+      getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/coharecount/byhare/{{hare_type}}","#cohareCountByHareNonHypers-list","Hasher","Count");
     });
 
    </script>
 
-
-
-
     <div class="container">
       <h1>{{pageTitle}}</h1>
       <h5>
-        <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>View Hound Details</a></i> |
-        <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>Overall Hare Details</a></i> |
-        True Hare Details |
-        <i><a href='/{{kennel_abbreviation}}/hares/hyper/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>Hyper Hare Details</a></i>
-
+        {% if google_analytics_id != 'none' %}
+          <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>View Hound Details</a></i> |
+        {% else %}
+          <i><a href='/{{kennel_abbreviation}}/hashers/{{hasherValue.HASHER_KY}}'>View Hound Details</a></i> |
+        {% endif %}
+        {% for hare_type in hare_types %}
+	  {% for harings in hareCounts %}
+          {% if harings.type == hare_type.HARE_TYPE_NAME %}
+          {% if harings.total > 0 %}
+	  {% if hare_type.HARE_TYPE_NAME == hare_type_name %}
+	    <i>{{hare_type.HARE_TYPE_NAME}} Hare Details</i> |
+	  {% else %}
+            {% if google_analytics_id != 'none' %}
+              <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+            {% else %}
+              <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+            {% endif %}
+	  {% endif %}
+	  {% endif %}
+	  {% endif %}
+          {% endfor %}
+        {% endfor %}
+        {% if google_analytics_id != 'none' %}
+          <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>Overall Hare Details</a></i>
+        {% else %}
+          <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}'>Overall Hare Details</a></i>
+        {% endif %}
       </h5>
 
-
-
-      <div class="row">
-
-        <div class="col-sm-5" style="background-color:lime;">
+      <div class="row marketing">
+        <div class="col-xs-12 col-md-6" style="background-color:lime;">
           <h3>Basic Details</h3>
           <dl class="dl-horizontal">
               {% autoescape %}
@@ -201,31 +171,75 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                 {% endif %}
 
                 <dt>Total Haring Count</dt><dd> {{overallHareCount}}</dd>
-                <dt>True Haring Count</dt><dd>{{trueHareCount}}</dd>
-                <dt>Hyper Haring Count</dt><dd>{{hyperHareCount}}</dd>
+	        {% for harings in hareCounts %}
+                  <dt>{{harings.type}} Haring Count</dt><dd>{{harings.total}}</dd>
+                {% endfor %}
               {% endautoescape %}
           </dl>
         </div>
 
-
-
-        <div class="col-sm-7" style="background-color:silver;">
-          <h3>Their harings</h3>
+        <div class="col-xs-12 col-md-6" style="background-color:silver;">
+          <h3>Their Harings</h3>
           <dl class="dl-horizontal">
-            <a href='/{{kennel_abbreviation}}/coharelist/byhare/nonhypers/{{hasherValue.HASHER_KY}}'>Their True Haring Cohares</a><br>
-            <a href='/{{kennel_abbreviation}}/coharecount/byhare/nonhypers/{{hasherValue.HASHER_KY}}'>Their True Haring Cohare Count </a><br>
-            All of their haring analversaries (Not written yet)<br>
-            <a href='/{{kennel_abbreviation}}/getHasherCountsByHare/{{hasherValue.HASHER_KY}}?type=true'>Hounds who have hashed their true harings</a><br>
+            <a href='/{{kennel_abbreviation}}/coharelist/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohares</a><br>
+            <a href='/{{kennel_abbreviation}}/coharecount/byhare/{{hare_type}}/{{hasherValue.HASHER_KY}}'>Their {{ hare_type_name }} Haring Cohare Count </a><br>
+            <a href='/{{kennel_abbreviation}}/getHareAnalversaries/{{hare_type}}/{{hasherValue.HASHER_KY}}'>All of their {{ hare_type_name }} Haring Analversaries</a><br>
+            <a href='/{{kennel_abbreviation}}/getHasherCountsByHare/{{hasherValue.HASHER_KY}}/{{hare_type}}'>Hounds who have hashed their {{ hare_type_name }} harings</a><br>
+            <span class="hidden-sm hidden-xs">
+	    {% for harings in hareCounts %}
+            &nbsp;<br>
+            {% endfor %}
+            &nbsp;<br>
+            </span>
           </dl>
         </div>
 
+        <div class="col-xs-12 col-md-6" style="background-color:yellow">
+          <h3>Their First {{hare_type_name}} Haring</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+                <div data-role="content" id="virgin_hashing_elapsed_time"></div>
+            </dd>
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:#ee8888">
+          <h3>Their Latest {{hare_type_name}} Haring</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+              <div data-role="content" id="latest_hashing_elapsed_time"></div>
+            </dd>
+          </dl>
+        </div>
       </div>
 
-
-
       <div class="row">
-
-
         <div class="col-sm-6">
 
           <canvas id="myChart2" width="25" height="25"></canvas>
@@ -240,13 +254,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_year_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
+                          {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(54, 162, 235, 0.2)',
-                        borderColor:'rgba(54, 162, 235, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -283,13 +297,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_month_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
+                          {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, .2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -328,13 +342,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_quarter_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
+                          {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -370,13 +384,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_state_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
+                          {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -414,13 +428,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: '# of True Harings',
+                      label: '# of {{ hare_type_name }} Harings',
                       data: [
                         {% for individualValue in harings_by_dayname_list %}
-                          {{individualValue.NON_HYPER_COUNT}},
+                          {{individualValue[hare_type_name ~ '_COUNT']}},
                         {% endfor %}],
-                        backgroundColor:'rgba(127, 15, 239, 0.2)',
-                        borderColor:'rgba(127, 15, 239, 1)',
+                        backgroundColor:'rgba({{chart_color}}, 0.2)',
+                        borderColor:'rgba({{chart_color}}, 1)',
                       borderWidth: 1
                   }
                 ]
@@ -455,14 +469,14 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
         <div class="col-sm-6 collapse" style="background-color:yellow" id="citylist">
           <dl class="dl-horizontal">
-            <h4>True Harings by city</h4>
+            <h4>{{ hare_type_name }} Harings by city</h4>
             <div data-role="content" id="hasherNonHyperHaringsByCity-list"></div>
           </dl>
         </div>
 
         <div class="col-sm-6 collapse" style="background-color:gold" id="coharelist">
           <dl class="dl-horizontal">
-            <h4>Favorite True CoHares</h4>
+            <h4>Favorite {{ hare_type_name }} CoHares</h4>
             <div data-role="content" id="cohareCountByHareNonHypers-list"></div>
           </dl>
         </div>
@@ -470,13 +484,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
       <div class="row">
         <div id = "div_one" class="col-sm-12" style="width:100%;height:600px">
-          <h4>True Harings By City</h4>
+          <h4>{{ hare_type_name }} Harings By City</h4>
           <canvas id="my_canvas" class="wordcloud"></canvas>
         </div>
       </div>
       <div class="row">
         <div id = "div_two" class="col-sm-12" style="width:100%;height:600px">
-          <h4>Favorite True CoHares</h4>
+          <h4>Favorite {{ hare_type_name }} CoHares</h4>
           <canvas id="my_canvas2" class="wordcloud"></canvas>
         </div>
       </div>
@@ -520,7 +534,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
               list: [
                 {% for item in cohare_count_list %}
                     [
-                      "{% autoescape false %}{{item.THE_VALUE[:18]}}{% endautoescape %}"
+                      "{% autoescape 'js' %}{{item.THE_VALUE[:18]}}{% endautoescape %}"
                     ,"{{min(80,item.THE_COUNT * 5)}}"],
                 {% endfor %}
               ],
@@ -543,7 +557,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
             <div id="TheMap1" class="col-sm-10"></div>
               <style>
               #TheMap1{
-                height: 100%;
+                height: 600px;
               }
               </style>
           </div>
@@ -591,7 +605,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
               <div id="TheMap2" class="col-sm-10"></div>
                 <style>
                 #TheMap2{
-                  height: 100%;
+                  height: 600px;
                 }
                 </style>
             </div>
@@ -665,7 +679,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                 <div id="TheMap3" class="col-sm-10"></div>
                   <style>
                   #TheMap3{
-                    height: 100%;
+                    height: 600px;
                   }
                   </style>
               </div>

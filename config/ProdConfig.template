@@ -9,25 +9,11 @@ define("DB_PASSWORD","yourpassword");
 define("DB_READ_ONLY_USER","yourusername");
 define("DB_READ_ONLY_PASSWORD","yourpassword");
 
-/* Define this if you want google analytics on this instance */
-define("GOOGLE_ANALYTICS_ID","");
-define("JUMBO_PERCENTAGES_MINIMUM_HASH_COUNT",10);
-define("JUMBO_COUNTS_MINIMUM_HASH_COUNT",5);
-
 define("DEFAULT_USER_PASSWORD","yourlongpasswordstring");
 
-define("GOOGLE_PLACES_API_WEB_SERVICE_KEY","");
-define("GOOGLE_MAPS_JAVASCRIPT_API_KEY","");
+// Uncomment if using mysql8 or better
+//define("MYSQL8", true);
 
-
-// Define the valid kennel abbreviations
-define("VALID_KENNEL_ABBREVIATIONS","sch4|SCH4|SCH4BASH|sch4bash|LVH3|lvh3|SWOT|swot");
-
-// Define the default kennel abbreviation (what you go to on the "/" URL)
-define("DEFAULT_KENNEL_ABBREVIATION", "SCH4");
-
-// Establish the contact email for the local administrator
-define("ADMINISTRATOR_EMAIL","foo@gmail.com");
-
-// Optional banner html
-//define("SITE_BANNER", "<div style=\"width:100%; background-color:yellow; color:black; font-weight:bold; text-align: center\">LOCALHOST TEST INSTANCE</div>");
+// Use in development instances only
+// Leave commented out in production
+//define("SHOW_WARNINGS", true);

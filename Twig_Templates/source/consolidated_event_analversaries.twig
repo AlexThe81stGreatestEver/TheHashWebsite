@@ -42,21 +42,6 @@
         </div>
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h4 class="panel-title">
@@ -93,14 +78,6 @@
                 </div>
               </div>
             </div>
-
-
-
-
-
-
-
-
 
             <div class="panel panel-default">
               <div class="panel-heading">
@@ -148,13 +125,6 @@
               </div>
             </div>
 
-
-
-
-
-
-
-
                         <div class="panel panel-default">
                           <div class="panel-heading">
                             <h4 class="panel-title">
@@ -200,12 +170,6 @@
                             </div>
                           </div>
                         </div>
-
-
-
-
-
-
 
                   <div class="panel panel-default">
                     <div class="panel-heading">
@@ -258,9 +222,6 @@
                       </div>
                     </div>
                   </div>
-
-
-
 
                 <div class="panel panel-default">
                   <div class="panel-heading">
@@ -358,9 +319,39 @@
                   </div>
                 </div>
 
+    {% if not (centurionAlertList is empty)%}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseCA">
+              Centurion Alert (+)
+            </a>
+          </h4>
+        </div>
+        <div id="collapseCA" class="panel-collapse collapse">
+          <div class="panel-body">
+              {% set headerbgcolor = "#d3d3d3" %}
+              {% set databgcolor = "#80CBC4" %}
 
+              <div class="row">
+                <div class="col-xs-12 col-md-6 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
+                <div class="col-xs-6 col-md-6 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
+              </div>
 
+              {% for item in centurionAlertList %}
+                <div class="row">
+                  <div class="col-xs-12 col-md-6"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
+                  <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
+                  <div class="col-xs-6 col-md-6"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
+                  <div class="col-xs-12 visible-xs"></br></div>
+                </div>
+              {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
+                </div>
 
   </div>
 {% endblock %}

@@ -13,7 +13,11 @@
       <tbody>
         {% for item in theList %}
           <tr>
-            <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}?name={{item.NAME}}&src={{pageTracking}}">{{item.NAME}}</a></td>
+            {% if google_analytics_id != 'none' %}
+              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}?name={{item.NAME}}&src={{pageTracking}}">{{item.NAME}}</a></td>
+            {% else %}
+              <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.NAME}}</a></td>
+            {% endif %}
             <td>{{item.VALUE}}</td>
           </tr>
         {% endfor %}

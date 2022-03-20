@@ -1,0 +1,18 @@
+{% extends "admin_base.twig" %}
+
+{% block template %}
+
+<h1>Select Kennel</h1>
+
+<div class="table-responsive">
+<table class="table table-condensed table-hover" id="the_main_table">
+  <tbody>
+    {% for kennel in kennels %}
+      <tr>
+        <td><a href='/admin/{{kennel.KENNEL_ABBREVIATION}}/{{urlSuffix}}'>{{kennel.KENNEL_ABBREVIATION}}</a></td>
+      </tr>
+    {% endfor %}
+</table>
+</div>
+
+{% endblock %}

@@ -1,74 +1,133 @@
 {% extends "fullwidth.twig" %}
 
 {% block content %}
+
+  <style type="text/css">
+   .table > tbody > tr > td { border: 0; padding: 0; font-size: 14px; }
+   .table > thead > tr > th { border: 0; padding: 0; font-size: 16px; }
+   .row { display: flex; }
+  </style>
+
   <script type = "text/javascript" src = "/vendor/components/jquery/jquery.min.js"></script>
   <script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
   <script type = "text/javascript" language = "javascript">
 
   //Generic function to retrieve data
-  function getListData(url_value,div_value, column_one_header, column_two_header, year_value){
+  function getListData(url_value, div_value, column_one_header, column_two_header, year_value) {
    var formData = {year_value:year_value};
-   $.ajax({
+
+   $("#theContent").append('<div style="display: none;" id="' + div_value.substring(1) + '"></div>');
+
+   return $.ajax({
        url : url_value,
        type: "POST",
        data : formData,
        dataType : 'json',
        success: function(data, textStatus, jqXHR){
-         $(div_value).empty();
 
-         $(div_value).append('<table class="table table-condensed">');
-         $(div_value).append('<thead>');
-         $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
-         $(div_value).append('</thead>');
+         var html = [];
 
-
+         html.push('<table class="table table-condensed">');
+         html.push('<thead>');
+         html.push('<tr><th>' +column_one_header+'</th><th>' +column_two_header+'</th></tr>');
+         html.push('<tr><th></th><th>&nbsp;</th></tr>');
+         html.push('</thead>');
 
          $.each(data, function(key,row) {
-           $(div_value).append('<tr>');
-           $(div_value).append('<td><b>'+ row.HASHER_NAME + '</b></td>');
-           $(div_value).append('<td>&nbsp;'+ row.THE_COUNT + '</td>');
-           $(div_value).append('</tr>');
+           html.push('<tr>');
+           html.push('<td><b>'+ row.HASHER_NAME + '</b></td>');
+           html.push('<td>'+ row.THE_COUNT + '</td>');
+           html.push('</tr>');
          });
 
-         $(div_value).append('</table>');
+         html.push('</table>');
 
+         $(div_value).append(html.join(''));
        },
        error: function (jqXHR, textStatus, errorThrown){
-            alert("failure");
-            alert(jqXHR);
-            alert(textStatus);
-            alert(errorThrown);
+         console.log(errorThrown);
        }
    });
   }
 
-
-
-
-
 //This function loads when the pages loads
- $(document).ready(function() {
+ $().ready(function() {
 
+    var blocks = [];
 
-    getListData("/{{kennel_abbreviation}}/statistics/getHasherCountsByYear","#hasherCounts-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getTotalHareCountsByYear","#totalHareCounts-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getHyperHareCountsByYear","#hyperHareCounts-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNonHyperHareCountsByYear","#nonHyperHareCounts-list","Hasher","Count",{{yearValue}});
+    blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getHasherCountsByYear","#hasherCounts-list","Hasher","Count",{{yearValue}}));
+    {% for hare_type in hare_types %}
+      blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getHareCountsByYear/{{hare_type.HARE_TYPE}}","#{{hare_type.HARE_TYPE_NAME}}HareCounts-list","Hasher","Count",{{yearValue}}));
+    {% endfor %}
+    blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getTotalHareCountsByYear","#totalHareCounts-list","Hasher","Count",{{yearValue}}));
+    blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getNewbieHasherListByYear","#newbieHashers-list","Hasher","Count",{{yearValue}}));
+    {% for hare_type in hare_types %}
+      blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getNewbieHareListByYear/{{hare_type.HARE_TYPE}}","#newbie{{hare_type.HARE_TYPE_NAME}}Hare-list","Hare","Count",{{yearValue}}));
+    {% endfor %}
+    blocks.push(getListData("/{{kennel_abbreviation}}/statistics/getNewbieOverallHareListByYear","#newbieOverallHare-list","Hare","Count",{{yearValue}}));
 
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieHasherListByYear","#newbieHashers-list","Hasher","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieTrueHareListByYear","#newbieTrueHare-list","Hare","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieHyperHareListByYear","#newbieHyperHare-list","Hare","Count",{{yearValue}});
-    getListData("/{{kennel_abbreviation}}/statistics/getNewbieOverallHareListByYear","#newbieOverallHare-list","Hare","Count",{{yearValue}});
+    $.when.apply($, blocks).done(function() {
+      var html = [];
+      doList(html, 'Hasher Counts', '* {{yearValue}} hashing count listed', 'hasherCounts');
+      {% for hare_type in hare_types %}
+        doList(html, '{{ hare_type.HARE_TYPE_NAME }} Haring Counts', '* {{yearValue}} {{ hare_type.HARE_TYPE_NAME }} haring count listed', '{{ hare_type.HARE_TYPE_NAME }}HareCounts');
+      {% endfor %}
+      doList(html, 'Overall Haring Counts', '* {{yearValue}} overall haring count listed', 'totalHareCounts');
+      doList(html, 'Newbie Hashers', '* All time hashing count listed', 'newbieHashers');
+      {% for hare_type in hare_types %}
+        doList(html, 'Newbie {{ hare_type.HARE_TYPE_NAME }} Hares', '* All time {{ hare_type.HARE_TYPE_NAME }} haring count listed', 'newbie{{ hare_type.HARE_TYPE_NAME }}Hare');
+      {% endfor %}
+      doList(html, 'Newbie Overall Hares', '* All time overall haring count listed', 'newbieOverallHare');
+      endLists(html);
+
+      $("#theContent").append(html.join(''));
+    });
 
   });
 
+  var column=0;
+  var bgcolor='90ee90';
+
+  function nextBgColor() {
+    bgcolor = (bgcolor=='90ee90' ? 'b19cd9' : '90ee90');
+  }
+
+  function doList(html, title, subtitle, id) {
+
+    var hasData = $('#' + id + '-list td').size() > 0;
+
+    var data = $('#' + id + '-list').html();
+    $('#' + id + '-list').remove();
+
+    if(hasData) {
+      if(column == 4) {
+        html.push('</div>');
+        column = 0;
+        nextBgColor();
+      }
+      if(column++ == 0) {
+        html.push('<div class="row">');
+      }
+      html.push('<div id=' + id + ' class="col-sm-3" style="background-color:#' + bgcolor + ';">');
+      nextBgColor();
+      html.push('<h3>' + title + '</h3>');
+      html.push('<h5><i>' + subtitle + '</i></h5>');
+      html.push('<a href="#' + id + '-list" class="btn btn-info" style="margin-bottom: 1em;" data-toggle="collapse" aria-expanded="true">Show/Hide</a>');
+      html.push('<div data-role="content" id="' + id + '-list" aria-expanded="true" class="collapse in">');
+      html.push(data);
+      html.push('</div>');
+      html.push('</div>');
+    }
+  }
+
+  function endLists(html) {
+    html.push('</div>');
+    column = 0;
+  }
 
   </script>
 
-
-
-
-<div class="container">
+<div class="container" id="theContent">
   <h1>{{pageTitle}}</h1>
 
   <div class="row">
@@ -77,8 +136,9 @@
       <dl class="dl-horizontal">
           {% autoescape %}
             <dt>Hashes</dt><dd>{{hash_count}}</dd>
-            <dt>Hyper Hashes </dt><dd>{{hyper_hash_count}} </dd>
-            <dt>True Hashes</dt><dd>{{true_hash_count}}</dd>
+            {% for hash_type in hash_types %}
+              <dt>{{ hash_type.HASH_TYPE_NAME }} Hashes </dt><dd>{{ hash_counts[hash_type.HASH_TYPE_NAME] }}</dd>
+            {% endfor %}
           {% endautoescape %}
       </dl>
     </div>
@@ -88,8 +148,9 @@
       <dl class="dl-horizontal">
           {% autoescape %}
             <dt>Hashers</dt><dd>{{hasher_count}}</dd>
-            <dt>True Hares </dt><dd>{{true_hare_count}}</dd>
-            <dt>Hyper Hares</dt><dd>{{hyper_hare_counts}}</dd>
+            {% for hare_type in hare_types %}
+              <dt>{{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd>{{ hare_counts[hare_type.HARE_TYPE_NAME] }}</dd>
+            {% endfor %}
             <dt>Overall Hares</dt><dd>{{overall_hare_count}}</dd>
           {% endautoescape %}
       </dl>
@@ -99,121 +160,28 @@
       <h3>Newbie Details</h3>
       <dl class="dl-horizontal">
           {% autoescape %}
-            <dt>Newbie Hashers</dt><dd><a href="#newbiehasherlist">{{newbie_hashers_count}}</a></dd>
-            <dt>Newbie True Hares </dt><dd><a href="#newbietrueharelist">{{newbie_true_hares_count}}</a></dd>
-            <dt>Newbie Hyper Hares</dt><dd><a href="#newbiehyperharelist">{{newbie_hyper_hares_count}}</a></dd>
-            <dt>Newbie Overall Hares</dt><dd><a href="#newbieoverallharelist">{{newbie_overall_hares_count}}</a></dd>
+            {% if newbie_hashers_count > 0 %}
+              <dt>Newbie Hashers</dt><dd><a href="#newbieHashers">{{newbie_hashers_count}}</a></dd>
+            {% else %}
+              <dt>Newbie Hashers</dt><dd>0</dd>
+            {% endif %}
+            {% for hare_type in hare_types %}
+              {% if newbie_hare_counts[hare_type.HARE_TYPE_NAME] > 0 %}
+                <dt>Newbie {{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd><a href="#newbie{{ hare_type.HARE_TYPE_NAME }}Hare">{{ newbie_hare_counts[hare_type.HARE_TYPE_NAME] }}</a></dd>
+              {% else %}
+                <dt>Newbie {{ hare_type.HARE_TYPE_NAME }} Hares </dt><dd>0</dd>
+              {% endif %}
+            {% endfor %}
+            {% if newbie_overall_hares_count > 0 %}
+              <dt>Newbie Overall Hares</dt><dd><a href="#newbieOverallHare">{{newbie_overall_hares_count}}</a></dd>
+            {% else %}
+              <dt>Newbie Overall Hares</dt><dd>0</dd>
+            {% endif %}
           {% endautoescape %}
       </dl>
     </div>
-
-
   </div>
 
-  <div class="row">
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Hasher Counts</h3>
-      <h5><i>* {{yearValue}} hashing count listed</i></h5>
-      <a href="#hasherCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="hasherCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>True Haring Counts</h3>
-      <h5><i>* {{yearValue}} true haring count listed</i></h5>
-      <a href="#nonHyperHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="nonHyperHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Hyper Haring Counts</h3>
-      <h5><i>* {{yearValue}} hyper haring count listed</i></h5>
-      <a href="#hyperHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="hyperHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Overall Haring Counts</h3>
-      <h5><i>* {{yearValue}} overall haring count listed</i></h5>
-      <a href="#totalHareCounts-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="totalHareCounts-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Newbie Hashers</h3>
-      <h5><i>* All time hashing count listed</i></h5>
-      <a href="#newbieHashers-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbiehasherlist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieHashers-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Newbie True Hares</h3>
-      <h5><i>* All time true haring count listed</i></h5>
-      <a href="#newbieTrueHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbietrueharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieTrueHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#81459E;">
-      <h3>Newbie Hyper Hares</h3>
-      <h5><i>* All time hyper haring count listed</i></h5>
-      <a href="#newbieHyperHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbiehyperharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieHyperHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-    <div class="col-sm-3" style="background-color:#35A1A5;">
-      <h3>Newbie Overall Hares</h3>
-      <h5><i>* All time overall haring count listed</i></h5>
-      <a href="#newbieOverallHare-list" class="btn btn-info" data-toggle="collapse">Show/Hide</a>
-      <a name= "newbieoverallharelist"></a>
-      <dl class="dl-horizontal">
-        <div data-role="content">
-          <ul data-role="listview" id="newbieOverallHare-list">
-          </ul>
-        </div>
-      </dl>
-    </div>
-
-  </div>
 </div>
 
 {% endblock %}
