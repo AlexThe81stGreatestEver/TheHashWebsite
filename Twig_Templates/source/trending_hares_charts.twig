@@ -19,7 +19,7 @@
           <script>
           var ctx = document.getElementById("myChart");
           var myChart = new Chart(ctx, {
-              type: 'horizontalBar',
+              type: 'bar',
               data: {
                   labels: [
                     {% for individualEntry in trending_hares_list %}
@@ -41,6 +41,7 @@
                   }]
               },
               options: {
+                  indexAxis: "y",
                   scales: {
                       yAxes: [{
                           ticks: {
