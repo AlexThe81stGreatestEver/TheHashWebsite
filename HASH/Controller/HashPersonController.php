@@ -230,7 +230,7 @@ class HashPersonController extends BaseController
 
     $returnValue = $this->render('edit_hasher_form.twig', array (
       'pageTitle' => 'Hasher Person Modification',
-      'pageHeader' => 'Why is this so complicated ?',
+      'pageHeader' => 'All fields are required',
       'form' => $form->createView(),
       'hasherValue' => $hasherValue,
     ));
@@ -313,7 +313,7 @@ class HashPersonController extends BaseController
 
     $returnValue = $this->render('new_hasher_form.twig', array (
       'pageTitle' => 'Hasher Person Creation',
-      'pageHeader' => 'Why is this so complicated ?',
+      'pageHeader' => 'All fields are required',
       'form' => $form->createView(),
     ));
 

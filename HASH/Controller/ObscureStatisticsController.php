@@ -1887,10 +1887,11 @@ class ObscureStatisticsController extends BaseController {
       $trendingTrueHaresList = $this->fetchAll($sqlTrendingTrueHares, array((int) $kennelKy, $hare_type, (int) $day_count));
 
       # Establish and set the return value
-      $returnValue = $this->render('trending_true_hares_charts.twig',array(
+      $returnValue = $this->render('trending_hares_charts.twig',array(
         'pageTitle' => 'Trending '.$hareTypeName.' Hares',
         'kennel_abbreviation' => $kennel_abbreviation,
-        'trending_true_hares_list' => $trendingTrueHaresList,
+        'trending_hares_list' => $trendingTrueHaresList,
+        "hare_type_name" => $hareTypeName,
         'day_count' => $day_count,
         'row_limit' => $rowLimit
       ));
@@ -1912,9 +1913,8 @@ class ObscureStatisticsController extends BaseController {
       $hareTypeName = $this->getHareTypeName($hare_type);
 
       # Establish and set the return value
-      $returnValue = $this->render('un_trending_true_hares_charts_json.twig',array(
-        'pageTitle' => 'Un-Trending True Hares',
-        'pageSubTitle' => 'The List of *ALL* Hashers',
+      $returnValue = $this->render('un_trending_hares_charts_json.twig',array(
+        'pageTitle' => 'Un-Trending '.$hareTypeName.' Hares',
         'kennel_abbreviation' => $kennel_abbreviation,
         'day_count' => $day_count,
         'row_limit' => $row_limit,

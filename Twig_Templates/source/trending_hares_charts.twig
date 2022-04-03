@@ -22,14 +22,14 @@
               type: 'horizontalBar',
               data: {
                   labels: [
-                    {% for individualEntry in trending_true_hares_list %}
+                    {% for individualEntry in trending_hares_list %}
                       '{{individualEntry.THE_VALUE|escape('js')}}',
                     {% endfor %}
                   ],
                   datasets: [{
-                      label: 'Number of True Harings',
+                      label: 'Number of {{ hare_type_name }} Harings',
                       data: [
-                        {% for individualEntry in trending_true_hares_list %}
+                        {% for individualEntry in trending_hares_list %}
                           '{{individualEntry.THE_COUNT}}',
                         {% endfor %}
 
@@ -50,7 +50,7 @@
                   },
                   title: {
                     display: true,
-                    text: 'True Harings in the last {{day_count}} days'
+                    text: '{{ hare_type_name }} Harings in the last {{day_count}} days'
                   }
               }
           });

@@ -11,6 +11,7 @@ dl div input { display: table-cell;}
 
 {% block template %}
   <h1>{{pageTitle}}</h1>
+  <h6>{{pageHeader}}</h6>
 
   {% for alert in [ 'info', 'success', 'warning', 'danger'] %}
     {% for message in app.session.getFlashBag.get(alert) %}
