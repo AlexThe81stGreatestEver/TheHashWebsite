@@ -1028,27 +1028,34 @@ class AdminController extends BaseController
     }
 
     # Declare the SQL used to retrieve this information
-    $sql =
-      "SELECT THE_KEY, NAME, VALUE,
-              HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD,".
-              ($type == "pending" ? "MAX" : "MIN")."(AWARD_LEVELS.AWARD_LEVEL) AS NEXT_AWARD_LEVEL
-         FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
-         LEFT JOIN HASHER_AWARDS
-           ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
-          AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
-         JOIN AWARD_LEVELS
-           ON AWARD_LEVELS.KENNEL_KY = HASHER_COUNTS.KENNEL_KY
-        WHERE AWARD_LEVELS.AWARD_LEVEL > COALESCE(HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED, 0)".
-              ($type == "pending" ? "
-          AND (VALUE + ?) >= AWARD_LEVELS.AWARD_LEVEL" : "
-          AND ? != -1
-          AND VALUE <= AWARD_LEVELS.AWARD_LEVEL
-          AND AWARD_LEVELS.AWARD_LEVEL > COALESCE(HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED, 0)")."
-        GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
-        ORDER BY VALUE DESC, NAME";
-
-    #Execute the SQL statement; create an array of rows
-    $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $horizon));
+    if($type == "pending") {
+      $sql =
+        "SELECT THE_KEY, NAME, VALUE,
+                HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD,
+                MAX(AWARD_LEVELS.AWARD_LEVEL) AS NEXT_AWARD_LEVEL
+           FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
+           LEFT JOIN HASHER_AWARDS
+             ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
+            AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
+           JOIN AWARD_LEVELS
+             ON AWARD_LEVELS.KENNEL_KY = HASHER_COUNTS.KENNEL_KY
+          WHERE AWARD_LEVELS.AWARD_LEVEL > COALESCE(HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED, 0)
+            AND (VALUE + ?) >= AWARD_LEVELS.AWARD_LEVEL
+          GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
+          ORDER BY VALUE DESC, NAME";
+      $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $horizon));
+    } else {
+      $sql =
+        "SELECT THE_KEY, NAME, VALUE,
+                HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD
+           FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
+           LEFT JOIN HASHER_AWARDS
+             ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
+            AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
+          GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
+          ORDER BY VALUE DESC, NAME";
+      $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
+    }
 
     # Establish and set the return value
     $returnValue = $this->render('admin_awards.twig',array(
