@@ -176,9 +176,9 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
     <div class="container">
       <h1>{{pageTitle}}</h1>
 
-      <div class="row" style="display: flex;">
+      <div class="row marketing">
 
-        <div class="col-sm-6" style="background-color:lime;">
+        <div class="col-xs-12 col-md-6" style="background-color:lime;">
           <h3>Basic Details</h3>
           <dl class="dl-horizontal">
               {% autoescape %}
@@ -186,10 +186,17 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
                 <dt>Kennel Abbreviation</dt><dd> {{kennel_abbreviation}} </dd>
                 <dt>Number of Hashes</dt><dd> {{hash_count}}</dd>
               {% endautoescape %}
+              <span class="hidden-sm hidden-xs">
+              {% if hareTypes|length > 1 %}
+                {% for i in 0..hareTypes|length-2 %}
+                  <dt>&nbsp;</dt><dd>&nbsp;</dd>
+                {% endfor %}
+              {% endif %}
+              </span>
           </dl>
         </div>
 
-        <div class="col-sm-6" style="background-color:gold;">
+        <div class="col-xs-12 col-md-6" style="background-color:gold;">
           <h3>Hasher Totals</h3>
           <dl class="dl-horizontal">
             <dt># of Hashers</dt><dd> <a href="/{{kennel_abbreviation}}/hashingCounts">{{distinct_hasher_count}}</a></dd>
@@ -197,16 +204,17 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
               <dt># of {{hareType.HARE_TYPE_NAME}} Hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts/{{hareType.HARE_TYPE}}">{{distinct_hare_counts[hareType.HARE_TYPE_NAME]}} </a></dd>
             {% endfor %}
             <dt># of {{overall}}Hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts">{{distinct_overall_hare_count}}</a></dd>
+            {% if hareTypes|length == 0 %}
+            <dt>&nbsp;</dt><dd>&nbsp;</dd>
+            {% endif %}
           </dl>
         </div>
 
-
-
       </div>
 
-      <div class="row" style="display: flex;">
+      <div class="row marketing">
 
-        <div class="col-sm-6" style="background-color:yellow">
+        <div class="col-xs-12 col-md-6" style="background-color:yellow">
           <h3>First Hash</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
@@ -228,9 +236,8 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
           </dl>
         </div>
 
-
-        <div class="col-sm-6" style="background-color:silver">
-          <h3>Latest hash</h3>
+        <div class="col-xs-12 col-md-6" style="background-color:silver">
+          <h3>Latest Hash</h3>
           <dl class="dl-horizontal">
             <dt>Hash Number</dt>
             <dd>
@@ -299,15 +306,7 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
 
         </div>
 
-
-
-
-
-
       </div>
-
-
-
 
       <div class="row">
 
@@ -397,8 +396,6 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
           </script>
 
         </div>
-
-
       </div>
 
       <div class="row">
@@ -487,7 +484,6 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
           </script>
         </div>
       </div>
-
 
       <div class="row">
 
@@ -659,8 +655,6 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
       </script>
 
       <script>
-
-
             var options = {
               list: [
                 {% for item in city_hashings_count_list %}
