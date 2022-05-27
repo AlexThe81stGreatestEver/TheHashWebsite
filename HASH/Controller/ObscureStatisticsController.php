@@ -2252,8 +2252,6 @@ class ObscureStatisticsController extends BaseController {
         # Establish and set the return value
         $returnValue = $this->render('kennel_chart_details.twig',array(
           'pageTitle' => 'Kennel Charts and Details',
-          'firstHeader' => 'Basic Details',
-          'secondHeader' => 'Statistics',
           'kennelName' => $kennelValue['KENNEL_NAME'],
           'location_breakdown_formatted_data' => $locationBreakdownFormattedData,
           #'hasherValue' => $hasher,
