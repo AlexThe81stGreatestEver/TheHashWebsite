@@ -186,11 +186,11 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
         <div class="col-sm-6" style="background-color:gold;">
           <h3>Hasher Totals</h3>
           <dl class="dl-horizontal">
-            <dt># of hashers</dt><dd> <a href="/{{kennel_abbreviation}}/hashingCounts">{{distinct_hasher_count}}</a></dd>
+            <dt># of Hashers</dt><dd> <a href="/{{kennel_abbreviation}}/hashingCounts">{{distinct_hasher_count}}</a></dd>
             {% for hareType in hareTypes %}
-              <dt># of "{{hareType.HARE_TYPE_NAME}}" hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts/{{hareType.HARE_TYPE}}">{{distinct_hare_counts[hareType.HARE_TYPE_NAME]}} </a></dd>
+              <dt># of {{hareType.HARE_TYPE_NAME}} Hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts/{{hareType.HARE_TYPE}}">{{distinct_hare_counts[hareType.HARE_TYPE_NAME]}} </a></dd>
             {% endfor %}
-            <dt># of "Overall" hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts">{{distinct_overall_hare_count}}</a></dd>
+            <dt># of {{overall}}Hares</dt><dd> <a href="/{{kennel_abbreviation}}/haringCounts">{{distinct_overall_hare_count}}</a></dd>
           </dl>
         </div>
 
