@@ -6,6 +6,7 @@
         .dl-horizontal dt { width: 180px; }
         .dl-horizontal dd { margin-left: 200px; }
       }
+      h4 { text-align: center; }
     </style>
 
     <script src="/node_modules/chart.js/dist/chart.min.js"></script>
@@ -639,22 +640,18 @@ function getListData(url_value,div_value, column_one_header, column_two_header){
       </div>
 
       <div class="row">
-        <div id = "surrounding_div" class="col-sm-12" style="width:100%;">
+        <div id = "surrounding_div" class="col-sm-12" style="height:600px;">
           <h4>Hashes By City</h4>
-          <canvas id="my_canvas" style="height: 600px;" class="wordcloud"></canvas>
+          <canvas id="my_canvas" style="width: 100%; display block; margin-left: auto; margin-right: auto;" class="wordcloud"></canvas>
         </div>
       </div>
-
-
 
       <script type = "text/javascript" language = "javascript">
           var canvas = document.getElementById("my_canvas");
           var parent = document.getElementById("surrounding_div");
           canvas.width = parent.offsetWidth;
           canvas.height = parent.offsetHeight;
-      </script>
 
-      <script>
             var options = {
               list: [
                 {% for item in city_hashings_count_list %}

@@ -7,6 +7,7 @@
         .dl-horizontal dt { width: 200px; }
         .dl-horizontal dd { margin-left: 220px; }
       }
+      h4 { text-align: center; }
     </style>
 
     <script src="/node_modules/chart.js/dist/chart.min.js"></script>
@@ -490,15 +491,13 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
       </div>
 
       <div class="row">
-        <div id = "div_one" class="col-sm-12" style="width:100%;height:600px">
+        <div id = "div_one" class="col-sm-6" style="height: 600px;">
           <h4>{{ hare_type_name }} Harings By City</h4>
-          <canvas id="my_canvas" class="wordcloud"></canvas>
+          <canvas id="my_canvas" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
         </div>
-      </div>
-      <div class="row">
-        <div id = "div_two" class="col-sm-12" style="width:100%;height:600px">
+        <div id = "div_two" class="col-sm-6" style="height: 600px;">
           <h4>Favorite {{ hare_type_name }} CoHares</h4>
-          <canvas id="my_canvas2" class="wordcloud"></canvas>
+          <canvas id="my_canvas2" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
         </div>
       </div>
 
@@ -510,13 +509,8 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
 
           var canvas2 = document.getElementById("my_canvas2");
           var parent2 = document.getElementById("div_two");
-          canvas2.width = parent.offsetWidth;
-          canvas2.height = parent.offsetHeight;
-      </script>
-
-      <script>
-
-
+          canvas2.width = parent2.offsetWidth;
+          canvas2.height = parent2.offsetHeight;
 
             var options = {
               list: [
