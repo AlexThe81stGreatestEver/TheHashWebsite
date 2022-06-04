@@ -8,7 +8,7 @@
   function getHares(hash_key){
    var formData = {hash_key:hash_key};
    $.ajax({
-       url : "/admin/event/getHaresForEvent",
+       url : "/admin/hash/getHaresForEvent",
        type: "POST",
        data : formData,
        dataType : 'json',
@@ -38,7 +38,7 @@
  function getHashers(hash_key){
   var formData = {hash_key:hash_key};
   $.ajax({
-      url : "/admin/event/getHashersForEvent",
+      url : "/admin/hash/getHashersForEvent",
       type: "POST",
       data : formData,
       dataType : 'json',
@@ -90,7 +90,7 @@
   function addHasher(hasher_key, hash_key){
    var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
    $.ajax({
-       url : "/admin/event/addHasherToHash",
+       url : "/admin/hash/addHasherToHash",
        type: "POST",
        data : formData,
        dataType : 'json',
@@ -111,7 +111,7 @@
  function addHare(hasher_key, hare_type, hash_key){
   var formData = {hasher_key:hasher_key,hare_type:hare_type,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
   $.ajax({
-      url : "/admin/event/addHareToHash",
+      url : "/admin/hash/addHareToHash",
       type: "POST",
       data : formData,
       dataType : 'json',
@@ -131,7 +131,7 @@
 function deleteHasher(hasher_key, hash_key){
  var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
  $.ajax({
-     url : "/admin/event/deleteHasherFromHash",
+     url : "/admin/hash/deleteHasherFromHash",
      type: "POST",
      data : formData,
      dataType : 'json',
@@ -148,7 +148,7 @@ function deleteHasher(hasher_key, hash_key){
 function deleteHare(hasher_key, hash_key){
  var formData = {hasher_key:hasher_key,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
  $.ajax({
-     url : "/admin/event/deleteHareFromHash",
+     url : "/admin/hash/deleteHareFromHash",
      type: "POST",
      data : formData,
      dataType : 'json',

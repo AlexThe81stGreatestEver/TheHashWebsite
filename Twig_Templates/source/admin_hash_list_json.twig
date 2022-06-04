@@ -26,7 +26,7 @@ $(document).ready(function() {
       {
         "data": "HASH_KY",
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-          $(nTd).html("<a href='/admin/edithash/ajaxform/"+oData.HASH_KY+"'>Event </a> | <a href='/admin/event/manageparticipation2/"+oData.HASH_KY+"'>Participation</a> | " +
+          $(nTd).html("<a href='/admin/edithash/ajaxform/"+oData.HASH_KY+"'>Event </a> | <a href='/admin/hash/manageparticipation2/"+oData.HASH_KY+"'>Participation</a> | " +
             {% if showBudgetPage %}
               "<a href='/admin/eventBudget/"+oData.HASH_KY+"'>Budget</a> | " +
             {% endif %}

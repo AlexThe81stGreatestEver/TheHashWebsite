@@ -311,8 +311,8 @@ $app->get('/admin/viewAuditRecords',                                  'AdminCont
 $app->post('/admin/viewAuditRecords',                                 'AdminController:viewAuditRecordsJson');
 
 # Modify the participation for an event
-$app->get('/admin/event/manageparticipation2/{hash_id}',            'HashEventController:hashParticipationJsonPreAction');
-$app->post('/admin/event/manageparticipation2/{hash_id}',           'HashEventController:hashParticipationJsonPostAction');
+$app->get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController:hashParticipationJsonPreAction');
+$app->post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController:hashParticipationJsonPostAction');
 
 # Page to manage the event tags
 $app->get('/admin/tags/manageeventtags',                            'TagController:manageEventTagsPreAction');
@@ -328,13 +328,13 @@ $app->post('/admin/tags/removetagfromevent',                        'TagControll
 $app->get('/admin/tags/eventscreen/{hash_id}',                      'TagController:showEventForTaggingPreAction');
 
 # Functions to add and delete hounds and hares to the hashes
-$app->post('/admin/event/addHasherToHash',                         'HashEventController:addHashParticipant');
-$app->post('/admin/event/addHareToHash',                           'HashEventController:addHashOrganizer');
-$app->post('/admin/event/deleteHasherFromHash',                    'HashEventController:deleteHashParticipant');
-$app->post('/admin/event/deleteHareFromHash',                      'HashEventController:deleteHashOrganizer');
+$app->post('/admin/hash/addHasherToHash',                         'HashEventController:addHashParticipant');
+$app->post('/admin/hash/addHareToHash',                           'HashEventController:addHashOrganizer');
+$app->post('/admin/hash/deleteHasherFromHash',                    'HashEventController:deleteHashParticipant');
+$app->post('/admin/hash/deleteHareFromHash',                      'HashEventController:deleteHashOrganizer');
 
-$app->post('/admin/event/getHaresForEvent',                        'HashEventController:getHaresForEvent');
-$app->post('/admin/event/getHashersForEvent',                      'HashEventController:getHashersForEvent');
+$app->post('/admin/hash/getHaresForEvent',                        'HashEventController:getHaresForEvent');
+$app->post('/admin/hash/getHashersForEvent',                      'HashEventController:getHashersForEvent');
 
 $app->get('/admin/listOrphanedHashers',                             'AdminController:listOrphanedHashersAction');
 
