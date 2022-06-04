@@ -18,6 +18,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "twbs/bootstrap"
     # Prefix all commit messages with "Composer"
     # include a list of updated dependencies
     commit-message:

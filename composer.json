@@ -11,7 +11,7 @@
         "symfony/config": "^5.4",
         "symfony/translation": "^3.0",
         "symfony/security-csrf": "^3.0",
-        "twbs/bootstrap": "^3.3",
+        "twbs/bootstrap": "^3.4",
         "mbostock/d3": "^3.5",
         "components/jquery": "^2.2",
         "ifightcrime/bootstrap-growl": "1.1.0",
