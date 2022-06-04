@@ -2,7 +2,7 @@
     "require": {
         "silex/silex": "~2.0",
         "doctrine/dbal": "~2.2",
-        "twig/twig": "2.14.*",
+        "twig/twig": "2.15.*",
         "symfony/security": "^3.0",
         "monolog/monolog": "^2.6",
         "symfony/twig-bridge": "^4.0",
