@@ -51,7 +51,7 @@
           var linkTwo = '<a href="javascript:deleteHasher('+row.HASHER_KY+ ',' + {{hash_key}} +');">-Hound</a>';
           var linkThree =
           {% for hareType in hareTypes %}
-            "<a href='javascript:addHare("+row.HASHER_KY+"," +{{hareType.HARE_TYPE}} + ",{{hash_key}});'>+{{hareType.HARE_TYPE_NAME}} Hare</a> | " +
+            "<a href='javascript:addHare("+row.HASHER_KY+"," +{{hareType.HARE_TYPE}} + ",{{hash_key}},false);'>+{{hareType.HARE_TYPE_NAME}} Hare</a> | " +
           {% endfor %}
             "";
           var linkFour = '<a target="_new" href="/admin/modifyhasher/form/'+row.HASHER_KY+'">Edit Hasher</a>';
@@ -108,22 +108,23 @@
  }
 
  //Function to add a hare to the event
- function addHare(hasher_key, hare_type, hash_key){
+ function addHare(hasher_key, hare_type, hash_key, add_hasher) {
   var formData = {hasher_key:hasher_key,hare_type:hare_type,hash_key:hash_key, csrf_token: '{{csrf_token}}'};
   $.ajax({
       url : "/admin/hash/addHareToHash",
       type: "POST",
       data : formData,
       dataType : 'json',
-      success: function(data, textStatus, jqXHR)
-      {
+      success: function(data, textStatus, jqXHR) {
           getHares({{hash_key}});
           displayMessage(data);
           clearSearch();
       },
       error: handleAjaxError
   });
-  addHasher(hasher_key, hash_key);
+  if(add_hasher) {
+      addHasher(hasher_key, hash_key);
+  }
 }
 
 
@@ -190,7 +191,7 @@ $(document).ready(function() {
         "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
           $(nTd).html("<a href='javascript:addHasher("+oData.THE_KEY+",{{hash_key}});'>+ Hound</a> " +
           {% for hareType in hareTypes %}
-            "| <a href='javascript:addHare("+oData.THE_KEY+"," + {{hareType.HARE_TYPE}} + ",{{hash_key}});'>+ {{hareType.HARE_TYPE_NAME}} Hare</a> " +
+            "| <a href='javascript:addHare("+oData.THE_KEY+"," + {{hareType.HARE_TYPE}} + ",{{hash_key}},true);'>+ {{hareType.HARE_TYPE_NAME}} Hare</a> " +
           {% endfor %}
           "| " + oData.NAME + " | " + oData.FIRST_NAME + " | " + oData.LAST_NAME + " | " + oData.HASHER_ABBREVIATION);
         }
