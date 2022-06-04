@@ -4,7 +4,7 @@
         "doctrine/dbal": "~2.2",
         "twig/twig": "2.14.*",
         "symfony/security": "^3.0",
-        "monolog/monolog": "^1.18",
+        "monolog/monolog": "^2.6",
         "symfony/twig-bridge": "^4.0",
         "symfony/form": "^3.0",
         "symfony/validator": "^4.1",
