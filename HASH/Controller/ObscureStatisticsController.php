@@ -9,7 +9,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Wamania\Snowball\English;
+use Wamania\Snowball\StemmerFactory;
 
 class ObscureStatisticsController extends BaseController {
 
@@ -2124,7 +2124,7 @@ class ObscureStatisticsController extends BaseController {
 
       #Iterate through the list of exceptions; see if there is a match; see if there is an exception match
 
-      $stemmer = new English();
+      $stemmer = StemmerFactory::create("en");
       $stem = $stemmer->stem($tokenValue);
 
 
