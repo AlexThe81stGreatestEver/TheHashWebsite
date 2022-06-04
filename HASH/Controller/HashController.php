@@ -181,7 +181,7 @@ class HashController extends BaseController
     $theSql = "$theSql LIMIT 10";
 
     foreach ($hareTypes as &$hareType) {
-    #Get the quickest to 5 true harings
+      #Get the quickest to 5 harings
       $theQuickestToXHaringsResults = $this->fetchAllIgnoreErrors($theSql, array($kennelKy, $kennelKy, $hareType['HARE_TYPE'], $kennelKy, $hareType['HARE_TYPE']));
       array_push($quickest_hares,
         array('data' => $theQuickestToXHaringsResults, 'label' => $hareType['HARE_TYPE_NAME'], 'hare_type' => $hareType['HARE_TYPE']));
