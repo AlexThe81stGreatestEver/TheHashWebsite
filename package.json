@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/AlexThe81stGreatestEver/TheHashWebsite#readme",
   "dependencies": {
-    "c3": "^0.6.12",
+    "c3": "^0.7.20",
     "chart.js": "^2.4.0",
     "datatables.net-responsive": "^2.2.9",
     "datatables.net-responsive-dt": "^2.2.9",
