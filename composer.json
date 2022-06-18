@@ -1,7 +1,7 @@
 {
     "require": {
         "silex/silex": "~2.0",
-        "doctrine/dbal": "~2.2",
+        "doctrine/dbal": "~3.3",
         "twig/twig": "2.15.*",
         "symfony/security": "^3.0",
         "monolog/monolog": "^2.6",
