@@ -2,7 +2,14 @@
 
 {% block content %}
 
-<script type="text/javascript" src="/node_modules/chart.js/dist/Chart.bundle.min.js"></script>
+<style type="text/css">
+  @media (min-width: 768px) {
+    .dl-horizontal dt { width: 180px; }
+    .dl-horizontal dd { margin-left: 200px; }
+  }
+</style>
+
+<script type="text/javascript" src="/node_modules/chart.js/dist/chart.min.js"></script>
 <script type="text/javascript" src="/node_modules/echarts/dist/echarts.js" type="module"></script>
 <script type="text/javascript" src="/node_modules/d3/dist/d3.min.js"></script>
 <script type="text/javascript" src="/node_modules/c3/c3.min.js"></script>

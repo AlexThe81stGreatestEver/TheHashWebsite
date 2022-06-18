@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <script src="/node_modules/chart.js/dist/Chart.bundle.min.js"></script>
+    <script src="/node_modules/chart.js/dist/chart.min.js"></script>
     <script type = "text/javascript" language = "javascript"></script>
 
 
@@ -117,11 +117,12 @@
                     };
 
                     myChart = new Chart(ctx, {
-                        type: 'horizontalBar',
+                        type: 'bar',
                           maintainAspectRatio: false,
                           responsive: true,
                         data: data,
                         options: {
+                            indexAxis: "y",
                             scales: {
                                 yAxes: [{
                                     ticks: {

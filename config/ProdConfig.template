@@ -11,9 +11,6 @@ define("DB_READ_ONLY_PASSWORD","yourpassword");
 
 define("DEFAULT_USER_PASSWORD","yourlongpasswordstring");
 
-// Uncomment if using mysql8 or better
-//define("MYSQL8", true);
-
 // Use in development instances only
 // Leave commented out in production
 //define("SHOW_WARNINGS", true);

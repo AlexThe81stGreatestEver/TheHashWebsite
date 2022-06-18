@@ -9,7 +9,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Wamania\Snowball\English;
+use Wamania\Snowball\StemmerFactory;
 
 class ObscureStatisticsController extends BaseController {
 
@@ -2124,7 +2124,7 @@ class ObscureStatisticsController extends BaseController {
 
       #Iterate through the list of exceptions; see if there is a match; see if there is an exception match
 
-      $stemmer = new English();
+      $stemmer = StemmerFactory::create("en");
       $stem = $stemmer->stem($tokenValue);
 
 
@@ -2252,8 +2252,6 @@ class ObscureStatisticsController extends BaseController {
         # Establish and set the return value
         $returnValue = $this->render('kennel_chart_details.twig',array(
           'pageTitle' => 'Kennel Charts and Details',
-          'firstHeader' => 'Basic Details',
-          'secondHeader' => 'Statistics',
           'kennelName' => $kennelValue['KENNEL_NAME'],
           'location_breakdown_formatted_data' => $locationBreakdownFormattedData,
           #'hasherValue' => $hasher,
@@ -2278,7 +2276,8 @@ class ObscureStatisticsController extends BaseController {
           'distinct_hasher_count' => $distinctHasherCountForKennel,
           'distinct_hare_counts' => $distinctHareCounts,
           'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel,
-          'hareTypes' => count($hareTypes) > 1 ? $hareTypes : array()
+          'hareTypes' => count($hareTypes) > 1 ? $hareTypes : array(),
+          'overall' => count($hareTypes) > 1 ? "Overall " : ""
         ));
 
         # Return the return value

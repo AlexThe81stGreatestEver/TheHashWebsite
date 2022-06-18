@@ -2,15 +2,12 @@
 
 {% block content %}
 
-    <script src="/node_modules/chart.js/dist/Chart.bundle.min.js"></script>
+   <style type="text/css">
+      h4 { text-align: center; }
+   </style>
+
+    <script src="/node_modules/chart.js/dist/chart.min.js"></script>
     <script type = "text/javascript" src = "/node_modules/wordcloud/src/wordcloud2.js"></script>
-    <script type = "text/javascript" language = "javascript">
-
-   //Call these functions upon page load
-   //$(document).ready(function() {
-    //});
-
-   </script>
 
     <div class="container">
       <h1>{{pageTitle}}</h1>
@@ -77,9 +74,13 @@
 
 <!--  ------------------------------------------------------------------------->
       <div class="row">
-        <div id = "div_one" class="col-sm-12" style="width:100%;height:600px">
+        <div id = "div_one" class="col-sm-6" style="height:600px">
           <h4>Hasher Counts</h4>
-          <canvas id="my_canvas" class="wordcloud"></canvas>
+          <canvas id="my_canvas" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
+        </div>
+        <div id = "div_two" class="col-sm-6" style="height:600px">
+          <h4>Hare Counts</h4>
+          <canvas id="my_canvas2" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
         </div>
       </div>
 
@@ -88,9 +89,12 @@
           var parent = document.getElementById("div_one");
           canvas.width = parent.offsetWidth;
           canvas.height = parent.offsetHeight;
-      </script>
 
-      <script>
+          canvas = document.getElementById("my_canvas2");
+          parent = document.getElementById("div_two");
+          canvas.width = parent.offsetWidth;
+          canvas.height = parent.offsetHeight;
+
             var options = {
               list: [
                 {% for item in hasher_count_list %}
@@ -105,26 +109,8 @@
               gridSize: 5
             };
             WordCloud(document.getElementById('my_canvas'), options );
-      </script>
 
-<!--  ------------------------------------------------------------------------->
-
-      <div class="row">
-        <div id = "div_two" class="col-sm-12" style="width:100%;height:600px">
-          <h4>Hare Counts</h4>
-          <canvas id="my_canvas2" class="wordcloud"></canvas>
-        </div>
-      </div>
-
-      <script type = "text/javascript" language = "javascript">
-          var canvas = document.getElementById("my_canvas2");
-          var parent = document.getElementById("div_two");
-          canvas.width = parent.offsetWidth;
-          canvas.height = parent.offsetHeight;
-      </script>
-
-      <script>
-            var options = {
+            options = {
               list: [
                 {% for item in hare_count_list %}
                     [
@@ -139,8 +125,6 @@
             };
             WordCloud(document.getElementById('my_canvas2'), options );
       </script>
-<!--  ------------------------------------------------------------------------->
-
 
     <div class="row"><h2>Event Map</h2>
       <div id="TheMap1" class="col-sm-10"></div>
