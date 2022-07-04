@@ -1,22 +1,20 @@
 <?php
 
 // web/index.php
-require_once __DIR__.'/vendor/autoload.php';
-require_once __DIR__.'/config/ProdConfig.php';
-require_once __DIR__.'/HASH/Controller/DatabaseUpdater.php';
-require_once __DIR__.'/HASH/Controller/HashController.php';
-require_once __DIR__.'/HASH/Controller/TagController.php';
-require_once __DIR__.'/HASH/Controller/HashEventController.php';
-require_once __DIR__.'/HASH/Controller/HashPersonController.php';
-require_once __DIR__.'/HASH/Controller/AdminController.php';
-require_once __DIR__.'/HASH/Controller/SuperAdminController.php';
-require_once __DIR__.'/HASH/Controller/ObscureStatisticsController.php';
-
-
-require_once './HASH/UserProvider.php';
+require_once 'vendor/autoload.php';
+require_once 'config/ProdConfig.php';
+require_once 'HASH/Controller/DatabaseUpdater.php';
+require_once 'HASH/Controller/HashController.php';
+require_once 'HASH/Controller/TagController.php';
+require_once 'HASH/Controller/HashEventController.php';
+require_once 'HASH/Controller/HashPersonController.php';
+require_once 'HASH/Controller/AdminController.php';
+require_once 'HASH/Controller/SuperAdminController.php';
+require_once 'HASH/Controller/ObscureStatisticsController.php';
+require_once 'HASH/UserProvider.php';
+require_once 'Events/EventListenerProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
-
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
@@ -32,6 +30,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -41,6 +40,8 @@ $app = new Silex\Application();
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app->register(new CsrfServiceProvider());
+
+$app->register(new Events\EventListenerProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app); };
@@ -589,20 +590,8 @@ $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'H
 # kennel home page
 $app->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
 
-#Do magic on the json traffic
 $app->before(function (Request $request, Application $app) {
-    if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
-        $data = json_decode($request->getContent(), true);
-        $request->request->replace(is_array($data) ? $data : array());
-    }
     new DatabaseUpdater($app, DB_NAME);
-});
-
-$app->after(function (Request $request, Response $response) {
-   $response->headers->set('X-Frame-Options', 'DENY');
-   $response->headers->set('X-Content-Type-Options', 'nosniff');
-   $response->headers->set('X-XSS-Protection','1; mode=block');
-   $response->headers->set('x-frame-options','SAMEORIGIN');
 });
 
 $app->run();
