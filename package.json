@@ -1,22 +1,4 @@
 {
-  "name": "htdocs",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AlexThe81stGreatestEver/TheHashWebsite.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AlexThe81stGreatestEver/TheHashWebsite/issues"
-  },
-  "homepage": "https://github.com/AlexThe81stGreatestEver/TheHashWebsite#readme",
   "dependencies": {
     "c3": "^0.7.20",
     "chart.js": "^3.7.1",
