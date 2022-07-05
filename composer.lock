@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5c89a13276d1b893cf9c642a549ebf90",
+    "content-hash": "65a80de844da8ee9c5ba518d08d0a82a",
     "packages": [
         {
             "name": "components/jquery",
@@ -81,6 +81,59 @@
                 "source": "https://github.com/DataTables/DataTablesSrc/"
             },
             "time": "2020-05-21T10:08:44+00:00"
+        },
+        {
+            "name": "derrabus/silex-psr11-provider",
+            "version": "v1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/derrabus/silex-psr11-provider.git",
+                "reference": "4a956a0324ccdce4b6cf0e4aa13f945b53516b5d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/derrabus/silex-psr11-provider/zipball/4a956a0324ccdce4b6cf0e4aa13f945b53516b5d",
+                "reference": "4a956a0324ccdce4b6cf0e4aa13f945b53516b5d",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.5.9 || ^7 || ^8",
+                "pimple/pimple": "^3.2",
+                "psr/container": "^1.0",
+                "symfony/http-kernel": "^3.3 || ^4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5 || ^7.5 || ^8.5 || ^9.2",
+                "silex/silex": "^2.2",
+                "symfony/phpunit-bridge": "^4.4 || ^5.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Rabus\\Psr11ServiceProvider\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander M. Turek",
+                    "email": "me@derrabus.de"
+                }
+            ],
+            "description": "Privides a PSR-11 compatible container as a service.",
+            "support": {
+                "issues": "https://github.com/derrabus/silex-psr11-provider/issues",
+                "source": "https://github.com/derrabus/silex-psr11-provider/tree/master"
+            },
+            "time": "2020-07-17T10:41:36+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -714,27 +767,22 @@
         },
         {
             "name": "psr/container",
-            "version": "2.0.2",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/container.git",
-                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963"
+                "reference": "513e0666f7216c7459170d56df27dfcefe1689ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/container/zipball/c71ecc56dfe541dbd90c5360474fbc405f8d5963",
-                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/513e0666f7216c7459170d56df27dfcefe1689ea",
+                "reference": "513e0666f7216c7459170d56df27dfcefe1689ea",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.4.0"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0.x-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Psr\\Container\\": "src/"
@@ -761,9 +809,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-fig/container/issues",
-                "source": "https://github.com/php-fig/container/tree/2.0.2"
+                "source": "https://github.com/php-fig/container/tree/1.1.2"
             },
-            "time": "2021-11-05T16:47:00+00:00"
+            "time": "2021-11-05T16:50:12+00:00"
         },
         {
             "name": "psr/log",

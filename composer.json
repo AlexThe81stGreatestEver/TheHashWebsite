@@ -17,6 +17,7 @@
         "ifightcrime/bootstrap-growl": "1.1.0",
         "datatables/datatables": "^1.10",
         "wamania/php-stemmer": "^3.0",
-        "ifsnop/mysqldump-php": "~2.9"
+        "ifsnop/mysqldump-php": "~2.9",
+        "derrabus/silex-psr11-provider": "^1"
     }
 }

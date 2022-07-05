@@ -4,11 +4,10 @@ namespace HASH\Controller;
 
 require_once "BaseController.php";
 
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -16,11 +15,12 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Psr\Container\ContainerInterface;
 
 class HashEventController extends BaseController {
 
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   protected function getHareTypesForHashType(int $kennelKy, int $hashType) {
@@ -169,19 +169,19 @@ class HashEventController extends BaseController {
       if(!(is_numeric($theLat)||empty($theLat))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the lat";
-        //$this->app['monolog']->addDebug("--- theLat failed validation: $theLat");
+        //$this->container->get('monolog')->addDebug("--- theLat failed validation: $theLat");
       }
 
       if(!(is_numeric($theLng)||empty($theLng))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the lng";
-        //$this->app['monolog']->addDebug("--- theLng failed validation: $theLng");
+        //$this->container->get('monolog')->addDebug("--- theLng failed validation: $theLng");
       }
 
       if(!(is_numeric($thePostal_code)||empty($thePostal_code))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the postal code";
-        //$this->app['monolog']->addDebug("--- thePostal_code failed validation: $thePostal_code");
+        //$this->container->get('monolog')->addDebug("--- thePostal_code failed validation: $thePostal_code");
       }
 
       if(!is_numeric($theLat)){
@@ -197,7 +197,7 @@ class HashEventController extends BaseController {
       if (!preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$theEventDate)){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the event date";
-        //$this->app['monolog']->addDebug("--- the date failed validation $theEventDate");
+        //$this->container->get('monolog')->addDebug("--- the date failed validation $theEventDate");
       }
 
 
@@ -206,7 +206,7 @@ class HashEventController extends BaseController {
       if (!preg_match("/^([01]\d|2[0-3]):([0-5][0-9]):([0-5][0-9])$/",$theEventTime)){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the event time";
-        //$this->app['monolog']->addDebug("--- the time failed validation $theEventTime");
+        //$this->container->get('monolog')->addDebug("--- the time failed validation $theEventTime");
 
       }
 
@@ -235,7 +235,7 @@ class HashEventController extends BaseController {
             LNG
           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
             $kennelKy,
             $theHashEventNumber,
             $theEventDateAndTime,
@@ -259,21 +259,21 @@ class HashEventController extends BaseController {
         if($theEventToCopy != null) {
 
           // Get the hash key for the event that was just created
-          $hashKy = $this->app['dbs']['mysql_write']->lastInsertId();
+          $hashKy = $this->container->get('dbs')['mysql_write']->lastInsertId();
 
           $sql = "INSERT INTO HASHINGS(HASH_KY, HASHER_KY)
                   SELECT ?, HASHER_KY
                     FROM HASHINGS
                    WHERE HASH_KY = ?";
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
 
           $sql = "INSERT INTO HARINGS(HARINGS_HASH_KY, HARINGS_HASHER_KY, HARE_TYPE)
                   SELECT ?, HARINGS_HASHER_KY, HARE_TYPE
                     FROM HARINGS
                    WHERE HARINGS_HASH_KY = ?";
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
 
           $auditAddl = " from event key ".$theEventToCopy;
         } else {
@@ -290,9 +290,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Success! Great, it worked";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
+      return new JsonResponse($returnMessage);
     }
 
     #Define action
@@ -353,7 +351,7 @@ class HashEventController extends BaseController {
       $theLng= trim(strip_tags($request->request->get('lng')));
       $theFormatted_address= trim(strip_tags($request->request->get('formatted_address')));
       $thePlace_id= trim(strip_tags($request->request->get('place_id')));
-      //$this->app['monolog']->addDebug("--- thePlace_id: $thePlace_id");
+      //$this->container->get('monolog')->addDebug("--- thePlace_id: $thePlace_id");
 
       // Establish a "passed validation" variable
       $passedValidation = TRUE;
@@ -364,19 +362,19 @@ class HashEventController extends BaseController {
       if(!(is_numeric($theLat)||empty($theLat))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the lat";
-        //$this->app['monolog']->addDebug("--- theLat failed validation: $theLat");
+        //$this->container->get('monolog')->addDebug("--- theLat failed validation: $theLat");
       }
 
       if(!(is_numeric($theLng)||empty($theLng))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the lng";
-        //$this->app['monolog']->addDebug("--- theLng failed validation: $theLng");
+        //$this->container->get('monolog')->addDebug("--- theLng failed validation: $theLng");
       }
 
       if(!(is_numeric($thePostal_code)||empty($thePostal_code))){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the postal code";
-        //$this->app['monolog']->addDebug("--- thePostal_code failed validation: $thePostal_code");
+        //$this->container->get('monolog')->addDebug("--- thePostal_code failed validation: $thePostal_code");
       }
 
       if(!is_numeric($theLat)){
@@ -392,7 +390,7 @@ class HashEventController extends BaseController {
       if (!preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$theEventDate)){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the event date";
-        //$this->app['monolog']->addDebug("--- the date failed validation $theEventDate");
+        //$this->container->get('monolog')->addDebug("--- the date failed validation $theEventDate");
       }
 
 
@@ -401,7 +399,7 @@ class HashEventController extends BaseController {
       if (!preg_match("/^([01]\d|2[0-3]):([0-5][0-9]):([0-5][0-9])$/",$theEventTime)){
         $passedValidation = FALSE;
         $returnMessage .= " |Failed validation on the event time";
-        //$this->app['monolog']->addDebug("--- the time failed validation $theEventTime");
+        //$this->container->get('monolog')->addDebug("--- the time failed validation $theEventTime");
 
       }
 
@@ -429,7 +427,7 @@ class HashEventController extends BaseController {
               LNG = ?
            WHERE HASH_KY = ?";
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
             $theHashEventNumber,
             $theEventDateAndTime,
             $theLocationDescription,
@@ -467,9 +465,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Success! Great, it worked";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
+      return new JsonResponse($returnMessage);
     }
 
     public function hashParticipationJsonPreAction(Request $request, int $hash_id){
@@ -560,7 +556,7 @@ class HashEventController extends BaseController {
           $sql = "INSERT INTO HASHINGS (HASHER_KY, HASH_KY) VALUES (?, ?);";
 
           #Execute the sql insert statement
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Audit the activity
 
@@ -588,9 +584,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Something is wrong with the input.$hasherKey and $hashKey";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
+      return new JsonResponse($returnMessage);
     }
 
     public function addHashOrganizer (Request $request){
@@ -636,7 +630,7 @@ class HashEventController extends BaseController {
           $sql = "INSERT INTO HARINGS (HARINGS_HASHER_KY, HARINGS_HASH_KY, HARE_TYPE) VALUES (?, ?, ?);";
 
           #Execute the sql insert statement
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey,$hareType));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey,$hareType));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -665,9 +659,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Something is wrong with the input.$hasherKey and $hashKey";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
+      return new JsonResponse($returnMessage);
     }
 
 
@@ -706,7 +698,7 @@ class HashEventController extends BaseController {
           $sql = "DELETE FROM HASHINGS WHERE HASHER_KY = ? AND HASH_KY = ?;";
 
           #Execute the sql insert statement
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -728,10 +720,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Something is wrong with the input.$hasherKey and $hashKey";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
-
+      return new JsonResponse($returnMessage);
     }
 
     public function deleteHashOrganizer (Request $request){
@@ -768,7 +757,7 @@ class HashEventController extends BaseController {
           $sql = "DELETE FROM HARINGS WHERE HARINGS_HASHER_KY = ? AND HARINGS_HASH_KY = ?;";
 
           #Execute the sql insert statement
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -790,10 +779,7 @@ class HashEventController extends BaseController {
         $returnMessage = "Something is wrong with the input.$hasherKey and $hashKey";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
-
+      return new JsonResponse($returnMessage);
     }
 
     #Obtain hashers for an event
@@ -816,9 +802,7 @@ class HashEventController extends BaseController {
       #Obtain the hare list
       $hareList = $this->fetchAll($hareListSQL,array((int)$hashKey));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareList, 200);
-      return $returnValue;
+      return new JsonResponse($hareList);
     }
 
     #Obtain hashers for an event
@@ -836,9 +820,7 @@ class HashEventController extends BaseController {
       #Obtain the hare list
       $hareList = $this->fetchAll($hareListSQL,array((int)$hashKey));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareList, 200);
-      return $returnValue;
+      return new JsonResponse($hareList);
     }
 
     #Define the action
@@ -860,7 +842,7 @@ class HashEventController extends BaseController {
 
     public function listHashesPostActionJson(Request $request, string $kennel_abbreviation){
 
-      #$this->app['monolog']->addDebug("Entering the function------------------------");
+      #$this->container->get('monolog')->addDebug("Entering the function------------------------");
 
       #Obtain the kennel key
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -877,17 +859,17 @@ class HashEventController extends BaseController {
       #-------------- Begin: Validate the post parameters ------------------------
       #Validate input start
       if(!is_numeric($inputStart)){
-        #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+        #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
         $inputStart = 0;
       }
 
       #Validate input length
       if(!is_numeric($inputLength)){
-        #$this->app['monolog']->addDebug("input length is not numeric");
+        #$this->container->get('monolog')->addDebug("input length is not numeric");
         $inputStart = "0";
         $inputLength = "50";
       } else if($inputLength == "-1"){
-        #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+        #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
         $inputStart = "0";
         $inputLength = "1000000000";
       }
@@ -907,12 +889,12 @@ class HashEventController extends BaseController {
       $inputOrderColumnIncremented = "13";
       $inputOrderDirectionExtracted = "desc";
       if(!is_null($inputOrderRaw)){
-        #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+        #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
         $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
         $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
         $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
       }else{
-        #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+        #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
       }
 
       #-------------- End: Modify the input parameters  --------------------------
@@ -997,10 +979,6 @@ class HashEventController extends BaseController {
         "aaData" => $theResults
       );
 
-      #Set the return value
-      $returnValue = $this->app->json($output,200);
-
-      #Return the return value
-      return $returnValue;
+      return new JsonResponse($output);
     }
 }

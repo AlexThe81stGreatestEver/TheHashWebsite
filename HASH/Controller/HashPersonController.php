@@ -2,8 +2,8 @@
 
 namespace HASH\Controller;
 
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -12,12 +12,13 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Psr\Container\ContainerInterface;
 
 class HashPersonController extends BaseController
 {
 
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   public function deleteHashPersonPreAction(Request $request, int $hasher_id){
@@ -109,7 +110,7 @@ class HashPersonController extends BaseController
 
           try{
             #Execute the query
-            $this->app['dbs']['mysql_write']->executeUpdate($deletionSQL,array((int) $hasherKey));
+            $this->container->get('dbs')['mysql_write']->executeUpdate($deletionSQL,array((int) $hasherKey));
 
             #Audit the action
             $hasherNickname = $hasherValue['HASHER_ABBREVIATION'];
@@ -144,9 +145,7 @@ class HashPersonController extends BaseController
       $returnMessage = "The hasher key ($hasherKey) is invalid.";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
 
@@ -169,7 +168,7 @@ class HashPersonController extends BaseController
         'BANNED' => $hasherValue['BANNED']
     );
 
-    $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class, $data)
+    $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class, $data)
       ->add('HASHER_NAME', TextType::class, array('label' => 'Hasher Name'))
       ->add('HASHER_ABBREVIATION', TextType::class, array('label' => 'Hasher Abbreviation'))
       ->add('LAST_NAME', TextType::class, array('label' => 'Last Name'))
@@ -206,7 +205,7 @@ class HashPersonController extends BaseController
             SET
               HASHER_NAME= ?, HASHER_ABBREVIATION= ?, LAST_NAME= ?, FIRST_NAME=?, HOME_KENNEL=?, DECEASED=?, BANNED=?
             WHERE HASHER_KY=?";
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
             $tempHasherName,
             $tempHasherAbbreviation,
             $tempLastName,
@@ -218,7 +217,7 @@ class HashPersonController extends BaseController
           ));
 
           #Add a confirmation that everything worked
-          $this->app['session']->getFlashBag()->add('success', 'Success! You modified the person. They were not good enough as they were, so you made them better.');
+          $this->container->get('session')->getFlashBag()->add('success', 'Success! You modified the person. They were not good enough as they were, so you made them better.');
 
           #Audit the action
           $tempActionType = "Modify Person";
@@ -226,7 +225,7 @@ class HashPersonController extends BaseController
           $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
       } else{
-        $this->app['session']->getFlashBag()->add('danger', 'Wrong! You broke it.');
+        $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You broke it.');
       }
 
     }
@@ -246,7 +245,7 @@ class HashPersonController extends BaseController
   #Define the action
   public function createHashPersonAction(Request $request){
 
-    $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class)
+    $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class)
       ->add('HASHER_NAME', TextType::class, array('label' => 'Hasher Name'))
       ->add('HASHER_ABBREVIATION', TextType::class, array('label' => 'Hasher Abbreviation'))
       ->add('LAST_NAME', TextType::class, array('label' => 'Last Name'))
@@ -289,7 +288,7 @@ class HashPersonController extends BaseController
             ) VALUES (?, ?, ?, ?, ?, ?)";
 
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
             $tempHasherName,
             $tempHasherAbbreviation,
             $tempLastName,
@@ -301,7 +300,7 @@ class HashPersonController extends BaseController
 
           #Add a confirmation that everything worked
           $theSuccessMessage = "Success! You created a person. (Hasher $tempHasherName)";
-          $this->app['session']->getFlashBag()->add('success', $theSuccessMessage);
+          $this->container->get('session')->getFlashBag()->add('success', $theSuccessMessage);
 
           #Audit the action
           $tempActionType = "Create Person";
@@ -309,7 +308,7 @@ class HashPersonController extends BaseController
           $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
       } else{
-        $this->app['session']->getFlashBag()->add('danger', 'Wrong! You broke it.');
+        $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You broke it.');
       }
 
     }
@@ -355,8 +354,6 @@ class HashPersonController extends BaseController
         $returnMessage = "Something is wrong with the input.$hasherKey";
       }
 
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
+      return new JsonResponse($returnMessage);
     }
 }

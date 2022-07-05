@@ -4,27 +4,28 @@ namespace HASH\Controller;
 
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
 require_once "BaseController.php";
-use Silex\Application;
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Datetime;
+use Psr\Container\ContainerInterface;
 
 class HashController extends BaseController
 {
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   #Define the action
   public function logonScreenAction(Request $request){
 
     # Establisht the last error
-    $lastError = $this->app['security.last_error']($request);
+    $lastError = $this->container->get('security.last_error')($request);
 
     # Establish the last username
-    $lastUserName = $this->app['session']->get('_security.last_username');
+    $lastUserName = $this->container->get('session')->get('_security.last_username');
 
     # Establish the return value
     $returnValue =  $this->render('logon_screen.twig', array (
@@ -88,7 +89,7 @@ class HashController extends BaseController
   }
 
   public function slashAction(Request $request) {
-    return $this->slashKennelAction2($request,$this->getDefaultKennel($this->app));
+    return $this->slashKennelAction2($request,$this->getDefaultKennel($this->container));
   }
 
   #Define the action
@@ -312,7 +313,7 @@ class HashController extends BaseController
 
   public function getCohareCountsJson(Request $request, string $kennel_abbreviation){
 
-    #$this->app['monolog']->addDebug("Entering the function------------------------");
+    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -330,17 +331,17 @@ class HashController extends BaseController
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->app['monolog']->addDebug("input length is not numeric");
+      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
@@ -357,13 +358,13 @@ class HashController extends BaseController
     #Obtain the column/order information
     $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
     if(!is_null($inputOrderRaw)){
-      #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
     }else{
       $inputOrderColumnExtracted = "2";
       $inputOrderDirectionExtracted = "desc";
-      #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
     $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
 
@@ -395,7 +396,7 @@ class HashController extends BaseController
         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
         LIMIT $inputStart,$inputLength";
 
-    #$this->app['monolog']->addDebug("sql: $sql");
+    #$this->container->get('monolog')->addDebug("sql: $sql");
 
     #Define the SQL that gets the count for the filtered results
     $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -476,11 +477,7 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   #Define the action
@@ -615,7 +612,7 @@ class HashController extends BaseController
 
   public function getHasherListJson(Request $request, string $kennel_abbreviation){
 
-    #$this->app['monolog']->addDebug("Entering the function------------------------");
+    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -630,17 +627,17 @@ class HashController extends BaseController
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->app['monolog']->addDebug("input length is not numeric");
+      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
@@ -660,12 +657,12 @@ class HashController extends BaseController
     $inputOrderColumnIncremented = "1";
     $inputOrderDirectionExtracted = "asc";
     if(!is_null($inputOrderRaw)){
-      #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
     }else{
-      #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
 
     #-------------- End: Modify the input parameters  --------------------------
@@ -811,17 +808,13 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
 
   public function getVirginHaringsListJson(Request $request, int $hare_type, string $kennel_abbreviation){
 
-    #$this->app['monolog']->addDebug("Entering the function------------------------");
+    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -836,17 +829,17 @@ class HashController extends BaseController
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->app['monolog']->addDebug("input length is not numeric");
+      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
@@ -866,12 +859,12 @@ class HashController extends BaseController
     $inputOrderColumnIncremented = "2";
     $inputOrderDirectionExtracted = "asc";
     if(!is_null($inputOrderRaw)){
-      #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
     }else{
-      #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
 
     #-------------- End: Modify the input parameters  --------------------------
@@ -950,16 +943,12 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   public function getLocationCountsJson(Request $request, string $kennel_abbreviation){
 
-    #$this->app['monolog']->addDebug("Entering the function------------------------");
+    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -974,17 +963,17 @@ class HashController extends BaseController
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->app['monolog']->addDebug("input length is not numeric");
+      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
@@ -1001,7 +990,7 @@ class HashController extends BaseController
     #Obtain the column/order information
     $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
     if(!is_null($inputOrderRaw)){
-      #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column']+1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
     } else {
@@ -1086,11 +1075,7 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
 
@@ -1109,17 +1094,17 @@ class HashController extends BaseController
     #-------------- Begin: Validate the post parameters ------------------------
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->app['monolog']->addDebug("input length is not numeric");
+      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
@@ -1139,12 +1124,12 @@ class HashController extends BaseController
     $inputOrderColumnIncremented = "1";
     $inputOrderDirectionExtracted = "asc";
     if(!is_null($inputOrderRaw)){
-      #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
     }else{
-      #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
       $inputOrderColumnIncremented = "DAYS_MIA";
       $inputOrderDirectionExtracted = "DESC";
     }
@@ -1231,11 +1216,7 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   public function attendancePercentagesPostActionJson(Request $request, string $kennel_abbreviation) {
@@ -1369,11 +1350,7 @@ class HashController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
 
@@ -4206,7 +4183,7 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
 
         $daysToAdd = round($hasherStatsDaysPerHash * $x);
         $nowDate = date("Y/m/d");
-        #$this->app['monolog']->addDebug("XX:nowDate $nowDate");
+        #$this->container->get('monolog')->addDebug("XX:nowDate $nowDate");
         #$incrementedDate = strtotime($nowDate."+ 2 days");
 
         $incrementedDateOverall = date('Y-m-d',strtotime($nowDate) + (24*3600*$daysToAdd));
@@ -4219,9 +4196,9 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
           $incrementedDateRecent = date('Y-m-d',strtotime($nowDate) + (24*3600*$daysToAddRecent));
         }
 
-        #$this->app['monolog']->addDebug("XD:incrementedHashCount $incrementedHashCount");
-        #$this->app['monolog']->addDebug("XE:daysToAdd $daysToAdd");
-        #$this->app['monolog']->addDebug("XF:date $date");
+        #$this->container->get('monolog')->addDebug("XD:incrementedHashCount $incrementedHashCount");
+        #$this->container->get('monolog')->addDebug("XE:daysToAdd $daysToAdd");
+        #$this->container->get('monolog')->addDebug("XF:date $date");
 
         $obj = [
           'incrementedHashCount' => $incrementedHashCount,
@@ -4296,7 +4273,7 @@ public function jumboCountsTablePreActionJson(Request $request, string $kennel_a
 
 public function jumboCountsTablePostActionJson(Request $request, string $kennel_abbreviation){
 
-  #$this->app['monolog']->addDebug("Entering the function jumboStatsTablePostActionJson------------------------");
+  #$this->container->get('monolog')->addDebug("Entering the function jumboStatsTablePostActionJson------------------------");
 
   #Establish he minimum hash count
   $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_counts_minimum_hash_count', 10);
@@ -4326,17 +4303,17 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   #-------------- Begin: Validate the post parameters ------------------------
   #Validate input start
   if(!is_numeric($inputStart)){
-    #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+    #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
     $inputStart = 0;
   }
 
   #Validate input length
   if(!is_numeric($inputLength)){
-    #$this->app['monolog']->addDebug("input length is not numeric");
+    #$this->container->get('monolog')->addDebug("input length is not numeric");
     $inputStart = "0";
     $inputLength = "50";
   } else if($inputLength == "-1"){
-    #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+    #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
     $inputStart = "0";
     $inputLength = "1000000000";
   }
@@ -4356,12 +4333,12 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   $inputOrderColumnIncremented = "2";
   $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
-    #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+    #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
     $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
     $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
   }else{
-    #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+    #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
   }
 
   #-------------- End: Modify the input parameters  --------------------------
@@ -4459,7 +4436,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
-  #$this->app['monolog']->addDebug("sql: $sql");
+  #$this->container->get('monolog')->addDebug("sql: $sql");
 
   #Define the SQL that gets the count for the filtered results
   $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4497,29 +4474,29 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   #-------------- End: Define the SQL used here   ----------------------------
 
   #-------------- Begin: Query the database   --------------------------------
-  #$this->app['monolog']->addDebug("Point A");
+  #$this->container->get('monolog')->addDebug("Point A");
 
   #Perform the filtered search
   $theResults = $this->fetchAll($sql,$args);
-  #$this->app['monolog']->addDebug("Point B");
+  #$this->container->get('monolog')->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
     $kennelKy,
     $minimumHashCount
   )))['THE_COUNT'];
-  #$this->app['monolog']->addDebug("Point C");
+  #$this->container->get('monolog')->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
     $kennelKy,
     $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
-  #$this->app['monolog']->addDebug("Point D");
+  #$this->container->get('monolog')->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------
 
-  #$this->app['monolog']->addDebug("Point theUnfilteredCount $theUnfilteredCount");
-  #$this->app['monolog']->addDebug("Point theFilteredCount $theFilteredCount");
+  #$this->container->get('monolog')->addDebug("Point theUnfilteredCount $theUnfilteredCount");
+  #$this->container->get('monolog')->addDebug("Point theFilteredCount $theFilteredCount");
 
   #Establish the output
   $output = array(
@@ -4529,21 +4506,8 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
     "aaData" => $theResults
   );
 
-  #Set the return value
-  $returnValue = $this->app->json($output,200);
-
-  #Return the return value
-  return $returnValue;
+  return new JsonResponse($output);
 }
-
-
-
-
-
-
-
-
-
 
 #Define the action
 public function jumboPercentagesTablePreActionJson(Request $request, string $kennel_abbreviation){
@@ -4575,7 +4539,7 @@ public function jumboPercentagesTablePreActionJson(Request $request, string $ken
 
 public function jumboPercentagesTablePostActionJson(Request $request, string $kennel_abbreviation){
 
-  #$this->app['monolog']->addDebug("Entering the function jumboPercentagesTablePostActionJson------------------------");
+  #$this->container->get('monolog')->addDebug("Entering the function jumboPercentagesTablePostActionJson------------------------");
 
   #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -4605,17 +4569,17 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   #-------------- Begin: Validate the post parameters ------------------------
   #Validate input start
   if(!is_numeric($inputStart)){
-    #$this->app['monolog']->addDebug("input start is not numeric: $inputStart");
+    #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
     $inputStart = 0;
   }
 
   #Validate input length
   if(!is_numeric($inputLength)){
-    #$this->app['monolog']->addDebug("input length is not numeric");
+    #$this->container->get('monolog')->addDebug("input length is not numeric");
     $inputStart = "0";
     $inputLength = "50";
   } else if($inputLength == "-1"){
-    #$this->app['monolog']->addDebug("input length is negative one (all rows selected)");
+    #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
     $inputStart = "0";
     $inputLength = "1000000000";
   }
@@ -4635,12 +4599,12 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   $inputOrderColumnIncremented = "2";
   $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
-    #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
+    #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
     $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
     $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
   }else{
-    #$this->app['monolog']->addDebug("inside inputOrderRaw is null");
+    #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
   }
 
   #-------------- End: Modify the input parameters  --------------------------
@@ -4748,7 +4712,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
-  #$this->app['monolog']->addDebug("sql: $sql");
+  #$this->container->get('monolog')->addDebug("sql: $sql");
 
   #Define the SQL that gets the count for the filtered results
   $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4786,29 +4750,29 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   #-------------- End: Define the SQL used here   ----------------------------
 
   #-------------- Begin: Query the database   --------------------------------
-  #$this->app['monolog']->addDebug("Point A");
+  #$this->container->get('monolog')->addDebug("Point A");
 
   #Perform the filtered search
   $theResults = $this->fetchAll($sql, $args);
-  #$this->app['monolog']->addDebug("Point B");
+  #$this->container->get('monolog')->addDebug("Point B");
 
   #Perform the untiltered count
   $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
     $kennelKy,
     $minimumHashCount,
   )))['THE_COUNT'];
-  #$this->app['monolog']->addDebug("Point C");
+  #$this->container->get('monolog')->addDebug("Point C");
 
   #Perform the filtered count
   $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
     $kennelKy,
     $minimumHashCount,
     (string) $inputSearchValueModified)))['THE_COUNT'];
-  #$this->app['monolog']->addDebug("Point D");
+  #$this->container->get('monolog')->addDebug("Point D");
   #-------------- End: Query the database   --------------------------------
 
-  #$this->app['monolog']->addDebug("Point theUnfilteredCount $theUnfilteredCount");
-  #$this->app['monolog']->addDebug("Point theFilteredCount $theFilteredCount");
+  #$this->container->get('monolog')->addDebug("Point theUnfilteredCount $theUnfilteredCount");
+  #$this->container->get('monolog')->addDebug("Point theFilteredCount $theFilteredCount");
 
   #Establish the output
   $output = array(
@@ -4818,11 +4782,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
     "aaData" => $theResults
   );
 
-  #Set the return value
-  $returnValue = $this->app->json($output,200);
-
-  #Return the return value
-  return $returnValue;
+  return new JsonResponse($output);
 }
 
 private function getStandardHareChartsAction(Request $request, int $hasher_id, string $kennel_abbreviation) {

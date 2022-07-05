@@ -4,9 +4,10 @@ namespace HASH\Controller;
 
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
 
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -15,20 +16,21 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Psr\Container\ContainerInterface;
 
 class AdminController extends BaseController
 {
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   public function logoutAction(Request $request){
 
     # Invalidate the session
-    $this->app['session']->invalidate();
+    $this->container->get('session')->invalidate();
 
     # Redirect the user to the root url
-    return $this->app->redirect('/');
+    return new RedirectResponse('/');
   }
 
   #Define the action
@@ -120,7 +122,7 @@ class AdminController extends BaseController
 
   public function newPasswordAction(Request $request){
 
-    $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class)
+    $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class)
       ->add('Current_Password', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 3)))))
       ->add('New_Password_Initial', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))))
       ->add('New_Password_Confirmation', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))));
@@ -144,13 +146,13 @@ class AdminController extends BaseController
           $tempNewPasswordConfirmation = $data['New_Password_Confirmation'];
 
           #Establish the userid value
-          $token = $this->app['security.token_storage']->getToken();
+          $token = $this->container->get('security.token_storage')->getToken();
           if (null !== $token) {
             $userid = $token->getUser();
           }
 
           // find the encoder for a UserInterface instance
-          $encoder = $this->app['security.encoder_factory']->getEncoder($userid);
+          $encoder = $this->container->get('security.encoder_factory')->getEncoder($userid);
 
           // compute the encoded password for the new password
           $encodedNewPassword = $encoder->encodePassword($tempNewPasswordInitial, $userid->getSalt());
@@ -172,7 +174,7 @@ class AdminController extends BaseController
           if($sizeOfRetrievedUserValueArray > 1){
             $validCurrentPassword = TRUE;
           }else{
-            $this->app['session']->getFlashBag()->add('danger', 'Wrong! You screwed up your current password.');
+            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You screwed up your current password.');
             $foundValidationError=TRUE;
           }
 
@@ -181,7 +183,7 @@ class AdminController extends BaseController
           if($tempNewPasswordInitial == $tempNewPasswordConfirmation){
             $validNewPasswordsMatch = TRUE;
           }else{
-            $this->app['session']->getFlashBag()->add('danger', 'Wrong! The new passwords do not match.');
+            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! The new passwords do not match.');
             $foundValidationError=TRUE;
           }
 
@@ -190,7 +192,7 @@ class AdminController extends BaseController
           if (preg_match_all('$\S*(?=\S{8,})(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[\d])(?=\S*[\W])\S*$', $tempNewPasswordInitial)){
             $validPasswordComplexity = TRUE;
           }else{
-            $this->app['session']->getFlashBag()->add('danger', 'Wrong! Your proposed password is too simple. It must be 8 characters long, contain a lower case letter, an upper case letter, a digit, and a special character!');
+            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! Your proposed password is too simple. It must be 8 characters long, contain a lower case letter, an upper case letter, a digit, and a special character!');
             $foundValidationError=TRUE;
           }
 
@@ -199,7 +201,7 @@ class AdminController extends BaseController
             $updateSql = "UPDATE USERS SET PASSWORD = ? WHERE USERNAME = ?";
 
             #Run the update SQL
-            $this->app['dbs']['mysql_write']->executeUpdate($updateSql,array($encodedNewPassword,$userid));
+            $this->container->get('dbs')['mysql_write']->executeUpdate($updateSql,array($encodedNewPassword,$userid));
 
             #Audit this activity
             $actionType = "Password Change";
@@ -207,16 +209,16 @@ class AdminController extends BaseController
             $this->auditTheThings($request, $actionType, $actionDescription);
 
             #Show the confirmation message
-            $this->app['session']->getFlashBag()->add('success', 'Success! You updated your password. Probably.');
+            $this->container->get('session')->getFlashBag()->add('success', 'Success! You updated your password. Probably.');
           }
 
       } else{
-        $this->app['session']->getFlashBag()->add('danger', 'Wrong! You screwed up.');
+        $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You screwed up.');
       }
     }
 
     #Establish the userid value
-    $token = $this->app['security.token_storage']->getToken();
+    $token = $this->container->get('security.token_storage')->getToken();
     if (null !== $token) {
       $userid = $token->getUser();
     }
@@ -360,11 +362,7 @@ class AdminController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   public function deleteHash(Request $request) {
@@ -380,13 +378,13 @@ class AdminController extends BaseController
     $kennel_abbreviation = $eventDetails['KENNEL_ABBREVIATION'];
 
     $sql = "DELETE FROM HASHES_TABLE WHERE HASH_KY = ?";
-    $this->app['dbs']['mysql_write']->executeUpdate($sql, array($hash_id));
+    $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($hash_id));
 
     $actionType = "Event Deletion (Ajax)";
     $actionDescription = "Deleted event ($kennel_abbreviation # $kennel_event_number)";
     $this->auditTheThings($request, $actionType, $actionDescription);
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   #Define the action
@@ -558,11 +556,7 @@ class AdminController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   #Define the action
@@ -687,11 +681,7 @@ class AdminController extends BaseController
       "aaData" => $theResults
     );
 
-    #Set the return value
-    $returnValue = $this->app->json($output,200);
-
-    #Return the return value
-    return $returnValue;
+    return new JsonResponse($output);
   }
 
   public function getHashersParticipationListJson(Request $request){
@@ -837,7 +827,7 @@ class AdminController extends BaseController
       "aaData" => $theResults
     );
 
-    return $this->app->json($output,200);
+    return new JsonResponse($output);
   }
 
   public function hasherDetailsKennelSelection(Request $request, int $hasher_id){
@@ -846,7 +836,7 @@ class AdminController extends BaseController
     $kennelValues = $this->fetchAll($listOfKennelsSQL);
 
     if(count($kennelValues) == 1) {
-      return $this->app->redirect("/" .
+      return new RedirectResponse("/" .
         $kennelValues[0]['KENNEL_ABBREVIATION'] .  "/hashers/" . $hasher_id);
     }
 
@@ -975,14 +965,14 @@ class AdminController extends BaseController
 
     if($c == 0) {
       $sql = "DELETE FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      $this->app['dbs']['mysql_write']->executeUpdate($sql, array($k, $kennelKy));
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($k, $kennelKy));
     } else {
       $sql = "UPDATE LEGACY_HASHINGS SET LEGACY_HASHINGS_COUNT = ? WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      if($this->app['dbs']['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
+      if($this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
         $sql = "SELECT 'exists' AS x FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
         if($this->fetchOne($sql, array($k, $kennelKy)) != 'exists') {
           $sql = "INSERT INTO LEGACY_HASHINGS(LEGACY_HASHINGS_COUNT, HASHER_KY, KENNEL_KY) VALUES(?,?,?)";
-          $this->app['dbs']['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy));
         }
       }
     }
@@ -1122,7 +1112,7 @@ class AdminController extends BaseController
       }
 
       try {
-        $this->app['dbs']['mysql_write']->executeUpdate($sql, array((int) $awardLevel, (int) $hasherKey, (int) $kennelKey));
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array((int) $awardLevel, (int) $hasherKey, (int) $kennelKey));
 
         $returnMessage = "Success!";
       } catch (\Exception $theException) {
@@ -1141,7 +1131,6 @@ class AdminController extends BaseController
     $this->auditTheThings($request, $actionType, $actionDescription);
 
     #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 }

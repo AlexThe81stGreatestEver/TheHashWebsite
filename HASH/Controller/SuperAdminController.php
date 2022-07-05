@@ -2,11 +2,13 @@
 
 namespace HASH\Controller;
 
-use Silex\Application;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -15,13 +17,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Security\Core\User\User;
-
+use Psr\Container\ContainerInterface;
 use Ifsnop\Mysqldump\Mysqldump;
 
 class SuperAdminController extends BaseController {
 
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   public function exportDatabaseAction(Request $request) {
@@ -37,9 +39,13 @@ class SuperAdminController extends BaseController {
     $dump = new Mysqldump("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
     $dump->start($tmpfile);
 
-    return $this->app->sendFile($tmpfile)
-      ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $tmpfilebasename)
-      ->deleteFileAfterSend(true);
+    $response = new BinaryFileResponse($tmpfile);
+    $response->headers->set("Content-Disposition",
+      HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT,
+      $tmpfilebasename));
+    $response->deleteFileAfterSend(true);
+
+    return $response;
   }
 
   private function convertInputToMask($input) {
@@ -78,7 +84,6 @@ class SuperAdminController extends BaseController {
 
       $ridiculous = $this->fetchAll("SELECT NAME, VALUE FROM SITE_CONFIG WHERE NAME LIKE 'ridiculous%' ORDER BY NAME");
 
-      #return $this->app->redirect('/');
       return $this->render('superadmin_landing.twig', array (
         'pageTitle' => 'This is the super admin landing screen',
         'subTitle1' => 'This is the super admin landing screen',
@@ -95,13 +100,13 @@ class SuperAdminController extends BaseController {
   public function logonScreenAction(Request $request){
 
     # Establisht the last error
-    $lastError = $this->app['security.last_error']($request);
-    #$this->app['monolog']->addDebug($lastError);
+    $lastError = $this->container->get('security.last_error')($request);
+    #$this->container->get('monolog')->addDebug($lastError);
 
     # Establish the last username
-    $lastUserName = $this->app['session']->get('_security.last_username');
-    #$lastUserName = $this->app['session']->get('_security.last_username');
-    #$this->app['monolog']->addDebug($lastUserName);
+    $lastUserName = $this->container->get('session')->get('_security.last_username');
+    #$lastUserName = $this->container->get('session')->get('_security.last_username');
+    #$this->container->get('monolog')->addDebug($lastUserName);
 
     # Establish the return value
     $returnValue =  $this->render('superadmin_logon_screen.twig', array (
@@ -118,11 +123,10 @@ class SuperAdminController extends BaseController {
   public function logoutAction(Request $request){
 
     # Invalidate the session
-    $this->app['session']->invalidate();
+    $this->container->get('session')->invalidate();
 
     # Redirect the user to the root url
-    return $this->app->redirect('/');
-
+    return new RedirectResponse('/');
   }
 
   #Define action
@@ -227,7 +231,7 @@ class SuperAdminController extends BaseController {
             HARE_TYPE_MASK = ?
          WHERE KENNEL_ABBREVIATION = ?";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $theKennelName,
           $theKennelAbbreviation,
           $theKennelDescription,
@@ -246,7 +250,7 @@ class SuperAdminController extends BaseController {
             FROM KENNELS
            WHERE KENNEL_ABBREVIATION = ?)";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array($kennel_abbreviation));
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_abbreviation));
 
         $sql = "
           INSERT INTO AWARD_LEVELS(KENNEL_KY, AWARD_LEVEL)
@@ -255,7 +259,7 @@ class SuperAdminController extends BaseController {
         $kennelAwards = preg_split("/,/", $theAwardLevels);
 
         foreach($kennelAwards as $kennelAward) {
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($kennel_abbreviation, (int) $kennelAward));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_abbreviation, (int) $kennelAward));
         }
       }
 
@@ -268,9 +272,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -348,7 +350,7 @@ class SuperAdminController extends BaseController {
             SITE_ADDRESS, IN_RECORD_KEEPING, HASH_TYPE_MASK, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?, ?, ?, ?)";
 
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
         $theKennelName,
         $theKennelAbbreviation,
         $theKennelDescription,
@@ -364,7 +366,7 @@ class SuperAdminController extends BaseController {
       $kennelAwards = preg_split("/,/", $theAwardLevels);
 
       foreach($kennelAwards as $kennelAward) {
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array($theKennelAbbreviation, (int) $kennelAward));
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theKennelAbbreviation, (int) $kennelAward));
       }
 
       #Audit this activity
@@ -376,9 +378,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -429,7 +429,7 @@ class SuperAdminController extends BaseController {
             CHART_COLOR = ?
          WHERE HARE_TYPE = ?";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $theHareTypeName,
           (int) $theSequence,
           $theChartColor,
@@ -445,9 +445,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -500,7 +498,7 @@ class SuperAdminController extends BaseController {
         INSERT INTO HARE_TYPES(HARE_TYPE_NAME, SEQ, CHART_COLOR, HARE_TYPE)
          VALUES(?, ?, ?, ?)";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $theHareTypeName,
           (int) $theSequence,
           $theChartColor,
@@ -515,9 +513,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -584,7 +580,7 @@ class SuperAdminController extends BaseController {
             HARE_TYPE_MASK = ?
          WHERE HASH_TYPE = ?";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $theHashTypeName,
           (int) $theSequence,
           $theHareTypeMask,
@@ -600,9 +596,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -667,7 +661,7 @@ class SuperAdminController extends BaseController {
         INSERT INTO HASH_TYPES(HASH_TYPE, HASH_TYPE_NAME, SEQ, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?)";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $hash_type,
           $theHashTypeName,
           (int) $theSequence,
@@ -682,9 +676,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -737,7 +729,7 @@ class SuperAdminController extends BaseController {
       $user = new User($theUsername, null, array("ROLE_USER"), true, true, true, true);
 
       // find the encoder for a UserInterface instance
-      $encoder = $this->app['security.encoder_factory']->getEncoder($user);
+      $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
 
       // compute the encoded password for the new password
       $encodedNewPassword = $encoder->encodePassword($thePassword, $user->getSalt());
@@ -758,7 +750,7 @@ class SuperAdminController extends BaseController {
             roles = ?
          WHERE id = ?";
 
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
           $theUsername,
           $roles,
           $user_id
@@ -771,7 +763,7 @@ class SuperAdminController extends BaseController {
               password = ?
            WHERE id = ?";
 
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
             $encodedNewPassword,
             $user_id
           ));
@@ -786,9 +778,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -832,7 +822,7 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NOT NULL";
 
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
         $theValue,
         $name));
 
@@ -845,9 +835,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -895,7 +883,7 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NULL";
 
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
         $theValue,
         $ridiculous));
 
@@ -908,9 +896,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -949,7 +935,7 @@ class SuperAdminController extends BaseController {
       for($i=0; $i<999; $i++) {
         try {
           $name = "ridiculous".$i;
-          $this->app['dbs']['mysql_write']->executeUpdate($sql,array($name, $theValue));
+          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($name, $theValue));
         } catch(\Exception $e) {
           continue;
         }
@@ -965,9 +951,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   #Define action
@@ -1014,7 +998,7 @@ class SuperAdminController extends BaseController {
       $user = new User($theUsername, null, array("ROLE_USER"), true, true, true, true);
 
       // find the encoder for a UserInterface instance
-      $encoder = $this->app['security.encoder_factory']->getEncoder($user);
+      $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
 
       // compute the encoded password for the new password
       $encodedPassword = $encoder->encodePassword($thePassword, $user->getSalt());
@@ -1029,7 +1013,7 @@ class SuperAdminController extends BaseController {
       $sql = "INSERT INTO USERS(username, roles, password)
         VALUES(?, ?, ?)";
 
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
         $theUsername,
         $roles,
         $encodedPassword));
@@ -1043,9 +1027,7 @@ class SuperAdminController extends BaseController {
       $returnMessage = "Success! Great, it worked";
     }
 
-    #Set the return value
-    $returnValue =  $this->app->json($returnMessage, 200);
-    return $returnValue;
+    return new JsonResponse($returnMessage);
   }
 
   public function deleteRidiculous(Request $request) {
@@ -1057,7 +1039,7 @@ class SuperAdminController extends BaseController {
     if(substr($ridiculous, 0, strlen("ridiculous")) == "ridiculous") {
 
       $sql = "DELETE FROM SITE_CONFIG WHERE NAME = ?";
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array($ridiculous));
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($ridiculous));
 
       $actionType = "Site Config Deletion (Ajax)";
       $actionDescription = "Deleted site config key $ridiculous";
@@ -1065,7 +1047,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   public function deleteUser(Request $request) {
@@ -1075,13 +1057,13 @@ class SuperAdminController extends BaseController {
 
     $user_id = $request->request->get('id');
 
-    if($user_id != $this->app['user'].'username') {
+    if($user_id != $this->container->get('user').'username') {
 
       $sql = "SELECT username FROM USERS WHERE ID = ?";
       $username = $this->fetchOne($sql, array($user_id));
 
       $sql = "DELETE FROM USERS WHERE id = ?";
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array($user_id));
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($user_id));
 
       $actionType = "User Deletion (Ajax)";
       $actionDescription = "Deleted user $username";
@@ -1089,7 +1071,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   public function deleteKennel(Request $request) {
@@ -1103,14 +1085,14 @@ class SuperAdminController extends BaseController {
     $kennel = $this->fetchOne($sql, array($kennel_ky));
 
     $sql = "DELETE FROM KENNELS WHERE KENNEL_KY = ?";
-    $this->app['dbs']['mysql_write']->executeUpdate($sql,array($kennel_ky));
+    $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_ky));
 
     $actionType = "Kennel Deletion (Ajax)";
     $actionDescription = "Deleted kennel $kennel";
 
     $this->auditTheThings($request, $actionType, $actionDescription);
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   public function deleteHashType(Request $request) {
@@ -1128,7 +1110,7 @@ class SuperAdminController extends BaseController {
       $hash_type_name = $this->fetchOne($sql, array($hash_type));
 
       $sql = "DELETE FROM HASH_TYPES WHERE HASH_TYPE = ?";
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hash_type));
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hash_type));
 
       $actionType = "Hash Type Deletion (Ajax)";
       $actionDescription = "Deleted hash type $hash_type_name";
@@ -1136,7 +1118,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   public function deleteHareType(Request $request) {
@@ -1154,7 +1136,7 @@ class SuperAdminController extends BaseController {
       $hare_type_name = $this->fetchOne($sql, array($hare_type));
 
       $sql = "DELETE FROM HARE_TYPES WHERE HARE_TYPE = ?";
-      $this->app['dbs']['mysql_write']->executeUpdate($sql,array($hare_type));
+      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hare_type));
 
       $actionType = "Hare Type Deletion (Ajax)";
       $actionDescription = "Deleted hare type $hare_type_name";
@@ -1162,7 +1144,7 @@ class SuperAdminController extends BaseController {
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
 
-    return $this->app->json("", 200);
+    return new JsonResponse("");
   }
 
   public function integrityChecks(Request $request) {

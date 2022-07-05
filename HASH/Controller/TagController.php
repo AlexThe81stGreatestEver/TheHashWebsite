@@ -4,11 +4,10 @@ namespace HASH\Controller;
 
 require_once "BaseController.php";
 
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -16,11 +15,12 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Psr\Container\ContainerInterface;
 
 class TagController extends BaseController
 {
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
     public function manageEventTagsPreAction(Request $request){
@@ -58,9 +58,7 @@ public function getEventTagsWithCountsJsonAction(Request $request){
   #Obtain the hare list
   $tagList = $this->fetchAll($tagListSQL);
 
-  #Set the return value
-  $returnValue =  $this->app->json($tagList, 200);
-  return $returnValue;
+  return new JsonResponse($tagList);
 }
 
 
@@ -74,9 +72,7 @@ public function getAllEventTagsJsonAction(Request $request){
   #Obtain the hare list
   $tagList = $this->fetchAll($tagListSQL);
 
-  #Set the return value
-  $returnValue =  $this->app->json($tagList, 200);
-  return $returnValue;
+  return new JsonResponse($tagList);
 }
 
 
@@ -103,9 +99,7 @@ public function getMatchingEventTagsJsonAction(Request $request){
   #Obtain the tag list
   $tagList = $this->fetchAll($tagListSQL,array((string) $searchTerm));
 
-  #Set the return value
-  $returnValue =  $this->app->json($tagList, 200);
-  return $returnValue;
+  return new JsonResponse($tagList);
 }
 
 
@@ -115,13 +109,13 @@ private function addNewEventTagAfterDbChecking(Request $request, string $theTagT
         $sql = "INSERT INTO HASHES_TAGS (TAG_TEXT, CREATED_BY) VALUES (?, ?);";
 
         #Determine the username
-        $token = $this->app['security.token_storage']->getToken();
+        $token = $this->container->get('security.token_storage')->getToken();
         if (null !== $token) {
           $user = $token->getUser();
         }
 
         #Execute the sql insert statement
-        $this->app['dbs']['mysql_write']->executeUpdate($sql,array($theTagText,$user));
+        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theTagText,$user));
 
         #Audit the action
         $tempActionType = "Created Event Tag";
@@ -163,11 +157,7 @@ public function addNewEventTag(Request $request){
           $returnMessage = "Something is wrong with the input $theTagText";
         }
 
-        #Set the return value
-        $returnValue =  $this->app->json($returnMessage, 200);
-        return $returnValue;
-
-
+        return new JsonResponse($returnMessage);
 }
 
   private function doesTagTextExistAlready(Request $request, string $theTagText){
@@ -261,7 +251,7 @@ public function addNewEventTag(Request $request){
         $user = $this->getUserName();
 
         #Execute the sql insert statement
-        $this->app['dbs']['mysql_write']->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,(string)$user));
+        $this->container->get('dbs')['mysql_write']->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,(string)$user));
 
         # Declare the SQL used to retrieve this information
         $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
@@ -284,14 +274,7 @@ public function addNewEventTag(Request $request){
         $returnMessage =  "Something is up";
       }
 
-
-
-      #Set the return value
-      $returnValue =  $this->app->json($returnMessage, 200);
-      return $returnValue;
-
-
-
+      return new JsonResponse($returnMessage);
     }
 
 
@@ -323,7 +306,7 @@ public function addNewEventTag(Request $request){
               $sql = "DELETE FROM HASHES_TAG_JUNCTION WHERE HASHES_KY= ? AND HASHES_TAGS_KY = ?;";
 
               #Execute the sql insert statement
-              $this->app['dbs']['mysql_write']->executeUpdate($sql,array($theEventKey,$tagKey));
+              $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theEventKey,$tagKey));
 
               #Get the user name
               #$user = $this->getUserName();
@@ -349,13 +332,7 @@ public function addNewEventTag(Request $request){
               $returnMessage =  "Something is up";
             }
 
-
-
-            #Set the return value
-            $returnValue =  $this->app->json($returnMessage, 200);
-            return $returnValue;
-
-
+            return new JsonResponse($returnMessage);
     }
 
     private function isTagTextValid(string $tagText){
@@ -413,7 +390,7 @@ public function addNewEventTag(Request $request){
       $returnValue = null;
 
       #Establish the return value
-      $token = $this->app['security.token_storage']->getToken();
+      $token = $this->container->get('security.token_storage')->getToken();
       if (null !== $token) {
         $returnValue = $token->getUser();
       }

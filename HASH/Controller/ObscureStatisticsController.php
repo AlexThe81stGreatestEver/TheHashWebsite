@@ -5,16 +5,17 @@ namespace HASH\Controller;
 require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
 require_once "BaseController.php";
 require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
+use Psr\Container\ContainerInterface;
 use Wamania\Snowball\StemmerFactory;
 
 class ObscureStatisticsController extends BaseController {
 
-  public function __construct(Application $app) {
-    parent::__construct($app);
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
   }
 
   public function kennelEventsHeatMap(Request $request, string $kennel_abbreviation){
@@ -200,9 +201,7 @@ class ObscureStatisticsController extends BaseController {
       #Obtain the hare list
       $hasherCountList = $this->fetchAll($hasherCountSQL,array((int)$theYear, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hasherCountList, 200);
-      return $returnValue;
+      return new JsonResponse($hasherCountList);
     }
 
     #Obtain total hare counts per year
@@ -220,10 +219,7 @@ class ObscureStatisticsController extends BaseController {
       #Obtain the hare list
       $hareCountList = $this->fetchAll($hareCountSQL,array((int)$theYear, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareCountList, 200);
-      return $returnValue;
-
+      return new JsonResponse($hareCountList);
     }
 
     #Obtain hare counts per year
@@ -241,10 +237,7 @@ class ObscureStatisticsController extends BaseController {
       #Obtain the hare list
       $hareCountList = $this->fetchAll($hareCountSQL,array((int)$theYear, $hare_type, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareCountList, 200);
-      return $returnValue;
-
+      return new JsonResponse($hareCountList);
     }
 
     #Obtain total hare counts per year
@@ -262,10 +255,7 @@ class ObscureStatisticsController extends BaseController {
       #Obtain the hare list
       $hareCountList = $this->fetchAll($hareCountSQL,array((int) $kennelKy,(int) $kennelKy,(int)$theYear));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareCountList, 200);
-      return $returnValue;
-
+      return new JsonResponse($hareCountList);
     }
 
     public function getNewbieHareListByYear(Request $request, int $hare_type, string $kennel_abbreviation){
@@ -283,9 +273,7 @@ class ObscureStatisticsController extends BaseController {
       $hareCountList = $this->fetchAll($hareCountSQL,array(
         $hare_type, (int) $kennelKy, $hare_type, (int) $kennelKy, $hare_type, (int)$theYear));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareCountList, 200);
-      return $returnValue;
+      return new JsonResponse($hareCountList);
     }
 
     public function getNewbieOverallHareListByYear(Request $request, string $kennel_abbreviation){
@@ -305,10 +293,7 @@ class ObscureStatisticsController extends BaseController {
         (int) $kennelKy,
         (int) $theYear));
 
-      #Set the return value
-      $returnValue =  $this->app->json($hareCountList, 200);
-      return $returnValue;
-
+      return new JsonResponse($hareCountList);
     }
 
     #Obtain the first hash of a given hasher
@@ -326,9 +311,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirVirginHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirVirginHash,200);
-      return $returnValue;
+      return new JsonResponse($theirVirginHash);
     }
 
     #Obtain the first haring of a given hasher
@@ -347,9 +330,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirVirginHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirVirginHash,200);
-      return $returnValue;
+      return new JsonResponse($theirVirginHash);
     }
 
     public function getKennelsVirginHash(Request $request, string $kennel_abbreviation){
@@ -363,9 +344,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirVirginHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirVirginHash,200);
-      return $returnValue;
+      return new JsonResponse($theirVirginHash);
     }
 
     #Obtain the latest hash of a given hasher
@@ -383,9 +362,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirLatestHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirLatestHash,200);
-      return $returnValue;
+      return new JsonResponse($theirLatestHash);
     }
 
     #Obtain the latest haring of a given hasher
@@ -404,9 +381,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirLatestHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirLatestHash,200);
-      return $returnValue;
+      return new JsonResponse($theirLatestHash);
     }
 
     public function getKennelsLatestHash(Request $request, string $kennel_abbreviation){
@@ -420,10 +395,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theirLatestHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theirLatestHash,200);
-      return $returnValue;
-
+      return new JsonResponse($theirLatestHash);
     }
 
 
@@ -442,10 +414,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     #Obtain the hasher hashes attended by quarter
@@ -463,10 +432,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -485,10 +451,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -507,10 +470,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     #Obtain the hasher hashes attended by state
@@ -528,10 +488,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     #Obtain the hasher hashes attended by city
@@ -549,10 +506,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getKennelHashesByCity(Request $request, string $kennel_abbreviation){
@@ -566,10 +520,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getKennelHashesByCounty(Request $request, string $kennel_abbreviation){
@@ -583,10 +534,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getKennelHashesByPostalcode(Request $request, string $kennel_abbreviation){
@@ -600,10 +548,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -621,10 +566,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherAllHaringsByQuarter(Request $request, string $kennel_abbreviation){
@@ -641,10 +583,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherAllHaringsByMonth(Request $request, string $kennel_abbreviation){
@@ -661,10 +600,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherAllHaringsByDayName(Request $request, string $kennel_abbreviation){
@@ -681,10 +617,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherAllHaringsByState(Request $request, string $kennel_abbreviation){
@@ -701,10 +634,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherAllHaringsByCity(Request $request, string $kennel_abbreviation){
@@ -721,10 +651,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -743,10 +670,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherHaringsByQuarter(Request $request, string $kennel_abbreviation, int $hare_type){
@@ -763,10 +687,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherHaringsByMonth(Request $request, string $kennel_abbreviation, $hare_type) {
@@ -783,10 +704,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherHaringsByDayName(Request $request, string $kennel_abbreviation, $hare_type) {
@@ -803,10 +721,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getHasherHaringsByState(Request $request, string $kennel_abbreviation, $hare_type) {
@@ -823,10 +738,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -844,10 +756,7 @@ class ObscureStatisticsController extends BaseController {
       #Query the database
       $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
     public function getCohareCountByHare(Request $request, string $kennel_abbreviation, int $hare_type){
@@ -868,10 +777,7 @@ class ObscureStatisticsController extends BaseController {
         (int) $theHasherKey,
         (int) $hare_type));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -892,10 +798,7 @@ class ObscureStatisticsController extends BaseController {
         (int) $theHasherKey,
         (int) $theHasherKey));
 
-      #Set the return value
-      $returnValue = $this->app->json($theResults,200);
-      return $returnValue;
-
+      return new JsonResponse($theResults);
     }
 
 
@@ -1990,11 +1893,7 @@ class ObscureStatisticsController extends BaseController {
           "resultList" => $unTrendingTrueHaresList
         );
 
-        #Set the return value
-        $returnValue = $this->app->json($output,200);
-
-        #Return the return value
-        return $returnValue;
+        return new JsonResponse($output);
     }
 
     #Landing screen for year in review
@@ -2046,7 +1945,7 @@ class ObscureStatisticsController extends BaseController {
       foreach($hasherNameList as $hasherName){
         $tempName = $hasherName['HASHER_NAME'];
         $tempKey = $hasherName['HASHER_KY'];
-        #$this->app['monolog']->addDebug("Item = $temp");
+        #$this->container->get('monolog')->addDebug("Item = $temp");
         $token = strtok($tempName, $tokenizerString);
         while($token !== false){
 
@@ -2087,9 +1986,9 @@ class ObscureStatisticsController extends BaseController {
 
 
       #foreach($theArrayOfSubstrings as $key => $value){
-      #  $this->app['monolog']->addDebug("key:$key");
+      #  $this->container->get('monolog')->addDebug("key:$key");
       #  foreach($value as $individualEntry){
-      #    $this->app['monolog']->addDebug("   entry:$individualEntry");
+      #    $this->container->get('monolog')->addDebug("   entry:$individualEntry");
       #  }
       #}
 
@@ -2309,7 +2208,7 @@ class ObscureStatisticsController extends BaseController {
       foreach($hasherNameList as $hasherName){
         $tempName = $hasherName['HASHER_NAME'];
         $tempKey = $hasherName['HASHER_KY'];
-        #$this->app['monolog']->addDebug("Item = $temp");
+        #$this->container->get('monolog')->addDebug("Item = $temp");
         $token = strtok($tempName, $tokenizerString);
         while($token !== false){
 
@@ -2318,7 +2217,7 @@ class ObscureStatisticsController extends BaseController {
 
           #test function call to stemmer function
           $stemmedLowerToken = $this->extractRootWordFromToken($lowerToken);
-          #$this->app['monolog']->addDebug("tokenValue:$token|stem:$stemmedLowerToken");
+          #$this->container->get('monolog')->addDebug("tokenValue:$token|stem:$stemmedLowerToken");
           $lowerToken = $stemmedLowerToken;
 
           #Create a hasher name and hasher key pair
@@ -2355,9 +2254,9 @@ class ObscureStatisticsController extends BaseController {
 
 
       #foreach($theArrayOfSubstrings as $key => $value){
-      #  $this->app['monolog']->addDebug("key:$key");
+      #  $this->container->get('monolog')->addDebug("key:$key");
       #  foreach($value as $individualEntry){
-      #    $this->app['monolog']->addDebug("   entry:$individualEntry");
+      #    $this->container->get('monolog')->addDebug("   entry:$individualEntry");
       #  }
       #}
 
@@ -2406,7 +2305,7 @@ class ObscureStatisticsController extends BaseController {
       foreach($hasherNameList as $hasherName){
         $tempName = $hasherName['HASHER_NAME'];
         $tempKey = $hasherName['HASHER_KY'];
-        #$this->app['monolog']->addDebug("Item = $temp");
+        #$this->container->get('monolog')->addDebug("Item = $temp");
         $token = strtok($tempName, $tokenizerString);
         while($token !== false){
 

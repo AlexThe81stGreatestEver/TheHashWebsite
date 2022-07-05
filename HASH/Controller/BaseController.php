@@ -2,15 +2,15 @@
 
 namespace HASH\Controller;
 
-use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Psr\Container\ContainerInterface;
 
 class BaseController {
 
-  protected Application $app;
+  protected ContainerInterface $container;
 
-  protected function __construct(Application $app) {
-    $this->app = $app;
+  protected function __construct(ContainerInterface $container) {
+    $this->container = $container;
   }
 
   // fetch all - ignore query errors
@@ -28,9 +28,9 @@ class BaseController {
 
   protected function fetchAll(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->app['db']->fetchAll($sql);
+      $result = $this->container->get('db')->fetchAll($sql);
     } else {
-      $result = $this->app['db']->fetchAll($sql, $args);
+      $result = $this->container->get('db')->fetchAll($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -40,9 +40,9 @@ class BaseController {
 
   protected function fetchOne(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->app['db']->fetchOne($sql);
+      $result = $this->container->get('db')->fetchOne($sql);
     } else {
-      $result = $this->app['db']->fetchOne($sql, $args);
+      $result = $this->container->get('db')->fetchOne($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -52,9 +52,9 @@ class BaseController {
 
   protected function fetchAssoc(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->app['db']->fetchAssoc($sql);
+      $result = $this->container->get('db')->fetchAssoc($sql);
     } else {
-      $result = $this->app['db']->fetchAssoc($sql, $args);
+      $result = $this->container->get('db')->fetchAssoc($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -64,7 +64,7 @@ class BaseController {
 
   private function show_warnings(string $sql) {
     if(SHOW_WARNINGS) {
-      $warnings = $this->app['db']->fetchAll("SHOW WARNINGS");
+      $warnings = $this->container->get('db')->fetchAll("SHOW WARNINGS");
       foreach($warnings as $warning) {
         print("WARNING:");
         foreach($warning as $message) {
@@ -82,7 +82,7 @@ class BaseController {
     $args['site_banner'] = $this->getSiteBanner();
     $args['use_consolidated_switch_kennel_page'] = $this->useConsolidatedSwitchKennelPage();
 
-    return $this->app['twig']->render($template, $args);
+    return $this->container->get('twig')->render($template, $args);
   }
 
   protected function hasLegacyHashCounts() {
@@ -587,7 +587,7 @@ class BaseController {
     $user = "UNKNOWN";
 
     #Determine the username
-    $token = $this->app['security.token_storage']->getToken();
+    $token = $this->container->get('security.token_storage')->getToken();
     if (null !== $token) {
       $user = $token->getUser();
     }
@@ -603,7 +603,7 @@ class BaseController {
       ) VALUES (?, ?, ?, ?, ?)";
 
     #Execute the insert statement
-    $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
+    $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
       $user,
       $nowDateTime,
       $actionType,
@@ -628,11 +628,11 @@ class BaseController {
   }
 
   private function getCsrfKeyForUser(string $key) {
-    return $key."-".$this->app['user'].'username';
+    return $key."-".$this->container->get('user').'username';
   }
 
   protected function getCsrfToken(string $key) {
-    return $this->app['csrf.token_manager']->getToken(
+    return $this->container->get('csrf.token_manager')->getToken(
       $this->getCsrfKeyForUser($key));
   }
 

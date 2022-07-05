@@ -22,6 +22,8 @@ use Silex\Provider\SecurityServiceProvider;
 use Silex\Provider\FormServiceProvider;
 use Silex\Provider\CsrfServiceProvider;
 
+use Rabus\Psr11ServiceProvider\Psr11ServiceProvider;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -37,19 +39,21 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 $app = new Silex\Application();
 
+$app->register(new Psr11ServiceProvider());
+
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app->register(new CsrfServiceProvider());
 
 $app->register(new Events\EventListenerProvider());
 
-$app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app); };
-$app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app); };
-$app['HashEventController'] = function() use($app) { return new \HASH\Controller\HashEventController($app); };
-$app['AdminController'] = function() use($app) { return new \HASH\Controller\AdminController($app); };
-$app['SuperAdminController'] = function() use($app) { return new \HASH\Controller\SuperAdminController($app); };
-$app['TagController'] = function() use($app) { return new \HASH\Controller\TagController($app); };
-$app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app); };
+$app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
+$app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
+$app['HashEventController'] = function() use($app) { return new \HASH\Controller\HashEventController($app['service_container']); };
+$app['AdminController'] = function() use($app) { return new \HASH\Controller\AdminController($app['service_container']); };
+$app['SuperAdminController'] = function() use($app) { return new \HASH\Controller\SuperAdminController($app['service_container']); };
+$app['TagController'] = function() use($app) { return new \HASH\Controller\TagController($app['service_container']); };
+$app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app['service_container']); };
 
 #TWIG Constants
 $twigClassPath = __DIR__.'vendor/twig/twig/lib';
