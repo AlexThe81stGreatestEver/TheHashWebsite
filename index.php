@@ -594,8 +594,6 @@ $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'H
 # kennel home page
 $app->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
 
-$app->before(function (Request $request, Application $app) {
-    new DatabaseUpdater($app, DB_NAME);
-});
+new DatabaseUpdater($app['dbs']['mysql_write'], DB_NAME);
 
 $app->run();
