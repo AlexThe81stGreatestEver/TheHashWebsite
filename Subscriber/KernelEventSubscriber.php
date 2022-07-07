@@ -1,6 +1,6 @@
 <?php
 
-namespace Events;
+namespace Subscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
