@@ -181,10 +181,6 @@ $app['controllers']
   ;
 #-------------------------------------------------------------------------------
 
-# Not sure if this should be used here
-$app->boot();
-
-
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
   'twig.path' => $twigTemplateSourceDirectory,
   'twig.class_path' =>$twigClassPath,
@@ -193,11 +189,13 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'auto_reload' => true)));
 
 # Register the monolog logging service
-$app->register(new Silex\Provider\MonologServiceProvider(), array(
-    'monolog.logfile' => __DIR__.'/development.log',
-    'monolog.level' => 'debug',
-    'monolog.bubble' => true
-));
+if($app['debug']) {
+  $app->register(new Silex\Provider\MonologServiceProvider(), array(
+      'monolog.logfile' => __DIR__.'/development.log',
+      'monolog.level' => 'debug',
+      'monolog.bubble' => true
+  ));
+}
 
 
 # End: -------------------------------------------------------------------------
