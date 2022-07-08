@@ -38,6 +38,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 $app = new Silex\Application();
+$app['locale'] = 'en';
 
 $app->register(new Psr11ServiceProvider());
 
@@ -46,7 +47,6 @@ $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
-$app->register(new Silex\Provider\LocaleServiceProvider());
 $app->register(new Provider\TranslationServiceProvider(), array('translator.messages' => array()));
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
