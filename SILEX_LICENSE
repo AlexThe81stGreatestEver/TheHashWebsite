@@ -3,6 +3,7 @@ The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
 Provider/CsrfServiceProvider.php
+Provider/DoctrineServiceProvider.php
 Provider/FormServiceProvider.php
 Provider/TranslationServiceProvider.php
 

@@ -16,6 +16,7 @@ require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
 require_once 'Provider/TranslationServiceProvider.php';
+require_once 'Provider/DoctrineServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -48,6 +49,7 @@ $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
 $app->register(new Provider\TranslationServiceProvider(), array('translator.messages' => array()));
+$app->register(new Provider\DoctrineServiceProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
@@ -62,35 +64,6 @@ $twigClassPath = __DIR__.'vendor/twig/twig/lib';
 $twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
 $twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
 # End TWIG Configurations-------------------------------------------------------
-
-#Registers a database connection -----------------------------------------------
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-  'dbs.options' => array(
-    'mysql_read' => array(
-      'driver'   => DB_DRIVER,
-      'dbname'   => DB_NAME,
-      'host'     => DB_HOST,
-      'port'     => DB_PORT,
-      'user'     => DB_READ_ONLY_USER,
-      'password' => DB_READ_ONLY_PASSWORD,
-      'charset'  => "utf8"
-    ),
-    'mysql_write' => array(
-      'driver'    => DB_DRIVER,
-      'dbname'    => DB_NAME,
-      'host'      => DB_HOST,
-      'port'      => DB_PORT,
-      'user'      => DB_USER,
-      'password'  => DB_PASSWORD,
-      'charset'   => "utf8"
-    ))));
-
-
-#-------------------------------------------------------------------------------
-
-
-
-
 
 /*
 #Is something goes wrong, show them these messages....
