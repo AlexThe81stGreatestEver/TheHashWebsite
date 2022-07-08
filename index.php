@@ -65,22 +65,6 @@ $twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
 $twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
 # End TWIG Configurations-------------------------------------------------------
 
-/*
-#Is something goes wrong, show them these messages....
-$app->error(function (Exception $exception, $code){
-  switch($code){
-    case 404:
-      $message = "$code: The page is not there";
-      break;
-    default:
-      $message = "$code: Something weird happened";
-  }
-
-  return $message;
-});
-*/
-
-
 # Begin: Register the session management stuff ---------------------------------
 $app->register(new Silex\Provider\SessionServiceProvider());
 # End: -------------------------------------------------------------------------
