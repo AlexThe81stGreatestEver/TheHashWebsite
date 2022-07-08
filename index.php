@@ -15,6 +15,7 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
+require_once 'Provider/TranslationServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -45,6 +46,8 @@ $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
+$app->register(new Silex\Provider\LocaleServiceProvider());
+$app->register(new Provider\TranslationServiceProvider(), array('translator.messages' => array()));
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
@@ -151,8 +154,6 @@ $app['security.access_rules'] = array(
 
 $app->register(new Silex\Provider\RoutingServiceProvider());
 $app->register(new Silex\Provider\ValidatorServiceProvider());
-$app->register(new Silex\Provider\LocaleServiceProvider());
-$app->register(new Silex\Provider\TranslationServiceProvider(), array('translator.messages' => array(),));
 #-------------------------------------------------------------------------------
 
 #Set your global assertions and stuff ------------------------------------------

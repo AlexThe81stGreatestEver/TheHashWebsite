@@ -4,6 +4,7 @@ the copyright notice that appears below.
 
 Provider/CsrfServiceProvider.php
 Provider/FormServiceProvider.php
+Provider/TranslationServiceProvider.php
 
 Copyright (c) 2010-2017 Fabien Potencier
 
