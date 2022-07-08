@@ -18,6 +18,7 @@ require_once 'Provider/FormServiceProvider.php';
 require_once 'Provider/TranslationServiceProvider.php';
 require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
+require_once 'Provider/TwigServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -60,12 +61,6 @@ $app['AdminController'] = function() use($app) { return new \HASH\Controller\Adm
 $app['SuperAdminController'] = function() use($app) { return new \HASH\Controller\SuperAdminController($app['service_container']); };
 $app['TagController'] = function() use($app) { return new \HASH\Controller\TagController($app['service_container']); };
 $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app['service_container']); };
-
-#TWIG Constants
-$twigClassPath = __DIR__.'vendor/twig/twig/lib';
-$twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
-$twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
-# End TWIG Configurations-------------------------------------------------------
 
 # Begin: Set the security firewalls --------------------------------------------
 
@@ -135,7 +130,11 @@ $app['controllers']
   ;
 #-------------------------------------------------------------------------------
 
-$app->register(new Silex\Provider\TwigServiceProvider(), array(
+$twigClassPath = __DIR__.'vendor/twig/twig/lib';
+$twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
+$twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
+
+$app->register(new Provider\TwigServiceProvider(), array(
   'twig.path' => $twigTemplateSourceDirectory,
   'twig.class_path' =>$twigClassPath,
   'twig.options' => array(

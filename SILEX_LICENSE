@@ -8,6 +8,7 @@ Provider/DoctrineServiceProvider.php
 Provider/FormServiceProvider.php
 Provider/SessionServiceProvider.php
 Provider/TranslationServiceProvider.php
+Provider/TwigServiceProvider.php
 
 Copyright (c) 2010-2017 Fabien Potencier
 
