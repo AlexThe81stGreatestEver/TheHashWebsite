@@ -17,6 +17,7 @@ require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
 require_once 'Provider/TranslationServiceProvider.php';
 require_once 'Provider/DoctrineServiceProvider.php';
+require_once 'Provider/SessionServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -50,6 +51,7 @@ $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
 $app->register(new Provider\TranslationServiceProvider(), array('translator.messages' => array()));
 $app->register(new Provider\DoctrineServiceProvider());
+$app->register(new Provider\SessionServiceProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
@@ -64,11 +66,6 @@ $twigClassPath = __DIR__.'vendor/twig/twig/lib';
 $twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
 $twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
 # End TWIG Configurations-------------------------------------------------------
-
-# Begin: Register the session management stuff ---------------------------------
-$app->register(new Silex\Provider\SessionServiceProvider());
-# End: -------------------------------------------------------------------------
-
 
 # Begin: Set the security firewalls --------------------------------------------
 

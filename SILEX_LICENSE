@@ -2,9 +2,11 @@ The following files were adapted from the abandoned Silex framework.
 The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
+Listener/SessionListener.php
 Provider/CsrfServiceProvider.php
 Provider/DoctrineServiceProvider.php
 Provider/FormServiceProvider.php
+Provider/SessionServiceProvider.php
 Provider/TranslationServiceProvider.php
 
 Copyright (c) 2010-2017 Fabien Potencier
