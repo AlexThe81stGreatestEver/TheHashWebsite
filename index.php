@@ -14,13 +14,13 @@ require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/CsrfServiceProvider.php';
+require_once 'Provider/FormServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Silex\Provider\SecurityServiceProvider;
-use Silex\Provider\FormServiceProvider;
 
 use Rabus\Psr11ServiceProvider\Psr11ServiceProvider;
 
@@ -43,8 +43,8 @@ $app->register(new Psr11ServiceProvider());
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app->register(new Provider\CsrfServiceProvider());
-
 $app->register(new Provider\EventListenerProvider());
+$app->register(new Provider\FormServiceProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
@@ -150,7 +150,6 @@ $app['security.access_rules'] = array(
 
 
 $app->register(new Silex\Provider\RoutingServiceProvider());
-$app->register(new FormServiceProvider());
 $app->register(new Silex\Provider\ValidatorServiceProvider());
 $app->register(new Silex\Provider\LocaleServiceProvider());
 $app->register(new Silex\Provider\TranslationServiceProvider(), array('translator.messages' => array(),));

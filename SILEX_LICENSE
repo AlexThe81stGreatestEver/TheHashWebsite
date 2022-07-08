@@ -3,6 +3,7 @@ The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
 Provider/CsrfServiceProvider.php
+Provider/FormServiceProvider.php
 
 Copyright (c) 2010-2017 Fabien Potencier
 
