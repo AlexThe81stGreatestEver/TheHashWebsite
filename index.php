@@ -42,6 +42,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 $app = new Silex\Application();
 $app['locale'] = 'en';
+$app['debug'] = defined('DEBUG') && DEBUG;
 
 $app->register(new Psr11ServiceProvider());
 
@@ -63,9 +64,6 @@ $app['TagController'] = function() use($app) { return new \HASH\Controller\TagCo
 $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app['service_container']); };
 
 # Begin: Set the security firewalls --------------------------------------------
-
-$app['debug'] = defined('DEBUG') && DEBUG;
-
 
 $app->register(new Silex\Provider\SecurityServiceProvider(), array(
     'security.firewalls' => array(
@@ -140,19 +138,6 @@ $app->register(new Provider\TwigServiceProvider(), array(
   'twig.options' => array(
     'cache' => $twigTemplateCompiledDirectory,
     'auto_reload' => true)));
-
-# Register the monolog logging service
-if($app['debug']) {
-  $app->register(new Silex\Provider\MonologServiceProvider(), array(
-      'monolog.logfile' => __DIR__.'/development.log',
-      'monolog.level' => 'debug',
-      'monolog.bubble' => true
-  ));
-}
-
-
-# End: -------------------------------------------------------------------------
-
 
 #Check users table in database-------------------------------------------------
 
