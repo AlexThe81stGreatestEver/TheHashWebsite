@@ -530,38 +530,31 @@ class HashEventController extends BaseController {
       $this->validateCsrfToken('participation'.$hashKey, $token);
 
       #Validate the post values; ensure that they are both numbers
-      if(ctype_digit($hasherKey)  && ctype_digit($hashKey)){
+      if(ctype_digit($hasherKey) && ctype_digit($hashKey)){
 
         #Determine the hasher identity
-        $hasherIdentitySql = "SELECT * FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
+        $hasherIdentitySql =
+           "SELECT HASHER_NAME, BANNED FROM HASHERS WHERE HASHERS.HASHER_KY = ?";
 
         # Make a database call to obtain the hasher information
-        $hasherValue = $this->fetchAssoc($hasherIdentitySql, array((int) $hasherKey));
-
-        #Obtain the object from the database results
-        $data = array(
-            'HASHER_KY' => $hasherValue['HASHER_KY'],
-            'HASHER_NAME' => $hasherValue['HASHER_NAME'],
-            'HASHER_ABBREVIATION' => $hasherValue['HASHER_ABBREVIATION'],
-            'LAST_NAME' => $hasherValue['LAST_NAME'],
-            'FIRST_NAME' => $hasherValue['FIRST_NAME'],
-            'HOME_KENNEL' => $hasherValue['HOME_KENNEL'],
-            'HOME_KENNEL_KY' => $hasherValue['HOME_KENNEL_KY'],
-            'DECEASED' => $hasherValue['DECEASED'],
-        );
+        $data = $this->fetchAssoc($hasherIdentitySql, array((int) $hasherKey));
 
         #Obtain the hasher name from the object
         $tempHasherName = $data['HASHER_NAME'];
 
         #Ensure the entry does not already exist
-        $existsSql = "SELECT HASHER_NAME
+        $existsSql = "SELECT 1 AS IGNORED
           FROM HASHINGS
-          JOIN HASHERS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-          WHERE HASHERS.HASHER_KY = ? AND HASH_KY = ?;";
+          WHERE HASHINGS.HASHER_KY = ? AND HASH_KY = ?";
 
         #Retrieve the existing record
         $hasherToAdd = $this->fetchAll($existsSql,array((int)$hasherKey,(int)$hashKey));
-        if(count($hasherToAdd) < 1){
+
+        if($data['BANNED'] == 1) {
+
+          $returnMessage = "Fail! $tempHasherName is banned.";
+
+        } else if(count($hasherToAdd) < 1){
 
           #Define the sql insert statement
           $sql = "INSERT INTO HASHINGS (HASHER_KY, HASH_KY) VALUES (?, ?);";
@@ -572,7 +565,7 @@ class HashEventController extends BaseController {
           #Audit the activity
 
           # Declare the SQL used to retrieve this information
-          $sql = "SELECT * FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
+          $sql = "SELECT KENNEL_EVENT_NUMBER, KENNEL_ABBREVIATION FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
 
           # Make a database call to obtain the hasher information
           $hashValue = $this->fetchAssoc($sql, array((int) $hashKey));
@@ -617,22 +610,10 @@ class HashEventController extends BaseController {
       if(ctype_digit($hasherKey)  && ctype_digit($hashKey) && ctype_digit($hareType)){
 
         #Determine the hasher identity
-        $hasherIdentitySql = "SELECT * FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
+        $hasherIdentitySql = "SELECT HASHER_NAME, BANNED FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
 
         # Make a database call to obtain the hasher information
-        $hasherValue = $this->fetchAssoc($hasherIdentitySql, array((int) $hasherKey));
-
-        #Obtain the object from the database results
-        $data = array(
-            'HASHER_KY' => $hasherValue['HASHER_KY'],
-            'HASHER_NAME' => $hasherValue['HASHER_NAME'],
-            'HASHER_ABBREVIATION' => $hasherValue['HASHER_ABBREVIATION'],
-            'LAST_NAME' => $hasherValue['LAST_NAME'],
-            'FIRST_NAME' => $hasherValue['FIRST_NAME'],
-            'HOME_KENNEL' => $hasherValue['HOME_KENNEL'],
-            'HOME_KENNEL_KY' => $hasherValue['HOME_KENNEL_KY'],
-            'DECEASED' => $hasherValue['DECEASED'],
-        );
+        $data = $this->fetchAssoc($hasherIdentitySql, array((int) $hasherKey));
 
         #Obtain the hasher name from the object
         $tempHasherName = $data['HASHER_NAME'];
@@ -640,12 +621,16 @@ class HashEventController extends BaseController {
         #Ensure the entry does not already exist
         $existsSql = "SELECT 1 AS IGNORED
           FROM HARINGS
-          JOIN HASHERS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-          WHERE HASHERS.HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ? AND HARINGS.HARE_TYPE = ?;";
+          WHERE HARINGS.HARINGS_HASHER_KY = ? AND HARINGS.HARINGS_HASH_KY = ? AND HARINGS.HARE_TYPE = ?;";
 
         #Retrieve the existing record
         $hareToAdd = $this->fetchAll($existsSql,array((int)$hasherKey, (int)$hashKey, (int)$hareType));
-        if(count($hareToAdd) < 1){
+
+        if($data['BANNED'] == 1) {
+
+          $returnMessage = "Fail! $tempHasherName is banned.";
+
+        } else if(count($hareToAdd) < 1){
 
           #Define the sql insert statement
           $sql = "INSERT INTO HARINGS (HARINGS_HASHER_KY, HARINGS_HASH_KY, HARE_TYPE) VALUES (?, ?, ?);";
@@ -655,7 +640,7 @@ class HashEventController extends BaseController {
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
-          $sql = "SELECT * FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
+          $sql = "SELECT KENNEL_EVENT_NUMBER, KENNEL_ABBREVIATION FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
 
           # Make a database call to obtain the hasher information
           $hashValue = $this->fetchAssoc($sql, array((int) $hashKey));

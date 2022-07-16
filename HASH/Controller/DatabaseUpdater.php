@@ -14,7 +14,7 @@ class DatabaseUpdater {
 
     $databaseVersion = $this->getDatabaseVersion();
 
-    $currentDatabaseVersion = 23;
+    $currentDatabaseVersion = 24;
 
     if($databaseVersion != $currentDatabaseVersion) {
 
@@ -120,6 +120,10 @@ class DatabaseUpdater {
             case 22:
               $this->addConsolidatedSwitchKennelPreferenceToSiteConfig();
               $this->setDatabaseVersion(23);
+            case 23:
+              $this->alterDeceasedColumn();
+              $this->addBannedColumn();
+              $this->setDatabaseVersion(24);
             default:
               // Overkill, but guarantees the view is up to date with the
               // current database structure.
@@ -183,6 +187,15 @@ class DatabaseUpdater {
       $name="ridiculous".$i;
       $this->insertIntoSiteConfig($name, $stats[$i], "");
     }
+  }
+
+  private function alterDeceasedColumn() {
+    $this->executeStatement("UPDATE HASHERS SET DECEASED=1 WHERE DECEASED IS NULL");
+    $this->executeStatement("ALTER TABLE HASHERS CHANGE DECEASED DECEASED TINYINT(1) UNSIGNED NOT NULL DEFAULT 0");
+  }
+
+  private function addBannedColumn() {
+    $this->executeStatement("ALTER TABLE HASHERS ADD BANNED TINYINT(1) UNSIGNED NOT NULL DEFAULT 0");
   }
 
   private function alterSiteConfigNameColumn() {
