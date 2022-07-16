@@ -12,6 +12,11 @@
   {{ form_row(form.FIRST_NAME) }}
   {{ form_row(form.HOME_KENNEL) }}
   {{ form_row(form.DECEASED) }}
+  {{ form_row(form.BANNED) }}
   {{ form_row(form._token) }}
+
+  <p>
+  Hashers marked as banned will not appear in the list of hashers that can be added to an event.  There will be no change in the way they appear on public pages.
+  </p>
 
 {% endblock %}

@@ -765,6 +765,10 @@ class AdminController extends BaseController
                AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR))) AS SORTA_RECENT_HASH_COUNT
       FROM HASHERS
       WHERE
+          DECEASED = 0
+        AND
+          BANNED = 0
+        AND
           HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
         AND
         (
@@ -779,6 +783,10 @@ class AdminController extends BaseController
     $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
     FROM HASHERS
     WHERE
+        DECEASED = 0
+      AND
+        BANNED = 0
+      AND
         HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
       AND
       (
@@ -788,7 +796,16 @@ class AdminController extends BaseController
         HASHER_ABBREVIATION LIKE ?)";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHERS WHERE HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")";
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*)
+          AS THE_COUNT
+        FROM HASHERS
+       WHERE
+           DECEASED = 0
+         AND
+           BANNED = 0
+         AND
+           HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")";
 
     #-------------- End: Define the SQL used here   ----------------------------
 

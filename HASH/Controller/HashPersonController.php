@@ -166,6 +166,7 @@ class HashPersonController extends BaseController
         'FIRST_NAME' => $hasherValue['FIRST_NAME'],
         'HOME_KENNEL' => $hasherValue['HOME_KENNEL'],
         'DECEASED' => $hasherValue['DECEASED'],
+        'BANNED' => $hasherValue['BANNED']
     );
 
     $formFactoryThing = $this->app['form.factory']->createBuilder(FormType::class, $data)
@@ -174,13 +175,14 @@ class HashPersonController extends BaseController
       ->add('LAST_NAME', TextType::class, array('label' => 'Last Name'))
       ->add('FIRST_NAME', TextType::class, array('label' => 'First Name'))
       ->add('HOME_KENNEL', TextType::class, array('label' => 'Home Kennel'))
+      ->add('BANNED', ChoiceType::class, array('label' => 'Banned',
+        'choices'  => array('No' => '0', 'Yes, strike their name from all pylons and obelisks' => '1')))
       ->add('DECEASED', ChoiceType::class, array('label' => 'Deceased',
-        'choices'  => array('No' => '0000000000', 'Yes, let us cherish their memory' => '0000000001')));
+        'choices'  => array('No' => '0', 'Yes, let us cherish their memory' => '1')));
 
     $formFactoryThing->setAction('#');
     $formFactoryThing->setMethod('POST');
     $form=$formFactoryThing->getForm();
-
 
     $form->handleRequest($request);
 
@@ -190,7 +192,6 @@ class HashPersonController extends BaseController
           #Obtain the name/value pairs from the form
           $data = $form->getData();
 
-
           #Establish the values from the form
           $tempHasherName = $data['HASHER_NAME'];
           $tempHasherAbbreviation = $data['HASHER_ABBREVIATION'];
@@ -198,11 +199,12 @@ class HashPersonController extends BaseController
           $tempFirstName = $data['FIRST_NAME'];
           $tempHomeKennel = $data['HOME_KENNEL'];
           $tempDeceased = $data['DECEASED'];
+          $tempBanned = $data['BANNED'];
 
           $sql = "
             UPDATE HASHERS
             SET
-              HASHER_NAME= ?, HASHER_ABBREVIATION= ?, LAST_NAME= ?, FIRST_NAME=?, HOME_KENNEL=?, DECEASED=?
+              HASHER_NAME= ?, HASHER_ABBREVIATION= ?, LAST_NAME= ?, FIRST_NAME=?, HOME_KENNEL=?, DECEASED=?, BANNED=?
             WHERE HASHER_KY=?";
           $this->app['dbs']['mysql_write']->executeUpdate($sql,array(
             $tempHasherName,
@@ -211,6 +213,7 @@ class HashPersonController extends BaseController
             $tempFirstName,
             $tempHomeKennel,
             $tempDeceased,
+            $tempBanned,
             $hasher_id
           ));
 
@@ -250,7 +253,7 @@ class HashPersonController extends BaseController
       ->add('FIRST_NAME', TextType::class, array('label' => 'First Name'))
       ->add('HOME_KENNEL', TextType::class, array('label' => 'Home Kennel'))
       ->add('DECEASED', ChoiceType::class, array('label' => 'Deceased',
-        'choices'  => array('No' => '0000000000', 'Yes, let us cherish their memory' => '0000000001')));
+        'choices'  => array('No' => '0', 'Yes, let us cherish their memory' => '1')));
 
 
     $formFactoryThing->setAction('#');
