@@ -4630,9 +4630,9 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "3";
-  $inputOrderColumnIncremented = "3";
-  $inputOrderDirectionExtracted = "desc";
+  $inputOrderColumnExtracted = "0";
+  $inputOrderColumnIncremented = "1";
+  $inputOrderDirectionExtracted = "asc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
@@ -4650,18 +4650,28 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   #Define the sql that performs the filtering
   $sql = "SELECT
       HASHER_NAME,
-      HASH_COUNT,
-      HARE_COUNT,
       (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+  }
+
+  $sql .= "HASH_COUNT,";
 
   foreach ($hashTypes as &$hashType) {
     $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
   }
 
+  $sql .= "HARE_COUNT,";
+
   foreach ($hareTypes as &$hareType) {
-    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,
-      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
   }
 
   $args = array($kennelKy, $kennelKy);
