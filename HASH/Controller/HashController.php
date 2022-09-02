@@ -4661,7 +4661,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   foreach ($hareTypes as &$hareType) {
     $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,
       (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
   }
 
   $args = array($kennelKy, $kennelKy);
