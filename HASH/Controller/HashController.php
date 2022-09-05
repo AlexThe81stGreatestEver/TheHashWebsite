@@ -4649,21 +4649,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   #-------------- Begin: Define the SQL used here   --------------------------
 
   #Define the sql that performs the filtering
-  $sql = "SELECT
-      HASHER_NAME,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .= "
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
-  }
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .= "
-      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
-  }
-
-  $sql .= "HASH_COUNT,";
+  $sql = "SELECT HASHER_NAME,HASH_COUNT,";
 
   foreach ($hashTypes as &$hashType) {
     $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
@@ -4673,6 +4659,18 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
 
   foreach ($hareTypes as &$hareType) {
     $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  $sql .= "(HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
   }
 
   $args = array($kennelKy, $kennelKy);

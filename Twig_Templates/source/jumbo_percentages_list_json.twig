@@ -31,6 +31,14 @@
           }
 
        },
+        { "data": "HASH_COUNT" },
+        {% for hashType in hashTypes %}
+          { "data": "{{ hashType.HASH_TYPE_NAME }}_HASH_COUNT" },
+        {% endfor %}
+        { "data": "HARE_COUNT" },
+        {% for hareType in hareTypes %}
+          { "data": "{{ hareType.HARE_TYPE_NAME }}_HARE_COUNT" },
+        {% endfor %}
         { "data": "HARING_TO_HASHING_PERCENTAGE",
             render: function ( data, type, row ) {
               return Math.round( data * 100 )+'%';
@@ -46,14 +54,6 @@
           render: function ( data, type, row ) {
             return Math.round( data * 100 )+'%';
         }},
-        {% endfor %}
-        { "data": "HASH_COUNT" },
-        {% for hashType in hashTypes %}
-          { "data": "{{ hashType.HASH_TYPE_NAME }}_HASH_COUNT" },
-        {% endfor %}
-        { "data": "HARE_COUNT" },
-        {% for hareType in hareTypes %}
-          { "data": "{{ hareType.HARE_TYPE_NAME }}_HARE_COUNT" },
         {% endfor %}
 
       ]
@@ -72,14 +72,6 @@
       <thead>
         <tr>
           <th>Hasher Name</th>
-          <td>Haring/Hashing %</td>
-          {% for hareType in hareTypes %}
-            <td>{{ hareType.HARE_TYPE_NAME }} Haring/Hashing %</td>
-          {% endfor %}
-          {% for hareType in hareTypes %}
-            <td>{{ hareType.HARE_TYPE_NAME }}/All Haring %</td>
-          {% endfor %}
-
           <td>Hash Count</td>
           {% for hashType in hashTypes %}
             <td>{{ hashType.HASH_TYPE_NAME }} Hash Count</td>
@@ -88,7 +80,13 @@
           {% for hareType in hareTypes %}
             <td>{{ hareType.HARE_TYPE_NAME }} Hare Count</td>
           {% endfor %}
-
+          <td>Haring/Hashing %</td>
+          {% for hareType in hareTypes %}
+            <td>{{ hareType.HARE_TYPE_NAME }} Haring/Hashing %</td>
+          {% endfor %}
+          {% for hareType in hareTypes %}
+            <td>{{ hareType.HARE_TYPE_NAME }}/All Haring %</td>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
