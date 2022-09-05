@@ -4456,7 +4456,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$this->app['monolog']->addDebug("sql: $sql");
@@ -4476,7 +4476,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > ? AND HASHER_NAME LIKE ?";
+  WHERE HASH_COUNT >= ? AND HASHER_NAME LIKE ?";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4492,7 +4492,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
         HASHERS
     )
     MAIN_TABLE
-    WHERE HASH_COUNT > ?";
+    WHERE HASH_COUNT >= ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4747,7 +4747,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$this->app['monolog']->addDebug("sql: $sql");
@@ -4767,7 +4767,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > ? AND ( HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT >= ? AND ( HASHER_NAME LIKE ? )";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4783,7 +4783,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
         HASHERS
     )
     MAIN_TABLE
-    WHERE HASH_COUNT > ?";
+    WHERE HASH_COUNT >= ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
