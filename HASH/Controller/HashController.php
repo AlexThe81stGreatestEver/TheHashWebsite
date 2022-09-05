@@ -4352,9 +4352,9 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "3";
-  $inputOrderColumnIncremented = "3";
-  $inputOrderDirectionExtracted = "desc";
+  $inputOrderColumnExtracted = "0";
+  $inputOrderColumnIncremented = "1";
+  $inputOrderDirectionExtracted = "asc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
@@ -4372,12 +4372,13 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   #Define the sql that performs the filtering
   $sql = "SELECT
       HASHER_NAME,
-      HASH_COUNT,
-      HARE_COUNT,";
+      HASH_COUNT,";
 
   foreach ($hashTypes as &$hashType) {
     $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
   }
+
+  $sql .= "HARE_COUNT,";
 
   foreach ($hareTypes as &$hareType) {
     $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
