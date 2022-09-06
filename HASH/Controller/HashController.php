@@ -4352,9 +4352,9 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "0";
-  $inputOrderColumnIncremented = "1";
-  $inputOrderDirectionExtracted = "asc";
+  $inputOrderColumnExtracted = "1";
+  $inputOrderColumnIncremented = "2";
+  $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
@@ -4631,9 +4631,9 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "0";
-  $inputOrderColumnIncremented = "1";
-  $inputOrderDirectionExtracted = "asc";
+  $inputOrderColumnExtracted = "1";
+  $inputOrderColumnIncremented = "2";
+  $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
     $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
