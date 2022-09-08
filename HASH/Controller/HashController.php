@@ -4352,8 +4352,8 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "3";
-  $inputOrderColumnIncremented = "3";
+  $inputOrderColumnExtracted = "1";
+  $inputOrderColumnIncremented = "2";
   $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
@@ -4372,12 +4372,13 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   #Define the sql that performs the filtering
   $sql = "SELECT
       HASHER_NAME,
-      HASH_COUNT,
-      HARE_COUNT,";
+      HASH_COUNT,";
 
   foreach ($hashTypes as &$hashType) {
     $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
   }
+
+  $sql .= "HARE_COUNT,";
 
   foreach ($hareTypes as &$hareType) {
     $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
@@ -4455,7 +4456,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$this->app['monolog']->addDebug("sql: $sql");
@@ -4475,7 +4476,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > ? AND HASHER_NAME LIKE ?";
+  WHERE HASH_COUNT >= ? AND HASHER_NAME LIKE ?";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4491,7 +4492,7 @@ public function jumboCountsTablePostActionJson(Request $request, string $kennel_
         HASHERS
     )
     MAIN_TABLE
-    WHERE HASH_COUNT > ?";
+    WHERE HASH_COUNT >= ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
@@ -4630,8 +4631,8 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
 
   #Obtain the column/order information
   $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "3";
-  $inputOrderColumnIncremented = "3";
+  $inputOrderColumnExtracted = "1";
+  $inputOrderColumnIncremented = "2";
   $inputOrderDirectionExtracted = "desc";
   if(!is_null($inputOrderRaw)){
     #$this->app['monolog']->addDebug("inside inputOrderRaw not null");
@@ -4648,20 +4649,28 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   #-------------- Begin: Define the SQL used here   --------------------------
 
   #Define the sql that performs the filtering
-  $sql = "SELECT
-      HASHER_NAME,
-      HASH_COUNT,
-      HARE_COUNT,
-      (HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+  $sql = "SELECT HASHER_NAME,HASH_COUNT,";
 
   foreach ($hashTypes as &$hashType) {
     $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
   }
 
+  $sql .= "HARE_COUNT,";
+
   foreach ($hareTypes as &$hareType) {
-    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+  }
+
+  $sql .= "(HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
+  }
+
+  foreach ($hareTypes as &$hareType) {
+    $sql .= "
+      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
   }
 
   $args = array($kennelKy, $kennelKy);
@@ -4736,7 +4745,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
   JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT > ? AND (HASHER_NAME LIKE ? )
+  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
   ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
   LIMIT $inputStart,$inputLength";
   #$this->app['monolog']->addDebug("sql: $sql");
@@ -4756,7 +4765,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
       HASHERS
   )
   MAIN_TABLE
-  WHERE HASH_COUNT > ? AND ( HASHER_NAME LIKE ? )";
+  WHERE HASH_COUNT >= ? AND ( HASHER_NAME LIKE ? )";
 
   #Define the sql that gets the overall counts
   $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
@@ -4772,7 +4781,7 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
         HASHERS
     )
     MAIN_TABLE
-    WHERE HASH_COUNT > ?";
+    WHERE HASH_COUNT >= ?";
 
   #-------------- End: Define the SQL used here   ----------------------------
 
