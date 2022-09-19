@@ -1,9 +1,9 @@
 {
     "require": {
-        "silex/silex": "~2.0",
         "doctrine/dbal": "~2.2",
         "twig/twig": "2.15.*",
         "symfony/security": "^3.0",
+        "symfony/routing": "^4.4",
         "monolog/monolog": "^2.6",
         "symfony/twig-bridge": "^4.0",
         "symfony/form": "^4.1",

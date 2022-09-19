@@ -19,12 +19,14 @@ require_once 'Provider/TranslationServiceProvider.php';
 require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
+require_once 'Provider/SecurityServiceProvider.php';
+require_once 'Provider/ServiceControllerServiceProvider.php';
+require_once 'Provider/ValidatorServiceProvider.php';
+require_once 'Application.php';
 
 use Doctrine\DBAL\Schema\Table;
 
-use Silex\Application;
-use Silex\ServiceProviderInterface;
-use Silex\Provider\SecurityServiceProvider;
+use Pimple\ServiceProviderInterface;
 
 use Rabus\Psr11ServiceProvider\Psr11ServiceProvider;
 
@@ -40,13 +42,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
-$app = new Silex\Application();
+$app = new Application();
 $app['locale'] = 'en';
 $app['debug'] = defined('DEBUG') && DEBUG;
 
 $app->register(new Psr11ServiceProvider());
 
-$app->register(new Silex\Provider\ServiceControllerServiceProvider());
+$app->register(new Provider\ServiceControllerServiceProvider());
 
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
@@ -65,33 +67,28 @@ $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Co
 
 # Begin: Set the security firewalls --------------------------------------------
 
-$app->register(new Silex\Provider\SecurityServiceProvider(), array(
-    'security.firewalls' => array(
-        'login' => array(
-            'pattern' => '^/logonscreen$',
-        ),
-        'supersecured' => array(
-            'pattern' => '^/superadmin',
-            'form' => array('login_path' => '/logonscreen/sa', 'check_path' => '/superadmin/login_check'),
-            'logout' => array('logout_path' => '/superadmin/logoutaction'),
-            'users' => function () use ($app) {return new UserProvider($app['db']);},
-            'logout' => array('logout_path' => '/superadmin/logoutaction', 'invalidate_session' => true),
-          ),
-        'secured' => array(
-            'pattern' => '^/admin',
-            'form' => array('login_path' => '/logonscreen', 'check_path' => '/admin/login_check'),
-            'logout' => array('logout_path' => '/logoutaction'),
-            'users' => function () use ($app) {return new UserProvider($app['db']);},
-            'logout' => array('logout_path' => '/admin/logoutaction', 'invalidate_session' => true),
-        ),
-        'unsecured' => array(
-          'pattern' => '^.*$',
-        )
+$app['security.firewalls'] = array(
+    'login' => array(
+        'pattern' => '^/logonscreen$',
+    ),
+    'supersecured' => array(
+        'pattern' => '^/superadmin',
+        'form' => array('login_path' => '/logonscreen/sa', 'check_path' => '/superadmin/login_check'),
+        'logout' => array('logout_path' => '/superadmin/logoutaction'),
+        'users' => function () use ($app) {return new UserProvider($app['db']);},
+        'logout' => array('logout_path' => '/superadmin/logoutaction', 'invalidate_session' => true),
+      ),
+    'secured' => array(
+        'pattern' => '^/admin',
+        'form' => array('login_path' => '/logonscreen', 'check_path' => '/admin/login_check'),
+        'logout' => array('logout_path' => '/logoutaction'),
+        'users' => function () use ($app) {return new UserProvider($app['db']);},
+        'logout' => array('logout_path' => '/admin/logoutaction', 'invalidate_session' => true),
+    ),
+    'unsecured' => array(
+      'pattern' => '^.*$',
     )
-));
-
-// Fallback to default password encoder used in SILEX 1.3
-$app['security.default_encoder'] = $app['security.encoder.digest'];
+);
 
 $app['security.access_rules'] = array(
     array('^/superadmin',   'ROLE_SUPERADMIN',),
@@ -99,8 +96,9 @@ $app['security.access_rules'] = array(
 );
 
 
-$app->register(new Silex\Provider\RoutingServiceProvider());
-$app->register(new Silex\Provider\ValidatorServiceProvider());
+$ssp = new Provider\SecurityServiceProvider();
+$app->register($ssp);
+$app->register(new Provider\ValidatorServiceProvider());
 #-------------------------------------------------------------------------------
 
 #Set your global assertions and stuff ------------------------------------------
@@ -529,6 +527,7 @@ $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'H
 # kennel home page
 $app->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
 
+$ssp->boot($app['controllers'], $app['controllers_factory']);
 new DatabaseUpdater($app['dbs']['mysql_write'], DB_NAME);
 
 $app->run();

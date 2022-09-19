@@ -3,6 +3,7 @@
 namespace HASH\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Psr\Container\ContainerInterface;
 
 class BaseController {
@@ -82,7 +83,7 @@ class BaseController {
     $args['site_banner'] = $this->getSiteBanner();
     $args['use_consolidated_switch_kennel_page'] = $this->useConsolidatedSwitchKennelPage();
 
-    return $this->container->get('twig')->render($template, $args);
+    return new Response($this->container->get('twig')->render($template, $args));
   }
 
   protected function hasLegacyHashCounts() {

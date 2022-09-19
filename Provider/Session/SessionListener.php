@@ -1,6 +1,6 @@
 <?php
 
-namespace Listener;
+namespace Provider\Session;
 
 use Pimple\Container;
 use Symfony\Component\HttpKernel\EventListener\SessionListener as BaseSessionListener;
