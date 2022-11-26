@@ -23,7 +23,6 @@ Provider/HttpKernelServiceProvider.php
 Provider/RoutingServiceProvider.php
 Provider/SecurityServiceProvider.php
 Provider/ServiceControllerServiceProvider.php
-Provider/Session/SessionListener.php
 Provider/SessionServiceProvider.php
 Provider/TranslationServiceProvider.php
 Provider/TwigServiceProvider.php
