@@ -29,9 +29,9 @@ class BaseController {
 
   protected function fetchAll(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->container->get('db')->fetchAll($sql);
+      $result = $this->container->get('db')->fetchAllAssociative($sql);
     } else {
-      $result = $this->container->get('db')->fetchAll($sql, $args);
+      $result = $this->container->get('db')->fetchAllAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -53,9 +53,9 @@ class BaseController {
 
   protected function fetchAssoc(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->container->get('db')->fetchAssoc($sql);
+      $result = $this->container->get('db')->fetchAssociative($sql);
     } else {
-      $result = $this->container->get('db')->fetchAssoc($sql, $args);
+      $result = $this->container->get('db')->fetchAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -65,7 +65,7 @@ class BaseController {
 
   private function show_warnings(string $sql) {
     if(SHOW_WARNINGS) {
-      $warnings = $this->container->get('db')->fetchAll("SHOW WARNINGS");
+      $warnings = $this->container->get('db')->fetchAllAssociative("SHOW WARNINGS");
       foreach($warnings as $warning) {
         print("WARNING:");
         foreach($warning as $message) {
