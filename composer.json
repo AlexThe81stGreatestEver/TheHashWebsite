@@ -1,6 +1,6 @@
 {
     "require": {
-        "doctrine/dbal": "~2.2",
+        "doctrine/dbal": "~3.5",
         "twig/twig": "2.15.*",
         "symfony/security": "^3.0",
         "symfony/routing": "^5.4",
