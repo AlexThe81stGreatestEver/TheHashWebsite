@@ -16,12 +16,14 @@ use Symfony\Bridge\Twig\Extension\WebLinkExtension;
 use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
 use Symfony\Component\Form\FormRenderer;
+use Symfony\Component\HttpFoundation\UrlHelper;
 use Twig\RuntimeLoader\ContainerRuntimeLoader;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\ArrayLoader;
 use Twig\Loader\ChainLoader;
 use Twig\Loader\FilesystemLoader;
+use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 class TwigServiceProvider implements ServiceProviderInterface
 {
@@ -76,7 +78,7 @@ class TwigServiceProvider implements ServiceProviderInterface
                 $twig->addGlobal('global', $app['twig.app_variable']);
 
                 if (isset($app['request_stack'])) {
-                    $twig->addExtension(new HttpFoundationExtension($app['request_stack']));
+                    $twig->addExtension(new HttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
                     $twig->addExtension(new RoutingExtension($app['url_generator']));
                     $twig->addExtension(new WebLinkExtension($app['request_stack']));
                 }
@@ -116,7 +118,12 @@ class TwigServiceProvider implements ServiceProviderInterface
                     $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
                     $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
                     $app['twig.loader']->addLoader(new FilesystemLoader($path));
-                }
+
+	            $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
+                        FormRenderer::class => function() use ($app) {
+			    return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+		    })));
+		}
 
                 if (isset($app['var_dumper.cloner'])) {
                     $twig->addExtension(new DumpExtension($app['var_dumper.cloner']));

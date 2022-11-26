@@ -9,7 +9,7 @@ use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Loader\XliffFileLoader;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpKernel\EventListener\TranslatorListener;
+//use Symfony\Component\HttpKernel\EventListener\TranslatorListener;
 
 class TranslationServiceProvider implements ServiceProviderInterface {
 
@@ -54,11 +54,13 @@ class TranslationServiceProvider implements ServiceProviderInterface {
             return $translator;
         };
 
+	/*
         if (isset($app['request_stack'])) {
             $app['translator.listener'] = function ($app) {
                 return new TranslatorListener($app['translator'], $app['request_stack']);
             };
         }
+	*/
 
         $app['translator.message_selector'] = function () {
             return new MessageFormatter();

@@ -17,7 +17,7 @@ dl div input { display: table-cell;}
     {% for message in app.session.getFlashBag.get(alert) %}
         <div class="alert alert-{{ alert }} alert-dismissible" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          {{ message|trans }}
+          {{ message }}
         </div>
     {% endfor %}
   {% endfor %}
