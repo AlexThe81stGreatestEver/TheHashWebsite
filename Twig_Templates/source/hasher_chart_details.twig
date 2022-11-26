@@ -11,9 +11,6 @@
 
 <script type="text/javascript" src="/node_modules/chart.js/dist/chart.umd.js"></script>
 <script type="text/javascript" src="/node_modules/echarts/dist/echarts.js" type="module"></script>
-<script type="text/javascript" src="/node_modules/d3/dist/d3.min.js"></script>
-<script type="text/javascript" src="/node_modules/c3/c3.min.js"></script>
-<link href="/node_modules/c3/c3.css" rel="stylesheet" type="text/css">
 
 <script type = "text/javascript" language = "javascript">
     //Function to get hares for the event
@@ -416,28 +413,44 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         <div class="row">
           <div class="col-sm-12">
 
-            <div id="chartXX"></div>
-            <script>
-              var chartXX = c3.generate({
-                              size: {
-                                  height: 400,
-                              },
-                              data: {
-                                  type: 'bar',
-                                  json: [
-                                    {% for individualValue in hashes_by_year_list %}
-                                      { 'Year': '{{individualValue.THE_VALUE}}', 'Count': '{{individualValue.THE_COUNT}}' },
-                                    {% endfor %}
-                                  ],
-                                  keys: {
-                                      x: 'Year',
-                                      value: ['Count']
-                                  }
-                              },
-                              legend:{hide:true},
-                              bindto: '#chartXX'
-                          });
-              </script>
+            <canvas id="chartXX" width="50" height="50"></canvas>
+	      <script>
+	      var ctx = document.getElementById("chartXX");
+	      new Chart(ctx, {
+		  type: 'bar',
+		  data: {
+		      labels: [
+			{% for individualValue in hashes_by_year_list %}
+			  "{{individualValue.THE_VALUE}}",
+			{% endfor %}
+		      ],
+		      datasets: [{
+			  label: '# of Hashes',
+			  data: [
+			    {% for individualValue in hashes_by_year_list %}
+			      {{individualValue.THE_COUNT}},
+			    {% endfor %}
+
+			  ],
+			  fillColor:'rgba(75, 192, 192, 0.2)',
+			  backgroundColor:'rgba(0, 0, 200, 0.2)',
+			  borderColor:'rgba(0, 0, 200, 1)',
+			  borderWidth: 1
+		      }]
+		  },
+		  options: {
+		      scales: {
+			  y: {
+				beginAtZero:true
+			  }
+		      },
+		      title: {
+			display: true,
+			text: 'Hashes By Year'
+		      }
+		  }
+	      });
+	      </script>
 
           </div>
         </div>
@@ -496,36 +509,35 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
         <div class="row">
 
           <div class="col-sm-6">
-            <div id="chartBB"></div>
+            <canvas id="chartBB" width="50" height="50"></canvas>
             <script>
-              var chartType = "pie";
-              var chartBB = c3.generate({
-                  bindto: '#chartBB',
-                  data: {
-                    columns:
-                    [
-                      {% for individualValue in hashes_by_state_list %}
-                        ['{{individualValue.THE_VALUE}}',{{individualValue.THE_COUNT}}],
-                      {% endfor %}
-                    ],
-                    type: chartType
-                  }
-              });
+	      var ctx = document.getElementById("chartBB");
+	      new Chart(ctx, {
+		  type: 'pie',
+		  data: {
+		      labels: [
+			{% for individualValue in hashes_by_state_list %}
+			  "{{individualValue.THE_VALUE}}",
+			{% endfor %}
+		      ],
+		      datasets: [{
+			  label: '# of Hashes',
+			  data: [
+			    {% for individualValue in hashes_by_state_list %}
+			      {{individualValue.THE_COUNT}},
+			    {% endfor %}
 
-            setInterval(function() {
-               switch(chartType) {
-                 case "pie":
-                   chartType="donut";
-                   break;
-                 case "donut":
-                   chartType="bar";
-                   break;
-                 case "bar":
-                   chartType="pie";
-                   break;
-               }
-               chartBB.transform(chartType);
-            }, 4000);
+			  ],
+			  borderWidth: 1
+		      }]
+		  },
+		  options: {
+		      title: {
+			display: true,
+			text: 'Hashes By State'
+		      }
+		  }
+	      });
 
             </script>
 
@@ -535,7 +547,7 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
             <canvas id="myChart6" width="50" height="50"></canvas>
             <script>
             var ctx = document.getElementById("myChart6");
-            var myChart = new Chart(ctx, {
+            new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: [
@@ -559,11 +571,9 @@ function getListData(hasher_id,url_value,div_value, column_one_header, column_tw
                 },
                 options: {
                     scales: {
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero:true
-                            }
-                        }]
+                        y: {
+			    beginAtZero:true
+                        }
                     },
                     title: {
                       display: true,
