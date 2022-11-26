@@ -16,6 +16,6 @@
         "datatables/datatables": "^1.10",
         "wamania/php-stemmer": "^3.0",
         "ifsnop/mysqldump-php": "~2.9",
-        "derrabus/silex-psr11-provider": "^1"
+	"pimple/pimple": "^3.5"
     }
 }

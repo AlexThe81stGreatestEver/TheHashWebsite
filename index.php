@@ -23,12 +23,12 @@ require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Provider/ServiceControllerServiceProvider.php';
 require_once 'Provider/ValidatorServiceProvider.php';
 require_once 'Application.php';
+require_once 'Psr11ServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
 use Pimple\ServiceProviderInterface;
 
-use Rabus\Psr11ServiceProvider\Psr11ServiceProvider;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4fe9efd76dc8dd8895dfc67e3338aa57",
+    "content-hash": "190eea57f2614c7bf881d8554b87e352",
     "packages": [
         {
             "name": "components/jquery",
@@ -81,59 +81,6 @@
                 "source": "https://github.com/DataTables/DataTablesSrc/"
             },
             "time": "2020-05-21T10:08:44+00:00"
-        },
-        {
-            "name": "derrabus/silex-psr11-provider",
-            "version": "v1.1.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/derrabus/silex-psr11-provider.git",
-                "reference": "4a956a0324ccdce4b6cf0e4aa13f945b53516b5d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/derrabus/silex-psr11-provider/zipball/4a956a0324ccdce4b6cf0e4aa13f945b53516b5d",
-                "reference": "4a956a0324ccdce4b6cf0e4aa13f945b53516b5d",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.5.9 || ^7 || ^8",
-                "pimple/pimple": "^3.2",
-                "psr/container": "^1.0",
-                "symfony/http-kernel": "^3.3 || ^4"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5 || ^7.5 || ^8.5 || ^9.2",
-                "silex/silex": "^2.2",
-                "symfony/phpunit-bridge": "^4.4 || ^5.1"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Rabus\\Psr11ServiceProvider\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Alexander M. Turek",
-                    "email": "me@derrabus.de"
-                }
-            ],
-            "description": "Privides a PSR-11 compatible container as a service.",
-            "support": {
-                "issues": "https://github.com/derrabus/silex-psr11-provider/issues",
-                "source": "https://github.com/derrabus/silex-psr11-provider/tree/master"
-            },
-            "time": "2020-07-17T10:41:36+00:00"
         },
         {
             "name": "doctrine/cache",
