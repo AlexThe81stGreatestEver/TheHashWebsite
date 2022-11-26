@@ -41,7 +41,7 @@ class ValidatorServiceProvider implements ServiceProviderInterface
         };
 
         $app['validator.validator_factory'] = function () use ($app) {
-            return new ConstraintValidatorFactory($app, $app['validator.validator_service_ids']);
+            return new \Provider\Validator\ConstraintValidatorFactory($app, $app['validator.validator_service_ids']);
         };
 
         $app['validator.object_initializers'] = function ($app) {
