@@ -13,7 +13,7 @@
         "symfony/security-csrf": "^3.0",
         "twbs/bootstrap": "^3.4",
         "mbostock/d3": "^3.5",
-        "components/jquery": "^2.2",
+        "components/jquery": "^3.6",
         "ifightcrime/bootstrap-growl": "1.1.0",
         "datatables/datatables": "^1.10",
         "wamania/php-stemmer": "^3.0",
