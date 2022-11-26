@@ -9,8 +9,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHa
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Session;
-
-require_once 'Session/SessionListener.php';
+use Symfony\Component\HttpKernel\EventListener\SessionListener;
 
 class SessionServiceProvider implements ServiceProviderInterface {
 
@@ -36,7 +35,7 @@ class SessionServiceProvider implements ServiceProviderInterface {
         };
 
         $app['session.listener'] = function ($app) {
-            return new \Provider\Session\SessionListener($app);
+            return new SessionListener($app['service_container']);
         };
 
         $app['session.storage.options'] = [];
