@@ -2,18 +2,6 @@
 
 {% block template %}
 
-  {% if is_granted('ROLE_USER') %}
-          Welcome {{ app.security.token.user.username }}! You are in the ROLE_USER role, and are very special.
-          <a href="{{ path('logout') }}">Log out</a>
-  {% elseif is_granted('ROLE_ADMIN') %}
-          Welcome {{ app.security.token.user.username }}! You are in the ROLE_ADMIN role, and are very special.
-          <a href="{{ path('admin_logoutaction') }}">Log out</a>
-  {% elseif is_granted('ROLE_SUPERADMIN') %}
-          Welcome {{ app.security.token.user.username }}! You are in the ROLE_SUPERADMIN role, and are very special.
-          <a href="{{ path('admin_logoutaction') }}">Log out</a>
-  {% else %}
-      You seem not to be logged in.
-
       <div class="container">
         <div class="row">
             <div class="form_bg">
@@ -49,7 +37,5 @@
             </div>
         </div>
     </div>
-
-    {% endif %}
 
 {% endblock %}

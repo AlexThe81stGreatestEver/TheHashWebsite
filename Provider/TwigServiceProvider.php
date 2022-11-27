@@ -44,8 +44,6 @@ class TwigServiceProvider implements ServiceProviderInterface
 
         $app['twig'] = function ($app) {
             $twig = $app['twig.environment_factory']($app);
-            // TODO: remove app from all twig templates, then remove next line
-            $twig->addGlobal('app', $app);
 
             $coreExtension = $twig->getExtension('Twig\Extension\CoreExtension');
 

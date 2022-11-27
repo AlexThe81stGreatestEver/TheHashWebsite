@@ -44,7 +44,7 @@ function deleteHareType(id) {
 
     {% if is_granted('ROLE_SUPERADMIN') %}
         Role: ROLE_SUPERADMIN.<br>
-        User:{{ app.user.username }}<br>
+        User:{{ global.getUser() }}<br>
         <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
 
         <div><h3>
@@ -69,7 +69,7 @@ function deleteHareType(id) {
                   <div class="col-md-5 hidden-xs"   style="background-color:{{bgcolor}};">{{item.roles}}</div>
                   <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.id}}/edituser/ajaxform">Modify</a>
-                    {% if app.user.username != item.username %}
+                    {% if global.getUser() != item.username %}
                     |
                     <a href="javascript:deleteUser({{item.id}})">
                     Delete

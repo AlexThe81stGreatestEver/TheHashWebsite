@@ -5,7 +5,7 @@
 
     <div class="jumbotron">
       <h1>{{pageTitle}}</h1>
-      <p>Hello {{ app.user.username }}. This section is to administer the advancement of mankind, world peace, and mature behavior.
+      <p>Hello {{ global.getUser() }}. This section is to administer the advancement of mankind, world peace, and mature behavior.
       {% if is_granted('ROLE_ADMIN') %}
           You are in the ROLE_ADMIN role, and are very special!<br>
       {% elseif is_granted('ROLE_SUPERADMIN') %}
