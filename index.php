@@ -149,6 +149,7 @@ if($app['debug']) {
       'monolog.bubble' => true
   ));
   $msp->boot($app);
+  $msp->subscribe($app, $app['dispatcher']);
 }
 
 #Check users table in database-------------------------------------------------

@@ -96,7 +96,7 @@ class MonologServiceProvider implements ServiceProviderInterface, \Api\BootableP
         };
 
         $app['monolog.listener'] = function () use ($app) {
-            return new LogListener($app['logger'], $app['monolog.exception.logger_filter']);
+            return new \EventListener\LogListener($app['logger'], $app['monolog.exception.logger_filter']);
         };
 
         $app['monolog.name'] = 'app';
