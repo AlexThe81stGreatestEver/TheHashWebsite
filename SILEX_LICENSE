@@ -11,6 +11,7 @@ CallbackResolver.php
 Controller.php
 ControllerCollection.php
 EventListener/ConverterListener.php
+EventListener/LogListener.php
 EventListener/MiddlewareListener.php
 EventListener/StringToResponseEventListener.php
 Exception/ControllerFrozenException.php
@@ -20,6 +21,7 @@ Provider/DoctrineServiceProvider.php
 Provider/ExceptionHandlerServiceProvider.php
 Provider/FormServiceProvider.php
 Provider/HttpKernelServiceProvider.php
+Provider/MonologServiceProvider.php
 Provider/RoutingServiceProvider.php
 Provider/SecurityServiceProvider.php
 Provider/ServiceControllerServiceProvider.php

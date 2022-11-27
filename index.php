@@ -22,6 +22,7 @@ require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Provider/ServiceControllerServiceProvider.php';
 require_once 'Provider/ValidatorServiceProvider.php';
+require_once 'Provider/MonologServiceProvider.php';
 require_once 'Application.php';
 require_once 'Psr11ServiceProvider.php';
 
@@ -136,6 +137,17 @@ $app->register(new Provider\TwigServiceProvider(), array(
   'twig.options' => array(
     'cache' => $twigTemplateCompiledDirectory,
     'auto_reload' => true)));
+
+# Register the monolog logging service
+if($app['debug']) {
+  $msp = new Provider\MonologServiceProvider();
+  $app->register($msp, array(
+      'monolog.logfile' => __DIR__.'/development.log',
+      'monolog.level' => 'debug',
+      'monolog.bubble' => true
+  ));
+  $msp->boot($app);
+}
 
 #Check users table in database-------------------------------------------------
 
