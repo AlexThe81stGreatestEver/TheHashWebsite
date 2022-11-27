@@ -68,7 +68,7 @@ $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Co
 
 # Begin: Set the security firewalls --------------------------------------------
 
-$userProvider = new UserProvider($app['db']);
+$app['UserProvider'] = function() use($app) { return new UserProvider($app['db']); };
 
 $app['security.firewalls'] = array(
     'login' => array(
@@ -78,14 +78,14 @@ $app['security.firewalls'] = array(
         'pattern' => '^/superadmin',
         'form' => array('login_path' => '/logonscreen/sa', 'check_path' => '/superadmin/login_check'),
         'logout' => array('logout_path' => '/superadmin/logoutaction'),
-        'users' => function () use ($userProvider) {return $userProvider;},
+        'users' => function () use ($app) {return $app['UserProvider'];},
         'logout' => array('logout_path' => '/superadmin/logoutaction', 'invalidate_session' => true),
       ),
     'secured' => array(
         'pattern' => '^/admin',
         'form' => array('login_path' => '/logonscreen', 'check_path' => '/admin/login_check'),
         'logout' => array('logout_path' => '/logoutaction'),
-        'users' => function () use ($userProvider) {return $userProvider;},
+        'users' => function () use ($app) {return $app['UserProvider'];},
         'logout' => array('logout_path' => '/admin/logoutaction', 'invalidate_session' => true),
     ),
     'unsecured' => array(
@@ -99,8 +99,7 @@ $app['security.access_rules'] = array(
 );
 
 
-$ssp = new Provider\SecurityServiceProvider();
-$app->register($ssp);
+$app->register(new Provider\SecurityServiceProvider());
 $app->register(new Provider\ValidatorServiceProvider());
 #-------------------------------------------------------------------------------
 
@@ -142,8 +141,7 @@ $app->register(new Provider\TwigServiceProvider(), array(
 
 # Register the monolog logging service
 if($app['debug']) {
-  $msp = new Provider\MonologServiceProvider();
-  $app->register($msp, array(
+  $app->register(new Provider\MonologServiceProvider(), array(
       'monolog.logfile' => __DIR__.'/development.log',
       'monolog.level' => 'debug',
       'monolog.bubble' => true
