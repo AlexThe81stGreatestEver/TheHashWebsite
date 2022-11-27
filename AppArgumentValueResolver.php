@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  */
 
+use Pimple\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -22,7 +23,7 @@ class AppArgumentValueResolver implements ArgumentValueResolverInterface
 {
     private $app;
 
-    public function __construct(Application $app)
+    public function __construct(Container $app)
     {
         $this->app = $app;
     }
@@ -32,7 +33,7 @@ class AppArgumentValueResolver implements ArgumentValueResolverInterface
      */
     public function supports(Request $request, ArgumentMetadata $argument)
     {
-        return null !== $argument->getType() && (Application::class === $argument->getType() || is_subclass_of($argument->getType(), Application::class));
+        return null !== $argument->getType() && (Container::class === $argument->getType() || is_subclass_of($argument->getType(), Container::class));
     }
 
     /**

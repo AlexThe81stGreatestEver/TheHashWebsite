@@ -2,12 +2,12 @@
 
 namespace EventListener;
 
+use Pimple\Container;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-require_once realpath(__DIR__ . '/..').'/Application.php';
 
 /**
  * Manages the route middlewares.
@@ -21,9 +21,9 @@ class MiddlewareListener implements EventSubscriberInterface
     /**
      * Constructor.
      *
-     * @param Application $app An Application instance
+     * @param Container $app A Container instance
      */
-    public function __construct(Application $app)
+    public function __construct(Container $app)
     {
         $this->app = $app;
     }

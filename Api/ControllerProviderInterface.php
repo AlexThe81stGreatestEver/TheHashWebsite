@@ -2,7 +2,8 @@
 
 namespace Api;
 
-require_once realpath(__DIR__ . '/..') . '/Application.php';
+use Pimple\Container;
+
 require_once realpath(__DIR__ . '/..') . '/ControllerCollection.php';
 
 /**
@@ -15,9 +16,9 @@ interface ControllerProviderInterface
     /**
      * Returns routes to connect to the given application.
      *
-     * @param Application $app An Application instance
+     * @param Container $app A Container instance
      *
      * @return ControllerCollection A ControllerCollection instance
      */
-    public function connect(Application $app);
+    public function connect(Container $app);
 }

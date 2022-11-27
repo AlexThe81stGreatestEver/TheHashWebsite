@@ -96,11 +96,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
         $this->booted = true;
 
         foreach ($this->providers as $provider) {
-            if ($provider instanceof EventListenerProviderInterface) {
+            if ($provider instanceof \Api\EventListenerProviderInterface) {
                 $provider->subscribe($this, $this['dispatcher']);
             }
 
-            if ($provider instanceof BootableProviderInterface) {
+            if ($provider instanceof \Api\BootableProviderInterface) {
                 $provider->boot($this);
             }
         }

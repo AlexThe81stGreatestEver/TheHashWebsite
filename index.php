@@ -148,8 +148,6 @@ if($app['debug']) {
       'monolog.level' => 'debug',
       'monolog.bubble' => true
   ));
-  $msp->boot($app);
-  $msp->subscribe($app, $app['dispatcher']);
 }
 
 #Check users table in database-------------------------------------------------
@@ -542,7 +540,6 @@ $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'H
 # kennel home page
 $app->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
 
-$ssp->boot($app['controllers'], $app['controllers_factory']);
 new DatabaseUpdater($app['dbs']['mysql_write'], DB_NAME);
 
 $app->run();

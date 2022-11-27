@@ -17,7 +17,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Logger;
 use Monolog\Handler;
 use Monolog\ErrorHandler;
-require_once realpath(__DIR__ . '/..') . '/Application.php';
 require_once realpath(__DIR__ . '/..') . '/Api/BootableProviderInterface.php';
 require_once realpath(__DIR__ . '/..') . '/Api/EventListenerProviderInterface.php';
 use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
@@ -109,7 +108,7 @@ class MonologServiceProvider implements ServiceProviderInterface, \Api\BootableP
         };
     }
 
-    public function boot(\Application $app)
+    public function boot(Container $app)
     {
         if ($app['monolog.use_error_handler']) {
             ErrorHandler::register($app['monolog']);

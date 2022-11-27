@@ -66,9 +66,9 @@ class HttpKernelServiceProvider implements ServiceProviderInterface, \Api\EventL
     public function subscribe(Container $app, EventDispatcherInterface $dispatcher)
     {
         $dispatcher->addSubscriber(new ResponseListener($app['charset']));
-        $dispatcher->addSubscriber(new EventListener\MiddlewareListener($app));
-        $dispatcher->addSubscriber(new EventListener\ConverterListener($app['routes'], $app['callback_resolver']));
-        $dispatcher->addSubscriber(new EventListener\StringToResponseListener());
+        $dispatcher->addSubscriber(new \EventListener\MiddlewareListener($app));
+        $dispatcher->addSubscriber(new \EventListener\ConverterListener($app['routes'], $app['callback_resolver']));
+        $dispatcher->addSubscriber(new \EventListener\StringToResponseListener());
 
         if (class_exists(HttpHeaderSerializer::class)) {
             $dispatcher->addSubscriber(new AddLinkHeaderListener());

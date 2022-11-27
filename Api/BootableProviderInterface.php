@@ -2,7 +2,7 @@
 
 namespace Api;
 
-require_once realpath(__DIR__ . '/..') . '/Application.php';
+use Pimple\Container;
 
 /**
  * Interface for bootable service providers.
@@ -18,7 +18,7 @@ interface BootableProviderInterface
      * and should be used for "dynamic" configuration (whenever
      * a service must be requested).
      *
-     * @param Application $app
+     * @param Container $app
      */
-    public function boot(\Application $app);
+    public function boot(Container $app);
 }

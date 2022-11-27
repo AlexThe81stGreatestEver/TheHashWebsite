@@ -5,6 +5,7 @@ namespace Provider;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 require_once realpath(__DIR__ . '/..').'/ControllerCollection.php';
+require_once realpath(__DIR__ . '/..').'/Api/BootableProviderInterface.php';
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,7 +58,7 @@ use Symfony\Component\Security\Guard\Provider\GuardAuthenticationProvider;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class SecurityServiceProvider implements ServiceProviderInterface
+class SecurityServiceProvider implements ServiceProviderInterface, \Api\BootableProviderInterface
 {
     protected $fakeRoutes;
 
@@ -669,8 +670,11 @@ class SecurityServiceProvider implements ServiceProviderInterface
         $app['dispatcher']->addSubscriber($app['security.firewall']);
     }
 
-    public function boot(\ControllerCollection $controllers, \ControllerCollection $controllers_factory)
+    public function boot(Container $app)
     {
+        $controllers = $app['controllers'];
+	$controllers_factory = $app['controllers_factory'];
+
         foreach ($this->fakeRoutes as $route) {
             list($method, $pattern, $name) = $route;
             $controllers_factory->$method($pattern)->run(null)->bind($name);
