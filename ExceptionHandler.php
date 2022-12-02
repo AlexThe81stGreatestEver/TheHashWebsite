@@ -21,7 +21,7 @@ class ExceptionHandler implements EventSubscriberInterface
         $this->debug = $debug;
     }
 
-    public function onSilexError(GetResponseForExceptionEvent $event)
+    public function onError(GetResponseForExceptionEvent $event)
     {
         $handler = new DebugExceptionHandler($this->debug);
 
@@ -40,6 +40,6 @@ class ExceptionHandler implements EventSubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        return [KernelEvents::EXCEPTION => ['onSilexError', -255]];
+        return [KernelEvents::EXCEPTION => ['onError', -255]];
     }
 }
