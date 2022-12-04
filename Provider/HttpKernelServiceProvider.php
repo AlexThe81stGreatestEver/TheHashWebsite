@@ -5,11 +5,9 @@ namespace Provider;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 require_once realpath(__DIR__ . '/..').'/Api/EventListenerProviderInterface.php';
-require_once realpath(__DIR__ . '/..').'/AppArgumentValueResolver.php';
 require_once realpath(__DIR__ . '/..').'/CallbackResolver.php';
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory;
@@ -32,16 +30,9 @@ class HttpKernelServiceProvider implements ServiceProviderInterface, \Api\EventL
         $app['argument_metadata_factory'] = function ($app) {
             return new ArgumentMetadataFactory();
         };
-        $app['argument_value_resolvers'] = function ($app) {
-            return array_merge([new \AppArgumentValueResolver($app)], ArgumentResolver::getDefaultArgumentValueResolvers());
-        };
-
-        $app['argument_resolver'] = function ($app) {
-            return new ArgumentResolver($app['argument_metadata_factory'], $app['argument_value_resolvers']);
-        };
 
         $app['kernel'] = function ($app) {
-            return new HttpKernel($app['dispatcher'], $app['resolver'], $app['request_stack'], $app['argument_resolver']);
+            return new HttpKernel($app['dispatcher'], $app['resolver'], $app['request_stack'], null);
         };
 
         $app['request_stack'] = function () {

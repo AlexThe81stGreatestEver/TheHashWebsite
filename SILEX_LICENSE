@@ -5,7 +5,6 @@ the copyright notice that appears below.
 Api/BootableProviderInterface.php
 Api/ControllerProviderInterface.php
 Api/EventListenerProviderInterface.php
-AppArgumentValueResolver.php
 Application.php
 CallbackResolver.php
 Controller.php
