@@ -12,6 +12,8 @@ require_once 'HASH/Controller/AdminController.php';
 require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
+require_once 'Provider/RoutingServiceProvider.php';
+require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
@@ -49,10 +51,20 @@ $app['debug'] = defined('DEBUG') && DEBUG;
 
 if($app['debug']) {
   Debug::enable();
+
+  # Register the monolog logging service
+  $app->register(new Provider\MonologServiceProvider(), array(
+      'monolog.logfile' => __DIR__.'/development.log',
+      'monolog.level' => 'debug',
+      'monolog.bubble' => true
+  ));
 } else {
+  $app['logger'] = null;
   ErrorHandler::register();
 }
 
+$app->register(new Provider\HttpKernelServiceProvider());
+$app->register(new Provider\RoutingServiceProvider());
 $app->register(new Psr11ServiceProvider());
 
 $app->register(new Provider\ServiceControllerServiceProvider());
@@ -143,15 +155,6 @@ $app->register(new Provider\TwigServiceProvider(), array(
   'twig.options' => array(
     'cache' => $twigTemplateCompiledDirectory,
     'auto_reload' => true)));
-
-# Register the monolog logging service
-if($app['debug']) {
-  $app->register(new Provider\MonologServiceProvider(), array(
-      'monolog.logfile' => __DIR__.'/development.log',
-      'monolog.level' => 'debug',
-      'monolog.bubble' => true
-  ));
-}
 
 #Check users table in database-------------------------------------------------
 

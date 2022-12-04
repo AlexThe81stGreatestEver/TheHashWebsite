@@ -19,8 +19,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 require_once 'Api/BootableProviderInterface.php';
 require_once 'Api/EventListenerProviderInterface.php';
 require_once 'Api/ControllerProviderInterface.php';
-require_once 'Provider/RoutingServiceProvider.php';
-require_once 'Provider/HttpKernelServiceProvider.php';
 
 /**
  * The Silex framework class.
@@ -52,10 +50,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
         $this['request.https_port'] = 443;
         $this['debug'] = false;
         $this['charset'] = 'UTF-8';
-        $this['logger'] = null;
-
-        $this->register(new Provider\HttpKernelServiceProvider());
-        $this->register(new Provider\RoutingServiceProvider());
 
         foreach ($values as $key => $value) {
             $this[$key] = $value;
