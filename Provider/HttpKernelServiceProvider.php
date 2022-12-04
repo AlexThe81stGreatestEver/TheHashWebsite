@@ -7,7 +7,6 @@ use Pimple\ServiceProviderInterface;
 require_once realpath(__DIR__ . '/..').'/Api/EventListenerProviderInterface.php';
 require_once realpath(__DIR__ . '/..').'/AppArgumentValueResolver.php';
 require_once realpath(__DIR__ . '/..').'/CallbackResolver.php';
-require_once realpath(__DIR__ . '/..').'/EventListener/ConverterListener.php';
 require_once realpath(__DIR__ . '/..').'/EventListener/MiddlewareListener.php';
 require_once realpath(__DIR__ . '/..').'/EventListener/StringToResponseListener.php';
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -67,7 +66,6 @@ class HttpKernelServiceProvider implements ServiceProviderInterface, \Api\EventL
     {
         $dispatcher->addSubscriber(new ResponseListener($app['charset']));
         $dispatcher->addSubscriber(new \EventListener\MiddlewareListener($app));
-        $dispatcher->addSubscriber(new \EventListener\ConverterListener($app['routes'], $app['callback_resolver']));
         $dispatcher->addSubscriber(new \EventListener\StringToResponseListener());
 
         if (class_exists(HttpHeaderSerializer::class)) {
