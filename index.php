@@ -30,7 +30,8 @@ use Doctrine\DBAL\Schema\Table;
 
 use Pimple\ServiceProviderInterface;
 
-
+use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -46,6 +47,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 $app = new Application();
 $app['locale'] = 'en';
 $app['debug'] = defined('DEBUG') && DEBUG;
+
+if($app['debug']) {
+  Debug::enable();
+} else {
+  ErrorHandler::register();
+}
 
 $app->register(new Psr11ServiceProvider());
 

@@ -19,7 +19,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 require_once 'Api/BootableProviderInterface.php';
 require_once 'Api/EventListenerProviderInterface.php';
 require_once 'Api/ControllerProviderInterface.php';
-require_once 'Provider/ExceptionHandlerServiceProvider.php';
 require_once 'Provider/RoutingServiceProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 
@@ -57,7 +56,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
         $this->register(new Provider\HttpKernelServiceProvider());
         $this->register(new Provider\RoutingServiceProvider());
-        $this->register(new Provider\ExceptionHandlerServiceProvider());
 
         foreach ($values as $key => $value) {
             $this[$key] = $value;

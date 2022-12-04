@@ -15,10 +15,8 @@ EventListener/LogListener.php
 EventListener/MiddlewareListener.php
 EventListener/StringToResponseEventListener.php
 Exception/ControllerFrozenException.php
-ExceptionHandler.php
 Provider/CsrfServiceProvider.php
 Provider/DoctrineServiceProvider.php
-Provider/ExceptionHandlerServiceProvider.php
 Provider/FormServiceProvider.php
 Provider/HttpKernelServiceProvider.php
 Provider/MonologServiceProvider.php
