@@ -10,7 +10,6 @@ Application.php
 CallbackResolver.php
 Controller.php
 ControllerCollection.php
-EventListener/MiddlewareListener.php
 EventListener/StringToResponseEventListener.php
 Exception/ControllerFrozenException.php
 Provider/CsrfServiceProvider.php
