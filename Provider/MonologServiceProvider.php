@@ -22,7 +22,6 @@ require_once realpath(__DIR__ . '/..') . '/Api/EventListenerProviderInterface.ph
 use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
 use Symfony\Bridge\Monolog\Processor\DebugProcessor;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-require_once realpath(__DIR__ . '/..') . '/EventListener/LogListener.php';
 
 /**
  * Monolog Provider.
@@ -92,10 +91,6 @@ class MonologServiceProvider implements ServiceProviderInterface, \Api\BootableP
 
         $app['monolog.level'] = function () {
             return Logger::DEBUG;
-        };
-
-        $app['monolog.listener'] = function () use ($app) {
-            return new \EventListener\LogListener($app['logger'], $app['monolog.exception.logger_filter']);
         };
 
         $app['monolog.name'] = 'app';
