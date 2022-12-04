@@ -21,7 +21,6 @@ require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Provider/ServiceControllerServiceProvider.php';
-require_once 'Provider/ValidatorServiceProvider.php';
 require_once 'Provider/MonologServiceProvider.php';
 require_once 'Application.php';
 require_once 'Psr11ServiceProvider.php';
@@ -107,7 +106,6 @@ $app['security.access_rules'] = array(
 
 
 $app->register(new Provider\SecurityServiceProvider());
-$app->register(new Provider\ValidatorServiceProvider());
 #-------------------------------------------------------------------------------
 
 #Set your global assertions and stuff ------------------------------------------

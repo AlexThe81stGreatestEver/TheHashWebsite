@@ -26,10 +26,8 @@ Provider/ServiceControllerServiceProvider.php
 Provider/SessionServiceProvider.php
 Provider/TranslationServiceProvider.php
 Provider/TwigServiceProvider.php
-Provider/ValidatorServiceProvider.php
 Provider/Routing/LazyRequestMatcher.php
 Provider/Routing/RedirectableUrlMatcher.php
-Provider/Validator/ConstraintValidatorFactory.php
 Route.php
 ServiceControllerResolver.php
 
