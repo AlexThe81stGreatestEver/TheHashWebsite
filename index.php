@@ -121,27 +121,26 @@ $app->register(new Provider\SecurityServiceProvider());
 
 #Set your global assertions and stuff ------------------------------------------
 $app['controllers']
-  ->assert("hash_id", "\d+")
-  ->assert("hasher_id", "\d+")
-  ->assert("hasher_id2", "\d+")
-  ->assert("hare_id", "\d+")
-  ->assert("user_id", "\d+")
-  ->assert("hare_type", "\d+")
-  ->assert("hash_type", "\d+")
-  ->assert("event_tag_ky", "\d+")
-  ->assert("year_value", "\d+")
-  ->assert("day_count","\d+")
-  ->assert("month_count","\d+")
-  ->assert("min_hash_count","\d+")
-  ->assert("max_percentage","\d+")
-  ->assert("analversary_number","\d+")
-  ->assert("row_limit","\d+")
-  ->assert("kennel_ky","\d+")
-  ->assert("horizon","\d+")
-  ->assert("kennel_abbreviation","^[A-Za-z0-9]+$")
-  ->assert("name","^[a-z_]+$")
-  ->assert("ridiculous","^ridiculous\d+$")
-  ;
+  ->setRequirement("hash_id", "\d+")
+  ->setRequirement("hasher_id", "\d+")
+  ->setRequirement("hasher_id2", "\d+")
+  ->setRequirement("hare_id", "\d+")
+  ->setRequirement("user_id", "\d+")
+  ->setRequirement("hare_type", "\d+")
+  ->setRequirement("hash_type", "\d+")
+  ->setRequirement("event_tag_ky", "\d+")
+  ->setRequirement("year_value", "\d+")
+  ->setRequirement("day_count","\d+")
+  ->setRequirement("month_count","\d+")
+  ->setRequirement("min_hash_count","\d+")
+  ->setRequirement("max_percentage","\d+")
+  ->setRequirement("analversary_number","\d+")
+  ->setRequirement("row_limit","\d+")
+  ->setRequirement("kennel_ky","\d+")
+  ->setRequirement("horizon","\d+")
+  ->setRequirement("kennel_abbreviation","^[A-Za-z0-9]+$")
+  ->setRequirement("name","^[a-z_]+$")
+  ->setRequirement("ridiculous","^ridiculous\d+$");
 #-------------------------------------------------------------------------------
 
 $twigClassPath = __DIR__.'vendor/twig/twig/lib';

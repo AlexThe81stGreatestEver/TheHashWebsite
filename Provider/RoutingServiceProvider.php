@@ -5,8 +5,8 @@ namespace Provider;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 require_once realpath(__DIR__ . '/..').'/ControllerCollection.php';
-require_once realpath(__DIR__ . '/..').'/Route.php';
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\HttpKernel\EventListener\RouterListener;
@@ -18,7 +18,7 @@ class RoutingServiceProvider implements ServiceProviderInterface
 {
     public function register(Container $app)
     {
-        $app['route_class'] = 'Route';
+        $app['route_class'] = 'Symfony\Component\Routing\Route';
 
         $app['request_context'] = function ($app) {
             $context = new RequestContext();
@@ -30,7 +30,7 @@ class RoutingServiceProvider implements ServiceProviderInterface
         };
 
         $app['route_factory'] = $app->factory(function ($app) {
-            return new $app['route_class']();
+            return new $app['route_class']('/');
         });
 
         $app['routes_factory'] = $app->factory(function () {

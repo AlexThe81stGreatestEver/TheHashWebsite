@@ -677,7 +677,7 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
 
         foreach ($this->fakeRoutes as $route) {
             list($method, $pattern, $name) = $route;
-            $controllers_factory->$method($pattern)->run(null)->bind($name);
+            $controllers_factory->$method($pattern)->setDefault('_controller', null)->bind($name);
         }
         $controllers->mount('/', $controllers_factory);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\Routing\Route;
 require_once 'Exception/ControllerFrozenException.php';
 
 /**

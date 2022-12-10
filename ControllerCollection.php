@@ -2,6 +2,7 @@
 
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 require_once 'Controller.php';
 
 /**
@@ -100,7 +101,7 @@ class ControllerCollection
      */
     public function get($pattern, $to = null)
     {
-        return $this->match($pattern, $to)->method('GET');
+        return $this->match($pattern, $to)->setMethods('GET');
     }
 
     /**
@@ -113,59 +114,7 @@ class ControllerCollection
      */
     public function post($pattern, $to = null)
     {
-        return $this->match($pattern, $to)->method('POST');
-    }
-
-    /**
-     * Maps a PUT request to a callable.
-     *
-     * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
-     *
-     * @return Controller
-     */
-    public function put($pattern, $to = null)
-    {
-        return $this->match($pattern, $to)->method('PUT');
-    }
-
-    /**
-     * Maps a DELETE request to a callable.
-     *
-     * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
-     *
-     * @return Controller
-     */
-    public function delete($pattern, $to = null)
-    {
-        return $this->match($pattern, $to)->method('DELETE');
-    }
-
-    /**
-     * Maps an OPTIONS request to a callable.
-     *
-     * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
-     *
-     * @return Controller
-     */
-    public function options($pattern, $to = null)
-    {
-        return $this->match($pattern, $to)->method('OPTIONS');
-    }
-
-    /**
-     * Maps a PATCH request to a callable.
-     *
-     * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
-     *
-     * @return Controller
-     */
-    public function patch($pattern, $to = null)
-    {
-        return $this->match($pattern, $to)->method('PATCH');
+        return $this->match($pattern, $to)->setMethods('POST');
     }
 
     public function __call($method, $arguments)
