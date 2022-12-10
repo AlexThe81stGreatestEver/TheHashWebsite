@@ -71,7 +71,7 @@ $app->register(new Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
-$app->register(new Provider\TranslationServiceProvider(), array('translator.messages' => array()));
+$app->register(new Provider\TranslationServiceProvider());
 $app->register(new Provider\DoctrineServiceProvider());
 $app->register(new Provider\SessionServiceProvider());
 
