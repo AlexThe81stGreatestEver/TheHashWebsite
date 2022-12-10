@@ -201,7 +201,7 @@ class AdminController extends BaseController
             $updateSql = "UPDATE USERS SET PASSWORD = ? WHERE USERNAME = ?";
 
             #Run the update SQL
-            $this->container->get('dbs')['mysql_write']->executeUpdate($updateSql,array($encodedNewPassword,$userid));
+            $this->dbw->executeUpdate($updateSql,array($encodedNewPassword,$userid));
 
             #Audit this activity
             $actionType = "Password Change";
@@ -378,7 +378,7 @@ class AdminController extends BaseController
     $kennel_abbreviation = $eventDetails['KENNEL_ABBREVIATION'];
 
     $sql = "DELETE FROM HASHES_TABLE WHERE HASH_KY = ?";
-    $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($hash_id));
+    $this->dbw->executeUpdate($sql, array($hash_id));
 
     $actionType = "Event Deletion (Ajax)";
     $actionDescription = "Deleted event ($kennel_abbreviation # $kennel_event_number)";
@@ -965,14 +965,14 @@ class AdminController extends BaseController
 
     if($c == 0) {
       $sql = "DELETE FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($k, $kennelKy));
+      $this->dbw->executeUpdate($sql, array($k, $kennelKy));
     } else {
       $sql = "UPDATE LEGACY_HASHINGS SET LEGACY_HASHINGS_COUNT = ? WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      if($this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
+      if($this->dbw->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
         $sql = "SELECT 'exists' AS x FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
         if($this->fetchOne($sql, array($k, $kennelKy)) != 'exists') {
           $sql = "INSERT INTO LEGACY_HASHINGS(LEGACY_HASHINGS_COUNT, HASHER_KY, KENNEL_KY) VALUES(?,?,?)";
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array($c, $k, $kennelKy));
+          $this->dbw->executeUpdate($sql, array($c, $k, $kennelKy));
         }
       }
     }
@@ -1112,7 +1112,7 @@ class AdminController extends BaseController
       }
 
       try {
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql, array((int) $awardLevel, (int) $hasherKey, (int) $kennelKey));
+        $this->dbw->executeUpdate($sql, array((int) $awardLevel, (int) $hasherKey, (int) $kennelKey));
 
         $returnMessage = "Success!";
       } catch (\Exception $theException) {

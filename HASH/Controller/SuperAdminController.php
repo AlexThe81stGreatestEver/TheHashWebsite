@@ -231,7 +231,7 @@ class SuperAdminController extends BaseController {
             HARE_TYPE_MASK = ?
          WHERE KENNEL_ABBREVIATION = ?";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $theKennelName,
           $theKennelAbbreviation,
           $theKennelDescription,
@@ -250,7 +250,7 @@ class SuperAdminController extends BaseController {
             FROM KENNELS
            WHERE KENNEL_ABBREVIATION = ?)";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_abbreviation));
+        $this->dbw->executeUpdate($sql,array($kennel_abbreviation));
 
         $sql = "
           INSERT INTO AWARD_LEVELS(KENNEL_KY, AWARD_LEVEL)
@@ -259,7 +259,7 @@ class SuperAdminController extends BaseController {
         $kennelAwards = preg_split("/,/", $theAwardLevels);
 
         foreach($kennelAwards as $kennelAward) {
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_abbreviation, (int) $kennelAward));
+          $this->dbw->executeUpdate($sql,array($kennel_abbreviation, (int) $kennelAward));
         }
       }
 
@@ -350,7 +350,7 @@ class SuperAdminController extends BaseController {
             SITE_ADDRESS, IN_RECORD_KEEPING, HASH_TYPE_MASK, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?, ?, ?, ?)";
 
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+      $this->dbw->executeUpdate($sql,array(
         $theKennelName,
         $theKennelAbbreviation,
         $theKennelDescription,
@@ -366,7 +366,7 @@ class SuperAdminController extends BaseController {
       $kennelAwards = preg_split("/,/", $theAwardLevels);
 
       foreach($kennelAwards as $kennelAward) {
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theKennelAbbreviation, (int) $kennelAward));
+        $this->dbw->executeUpdate($sql,array($theKennelAbbreviation, (int) $kennelAward));
       }
 
       #Audit this activity
@@ -429,7 +429,7 @@ class SuperAdminController extends BaseController {
             CHART_COLOR = ?
          WHERE HARE_TYPE = ?";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $theHareTypeName,
           (int) $theSequence,
           $theChartColor,
@@ -498,7 +498,7 @@ class SuperAdminController extends BaseController {
         INSERT INTO HARE_TYPES(HARE_TYPE_NAME, SEQ, CHART_COLOR, HARE_TYPE)
          VALUES(?, ?, ?, ?)";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $theHareTypeName,
           (int) $theSequence,
           $theChartColor,
@@ -580,7 +580,7 @@ class SuperAdminController extends BaseController {
             HARE_TYPE_MASK = ?
          WHERE HASH_TYPE = ?";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $theHashTypeName,
           (int) $theSequence,
           $theHareTypeMask,
@@ -661,7 +661,7 @@ class SuperAdminController extends BaseController {
         INSERT INTO HASH_TYPES(HASH_TYPE, HASH_TYPE_NAME, SEQ, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?)";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $hash_type,
           $theHashTypeName,
           (int) $theSequence,
@@ -750,7 +750,7 @@ class SuperAdminController extends BaseController {
             roles = ?
          WHERE id = ?";
 
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+        $this->dbw->executeUpdate($sql,array(
           $theUsername,
           $roles,
           $user_id
@@ -763,7 +763,7 @@ class SuperAdminController extends BaseController {
               password = ?
            WHERE id = ?";
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+          $this->dbw->executeUpdate($sql,array(
             $encodedNewPassword,
             $user_id
           ));
@@ -822,7 +822,7 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NOT NULL";
 
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+      $this->dbw->executeUpdate($sql,array(
         $theValue,
         $name));
 
@@ -883,7 +883,7 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NULL";
 
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+      $this->dbw->executeUpdate($sql,array(
         $theValue,
         $ridiculous));
 
@@ -935,7 +935,7 @@ class SuperAdminController extends BaseController {
       for($i=0; $i<999; $i++) {
         try {
           $name = "ridiculous".$i;
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($name, $theValue));
+          $this->dbw->executeUpdate($sql,array($name, $theValue));
         } catch(\Exception $e) {
           continue;
         }
@@ -1013,7 +1013,7 @@ class SuperAdminController extends BaseController {
       $sql = "INSERT INTO USERS(username, roles, password)
         VALUES(?, ?, ?)";
 
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+      $this->dbw->executeUpdate($sql,array(
         $theUsername,
         $roles,
         $encodedPassword));
@@ -1039,7 +1039,7 @@ class SuperAdminController extends BaseController {
     if(substr($ridiculous, 0, strlen("ridiculous")) == "ridiculous") {
 
       $sql = "DELETE FROM SITE_CONFIG WHERE NAME = ?";
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($ridiculous));
+      $this->dbw->executeUpdate($sql,array($ridiculous));
 
       $actionType = "Site Config Deletion (Ajax)";
       $actionDescription = "Deleted site config key $ridiculous";
@@ -1063,7 +1063,7 @@ class SuperAdminController extends BaseController {
       $username = $this->fetchOne($sql, array($user_id));
 
       $sql = "DELETE FROM USERS WHERE id = ?";
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($user_id));
+      $this->dbw->executeUpdate($sql,array($user_id));
 
       $actionType = "User Deletion (Ajax)";
       $actionDescription = "Deleted user $username";
@@ -1085,7 +1085,7 @@ class SuperAdminController extends BaseController {
     $kennel = $this->fetchOne($sql, array($kennel_ky));
 
     $sql = "DELETE FROM KENNELS WHERE KENNEL_KY = ?";
-    $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($kennel_ky));
+    $this->dbw->executeUpdate($sql,array($kennel_ky));
 
     $actionType = "Kennel Deletion (Ajax)";
     $actionDescription = "Deleted kennel $kennel";
@@ -1110,7 +1110,7 @@ class SuperAdminController extends BaseController {
       $hash_type_name = $this->fetchOne($sql, array($hash_type));
 
       $sql = "DELETE FROM HASH_TYPES WHERE HASH_TYPE = ?";
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hash_type));
+      $this->dbw->executeUpdate($sql,array($hash_type));
 
       $actionType = "Hash Type Deletion (Ajax)";
       $actionDescription = "Deleted hash type $hash_type_name";
@@ -1136,7 +1136,7 @@ class SuperAdminController extends BaseController {
       $hare_type_name = $this->fetchOne($sql, array($hare_type));
 
       $sql = "DELETE FROM HARE_TYPES WHERE HARE_TYPE = ?";
-      $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hare_type));
+      $this->dbw->executeUpdate($sql,array($hare_type));
 
       $actionType = "Hare Type Deletion (Ajax)";
       $actionDescription = "Deleted hare type $hare_type_name";

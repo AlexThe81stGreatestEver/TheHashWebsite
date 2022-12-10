@@ -3,7 +3,6 @@
 // web/index.php
 require_once 'vendor/autoload.php';
 require_once 'config/ProdConfig.php';
-require_once 'HASH/Controller/DatabaseUpdater.php';
 require_once 'HASH/Controller/HashController.php';
 require_once 'HASH/Controller/TagController.php';
 require_once 'HASH/Controller/HashEventController.php';
@@ -86,7 +85,7 @@ $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Co
 
 # Begin: Set the security firewalls --------------------------------------------
 
-$app['UserProvider'] = function() use($app) { return new UserProvider($app['db']); };
+$app['UserProvider'] = function() use($app) { return new UserProvider($app['db']()); };
 
 $app['security.firewalls'] = array(
     'login' => array(
@@ -158,7 +157,7 @@ $app->register(new Provider\TwigServiceProvider(), array(
 
 #Check users table in database-------------------------------------------------
 
-$schema = $app['dbs']['mysql_write']->getSchemaManager();
+$schema = $app['dbs']->getParameter('mysql_write')()->getSchemaManager();
 
 if (!$schema->tablesExist('USERS')) {
 
@@ -185,7 +184,7 @@ if (!$schema->tablesExist('USERS')) {
         $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
 
         // insert the new user record
-        $app['dbs']['mysql_write']->insert('USERS', array(
+        $app['dbs']->getParameter('mysql_write')()->insert('USERS', array(
             'username' => $user->getUsername(),
             'password' => $encodedNewPassword,
             'roles' => implode(',',$user->getRoles())));
@@ -545,7 +544,5 @@ $app->post('/{kennel_abbreviation}/hashers/retrieve',                         'H
 
 # kennel home page
 $app->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
-
-new DatabaseUpdater($app['dbs']['mysql_write'], DB_NAME);
 
 $app->run();

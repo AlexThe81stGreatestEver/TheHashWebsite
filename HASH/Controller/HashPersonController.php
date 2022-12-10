@@ -110,7 +110,7 @@ class HashPersonController extends BaseController
 
           try{
             #Execute the query
-            $this->container->get('dbs')['mysql_write']->executeUpdate($deletionSQL,array((int) $hasherKey));
+            $this->dbw->executeUpdate($deletionSQL,array((int) $hasherKey));
 
             #Audit the action
             $hasherNickname = $hasherValue['HASHER_ABBREVIATION'];
@@ -205,7 +205,7 @@ class HashPersonController extends BaseController
             SET
               HASHER_NAME= ?, HASHER_ABBREVIATION= ?, LAST_NAME= ?, FIRST_NAME=?, HOME_KENNEL=?, DECEASED=?, BANNED=?
             WHERE HASHER_KY=?";
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+          $this->dbw->executeUpdate($sql,array(
             $tempHasherName,
             $tempHasherAbbreviation,
             $tempLastName,
@@ -288,7 +288,7 @@ class HashPersonController extends BaseController
             ) VALUES (?, ?, ?, ?, ?, ?)";
 
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+          $this->dbw->executeUpdate($sql,array(
             $tempHasherName,
             $tempHasherAbbreviation,
             $tempLastName,

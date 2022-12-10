@@ -115,7 +115,7 @@ private function addNewEventTagAfterDbChecking(Request $request, string $theTagT
         }
 
         #Execute the sql insert statement
-        $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theTagText,$user));
+        $this->dbw->executeUpdate($sql,array($theTagText,$user));
 
         #Audit the action
         $tempActionType = "Created Event Tag";
@@ -251,7 +251,7 @@ public function addNewEventTag(Request $request){
         $user = $this->getUserName();
 
         #Execute the sql insert statement
-        $this->container->get('dbs')['mysql_write']->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,(string)$user));
+        $this->dbw->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,(string)$user));
 
         # Declare the SQL used to retrieve this information
         $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
@@ -306,7 +306,7 @@ public function addNewEventTag(Request $request){
               $sql = "DELETE FROM HASHES_TAG_JUNCTION WHERE HASHES_KY= ? AND HASHES_TAGS_KY = ?;";
 
               #Execute the sql insert statement
-              $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($theEventKey,$tagKey));
+              $this->dbw->executeUpdate($sql,array($theEventKey,$tagKey));
 
               #Get the user name
               #$user = $this->getUserName();

@@ -2,16 +2,17 @@
 
 namespace Provider;
 
-use Pimple\Container;
+use Pimple\Container as PimpleContainer;
 use Pimple\ServiceProviderInterface;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\Common\EventManager;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
+use Symfony\Component\DependencyInjection\Container;
 
 class DoctrineServiceProvider implements ServiceProviderInterface {
 
-    public function register(Container $app) {
+    public function register(PimpleContainer $app) {
 
         $app['dbs.options'] = array(
             'mysql_read' => array(
@@ -33,59 +34,60 @@ class DoctrineServiceProvider implements ServiceProviderInterface {
 
         $app['dbs.default'] = "mysql_read";
 
-        $app['dbs'] = function ($app) {
+        $app['dbs'] = function() use ($app) {
             $dbs = new Container();
             foreach ($app['dbs.options'] as $name => $options) {
-                $config = $app['dbs.config'][$name];
-                $manager = $app['dbs.event_manager'][$name];
+                $config = $app['dbs.config']->getParameter($name);
+                $manager = $app['dbs.event_manager']->getParameter($name);
 
-                $dbs[$name] = function ($dbs) use ($options, $config, $manager) {
+                $dbs->setParameter($name, function () use ($options, $config, $manager) {
                     return DriverManager::getConnection($options, $config, $manager);
-                };
+                });
             }
 
             return $dbs;
         };
 
-        $app['dbs.config'] = function ($app) {
+        $app['dbs.config'] = function() use ($app) {
             $configs = new Container();
             $addLogger = isset($app['logger']) && null !== $app['logger'] && class_exists('Symfony\Bridge\Doctrine\Logger\DbalLogger');
             foreach ($app['dbs.options'] as $name => $options) {
-                $configs[$name] = new Configuration();
+		$config = new Configuration();
                 if ($addLogger) {
-                    $configs[$name]->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
+                    $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
                 }
+                $configs->setParameter($name, $config);
             }
 
             return $configs;
         };
 
-        $app['dbs.event_manager'] = function ($app) {
+        $app['dbs.event_manager'] = function() use ($app) {
             $managers = new Container();
             foreach ($app['dbs.options'] as $name => $options) {
-                $managers[$name] = new EventManager();
+                $managers->setParameter($name, new EventManager());
             }
 
             return $managers;
         };
 
         // shortcuts for the "first" DB
-        $app['db'] = function ($app) {
+        $app['db'] = function() use ($app) {
             $dbs = $app['dbs'];
 
-            return $dbs[$app['dbs.default']];
+            return $dbs->getParameter($app['dbs.default']);
         };
 
-        $app['db.config'] = function ($app) {
+        $app['db.config'] = function() use ($app) {
             $dbs = $app['dbs.config'];
 
-            return $dbs[$app['dbs.default']];
+            return $dbs->getParameter($app['dbs.default']);
         };
 
-        $app['db.event_manager'] = function ($app) {
+        $app['db.event_manager'] = function() use ($app) {
             $dbs = $app['dbs.event_manager'];
 
-            return $dbs[$app['dbs.default']];
+            return $dbs->getParameter($app['dbs.default']);
         };
     }
 }

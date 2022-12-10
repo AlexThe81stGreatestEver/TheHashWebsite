@@ -235,7 +235,7 @@ class HashEventController extends BaseController {
             LNG
           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+          $this->dbw->executeUpdate($sql,array(
             $kennelKy,
             $theHashEventNumber,
             $theEventDateAndTime,
@@ -259,21 +259,21 @@ class HashEventController extends BaseController {
         if($theEventToCopy != null) {
 
           // Get the hash key for the event that was just created
-          $hashKy = $this->container->get('dbs')['mysql_write']->lastInsertId();
+          $hashKy = $this->dbw->lastInsertId();
 
           $sql = "INSERT INTO HASHINGS(HASH_KY, HASHER_KY)
                   SELECT ?, HASHER_KY
                     FROM HASHINGS
                    WHERE HASH_KY = ?";
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
+          $this->dbw->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
 
           $sql = "INSERT INTO HARINGS(HARINGS_HASH_KY, HARINGS_HASHER_KY, HARE_TYPE)
                   SELECT ?, HARINGS_HASHER_KY, HARE_TYPE
                     FROM HARINGS
                    WHERE HARINGS_HASH_KY = ?";
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
+          $this->dbw->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
 
           $auditAddl = " from event key ".$theEventToCopy;
         } else {
@@ -427,7 +427,7 @@ class HashEventController extends BaseController {
               LNG = ?
            WHERE HASH_KY = ?";
 
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+          $this->dbw->executeUpdate($sql,array(
             $theHashEventNumber,
             $theEventDateAndTime,
             $theLocationDescription,
@@ -556,7 +556,7 @@ class HashEventController extends BaseController {
           $sql = "INSERT INTO HASHINGS (HASHER_KY, HASH_KY) VALUES (?, ?);";
 
           #Execute the sql insert statement
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->dbw->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Audit the activity
 
@@ -630,7 +630,7 @@ class HashEventController extends BaseController {
           $sql = "INSERT INTO HARINGS (HARINGS_HASHER_KY, HARINGS_HASH_KY, HARE_TYPE) VALUES (?, ?, ?);";
 
           #Execute the sql insert statement
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey,$hareType));
+          $this->dbw->executeUpdate($sql,array($hasherKey,$hashKey,$hareType));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -698,7 +698,7 @@ class HashEventController extends BaseController {
           $sql = "DELETE FROM HASHINGS WHERE HASHER_KY = ? AND HASH_KY = ?;";
 
           #Execute the sql insert statement
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->dbw->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information
@@ -757,7 +757,7 @@ class HashEventController extends BaseController {
           $sql = "DELETE FROM HARINGS WHERE HARINGS_HASHER_KY = ? AND HARINGS_HASH_KY = ?;";
 
           #Execute the sql insert statement
-          $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array($hasherKey,$hashKey));
+          $this->dbw->executeUpdate($sql,array($hasherKey,$hashKey));
 
           #Add the audit statement
           # Declare the SQL used to retrieve this information

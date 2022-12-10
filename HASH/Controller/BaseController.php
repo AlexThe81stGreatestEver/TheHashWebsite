@@ -5,13 +5,20 @@ namespace HASH\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Psr\Container\ContainerInterface;
+require_once "config/ProdConfig.php";
+require_once 'HASH/Controller/DatabaseUpdater.php';
 
 class BaseController {
 
   protected ContainerInterface $container;
+  protected $db;
+  protected $dbw;
 
   protected function __construct(ContainerInterface $container) {
     $this->container = $container;
+    $this->db = $this->container->get('db')();
+    $this->dbw = $this->container->get('dbs')->getParameter('mysql_write')();
+    new \DatabaseUpdater($this->dbw, DB_NAME);
   }
 
   // fetch all - ignore query errors
@@ -29,9 +36,9 @@ class BaseController {
 
   protected function fetchAll(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->container->get('db')->fetchAllAssociative($sql);
+      $result = $this->db->fetchAllAssociative($sql);
     } else {
-      $result = $this->container->get('db')->fetchAllAssociative($sql, $args);
+      $result = $this->db->fetchAllAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -41,9 +48,9 @@ class BaseController {
 
   protected function fetchOne(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->container->get('db')->fetchOne($sql);
+      $result = $this->db->fetchOne($sql);
     } else {
-      $result = $this->container->get('db')->fetchOne($sql, $args);
+      $result = $this->db->fetchOne($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -53,9 +60,9 @@ class BaseController {
 
   protected function fetchAssoc(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->container->get('db')->fetchAssociative($sql);
+      $result = $this->db->fetchAssociative($sql);
     } else {
-      $result = $this->container->get('db')->fetchAssociative($sql, $args);
+      $result = $this->db->fetchAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -65,7 +72,7 @@ class BaseController {
 
   private function show_warnings(string $sql) {
     if(SHOW_WARNINGS) {
-      $warnings = $this->container->get('db')->fetchAllAssociative("SHOW WARNINGS");
+      $warnings = $this->db->fetchAllAssociative("SHOW WARNINGS");
       foreach($warnings as $warning) {
         print("WARNING:");
         foreach($warning as $message) {
@@ -604,7 +611,7 @@ class BaseController {
       ) VALUES (?, ?, ?, ?, ?)";
 
     #Execute the insert statement
-    $this->container->get('dbs')['mysql_write']->executeUpdate($sql,array(
+    $this->dbw->executeUpdate($sql,array(
       $user,
       $nowDateTime,
       $actionType,
