@@ -3,7 +3,6 @@ The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
 Api/BootableProviderInterface.php
-Api/ControllerProviderInterface.php
 Api/EventListenerProviderInterface.php
 Application.php
 CallbackResolver.php

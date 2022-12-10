@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 require_once 'Api/BootableProviderInterface.php';
 require_once 'Api/EventListenerProviderInterface.php';
-require_once 'Api/ControllerProviderInterface.php';
 
 /**
  * The Silex framework class.
@@ -419,7 +418,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Mounts controllers under the given route prefix.
      *
      * @param string                                                    $prefix      The route prefix
-     * @param ControllerCollection|callable|ControllerProviderInterface $controllers A ControllerCollection, a callable, or a ControllerProviderInterface instance
+     * @param ControllerCollection|callable $controllers A ControllerCollection, or a callable 
      *
      * @return Application
      *
@@ -427,20 +426,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      */
     public function mount($prefix, $controllers)
     {
-        if ($controllers instanceof ControllerProviderInterface) {
-            $connectedControllers = $controllers->connect($this);
-
-            if (!$connectedControllers instanceof ControllerCollection) {
-                throw new \LogicException(sprintf('The method "%s::connect" must return a "ControllerCollection" instance. Got: "%s"', get_class($controllers), is_object($connectedControllers) ? get_class($connectedControllers) : gettype($connectedControllers)));
-            }
-
-            $controllers = $connectedControllers;
-        } elseif (!$controllers instanceof ControllerCollection && !is_callable($controllers)) {
-            throw new \LogicException('The "mount" method takes either a "ControllerCollection" instance, "ControllerProviderInterface" instance, or a callable.');
-        }
-
         $this['controllers']->mount($prefix, $controllers);
-
         return $this;
     }
 
