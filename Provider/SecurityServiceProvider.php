@@ -260,12 +260,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
 
                     $listeners[] = 'security.access_listener';
 
-                    if (isset($firewall['switch_user'])) {
-                        $app['security.switch_user.'.$name] = $app['security.authentication_listener.switch_user._proto']($name, $firewall['switch_user']);
-
-                        $listeners[] = 'security.switch_user.'.$name;
-                    }
-
                     if (!isset($app['security.exception_listener.'.$name])) {
                         if (null === $entryPoint) {
                             $app[$entryPoint = 'security.entry_point.'.$name.'.form'] = $app['security.entry_point.form._proto']($name, []);
@@ -511,16 +505,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
             };
         });
 
-        $app['security.authentication_listener.anonymous._proto'] = $app->protect(function ($providerKey, $options) use ($app) {
-            return function () use ($app, $providerKey, $options) {
-                return new AnonymousAuthenticationListener(
-                    $app['security.token_storage'],
-                    $providerKey,
-                    $app['logger']
-                );
-            };
-        });
-
         $app['security.authentication.logout_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
             return function () use ($name, $options, $app) {
                 return new DefaultLogoutSuccessHandler(
@@ -556,22 +540,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                 }
 
                 return $listener;
-            };
-        });
-
-        $app['security.authentication_listener.switch_user._proto'] = $app->protect(function ($name, $options) use ($app, $that) {
-            return function () use ($app, $name, $options, $that) {
-                return new SwitchUserListener(
-                    $app['security.token_storage'],
-                    $app['security.user_provider.'.$name],
-                    $app['security.user_checker'],
-                    $name,
-                    $app['security.access_manager'],
-                    $app['logger'],
-                    isset($options['parameter']) ? $options['parameter'] : '_switch_user',
-                    isset($options['role']) ? $options['role'] : 'ROLE_ALLOWED_TO_SWITCH',
-                    $app['dispatcher']
-                );
             };
         });
 
@@ -632,12 +600,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                     $name,
                     $app['security.user_checker']
                 );
-            };
-        });
-
-        $app['security.authentication_provider.anonymous._proto'] = $app->protect(function ($name, $options) use ($app) {
-            return function () use ($app, $name) {
-                return new AnonymousAuthenticationProvider($name);
             };
         });
 
