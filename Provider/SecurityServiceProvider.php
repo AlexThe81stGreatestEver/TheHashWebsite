@@ -72,7 +72,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         $app['security.role_hierarchy'] = [];
         $app['security.access_rules'] = [];
         $app['security.hide_user_not_found'] = true;
-        $app['security.encoder.bcrypt.cost'] = 13;
 
         $app['security.authorization_checker'] = function ($app) {
             return new AuthorizationChecker($app['security.token_storage'], $app['security.authentication_manager'], $app['security.access_manager']);
@@ -111,20 +110,11 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         // to be backwards compatible, this method was adjusted to do the
         // same thing silex 1.3 did.  long term thing about how to upgrade.
         $app['security.default_encoder'] = function ($app) {
-            //return $app['security.encoder.bcrypt'];
             return $app['security.encoder.digest'];
         };
 
         $app['security.encoder.digest'] = function ($app) {
             return new MessageDigestPasswordEncoder();
-        };
-
-        $app['security.encoder.bcrypt'] = function ($app) {
-            return new BCryptPasswordEncoder($app['security.encoder.bcrypt.cost']);
-        };
-
-        $app['security.encoder.pbkdf2'] = function ($app) {
-            return new Pbkdf2PasswordEncoder();
         };
 
         $app['security.user_checker'] = function ($app) {
@@ -166,14 +156,10 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         };
 
         // generate the build-in authentication factories
-        foreach (['logout', 'pre_auth', 'guard', 'form', 'http', 'remember_me', 'anonymous'] as $type) {
+        foreach (['logout', 'form' ] as $type) {
             $entryPoint = null;
-            if ('http' === $type) {
-                $entryPoint = 'http';
-            } elseif ('form' === $type) {
+            if ('form' === $type) {
                 $entryPoint = 'form';
-            } elseif ('guard' === $type) {
-                $entryPoint = 'guard';
             }
 
             $app['security.authentication_listener.factory.'.$type] = $app->protect(function ($name, $options) use ($type, $app, $entryPoint) {
@@ -186,11 +172,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                 }
 
                 $provider = 'dao';
-                if ('anonymous' === $type) {
-                    $provider = 'anonymous';
-                } elseif ('guard' === $type) {
-                    $provider = 'guard';
-                }
                 if (!isset($app['security.authentication_provider.'.$name.'.'.$provider])) {
                     $app['security.authentication_provider.'.$name.'.'.$provider] = $app['security.authentication_provider.'.$provider.'._proto']($name, $options);
                 }
@@ -205,7 +186,7 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         }
 
         $app['security.firewall_map'] = function ($app) {
-            $positions = ['logout', 'pre_auth', 'guard', 'form', 'http', 'remember_me', 'anonymous'];
+            $positions = ['logout', 'form' ];
             $providers = [];
             $configs = [];
             foreach ($app['security.firewalls'] as $name => $firewall) {
@@ -245,9 +226,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                     }
 
                     foreach ($firewall as $type => $options) {
-                        if ('switch_user' === $type) {
-                            continue;
-                        }
 
                         // normalize options
                         if (!is_array($options)) {
@@ -386,7 +364,7 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         };
 
         $app['security.http_utils'] = function ($app) {
-            return new HttpUtils($app['url_generator'], $app['request_matcher']);
+            return new HttpUtils();
         };
 
         $app['security.last_error'] = $app->protect(function (Request $request) {
