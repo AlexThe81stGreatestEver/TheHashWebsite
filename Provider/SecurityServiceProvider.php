@@ -117,8 +117,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                 $app['security.validator.user_password_validator'] = function ($app) {
                     return new UserPasswordValidator($app['security.token_storage'], $app['security.encoder_factory']);
                 };
-
-                $app['validator.validator_service_ids'] = array_merge($app['validator.validator_service_ids'], ['security.validator.user_password' => 'security.validator.user_password_validator']);
             }
 
             return new Firewall($app['security.firewall_map'], $app['dispatcher']);
