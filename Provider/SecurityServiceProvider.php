@@ -22,7 +22,6 @@ use Symfony\Component\Security\Http\Authentication\DefaultAuthenticationFailureH
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\Authorization\Voter\RoleHierarchyVoter;
-use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
 use Symfony\Component\Security\Core\Validator\Constraints\UserPasswordValidator;
@@ -110,7 +109,6 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         $app['security.voters'] = function ($app) {
             return [
                 new RoleHierarchyVoter(new RoleHierarchy($app['security.role_hierarchy'])),
-                new AuthenticatedVoter($app['security.trust_resolver']),
             ];
         };
 
