@@ -14,13 +14,9 @@ use Symfony\Component\Security\Core\User\UserChecker;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Security\Core\Encoder\MessageDigestPasswordEncoder;
-use Symfony\Component\Security\Core\Encoder\BCryptPasswordEncoder;
-use Symfony\Component\Security\Core\Encoder\Pbkdf2PasswordEncoder;
 use Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider;
-use Symfony\Component\Security\Core\Authentication\Provider\AnonymousAuthenticationProvider;
 use Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager;
 use Symfony\Component\Security\Core\Authentication\AuthenticationTrustResolver;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Authentication\DefaultAuthenticationSuccessHandler;
 use Symfony\Component\Security\Http\Authentication\DefaultAuthenticationFailureHandler;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
@@ -36,7 +32,6 @@ use Symfony\Component\Security\Http\Firewall\AbstractAuthenticationListener;
 use Symfony\Component\Security\Http\Firewall\AccessListener;
 use Symfony\Component\Security\Http\Firewall\BasicAuthenticationListener;
 use Symfony\Component\Security\Http\Firewall\LogoutListener;
-use Symfony\Component\Security\Http\Firewall\SwitchUserListener;
 use Symfony\Component\Security\Http\Firewall\AnonymousAuthenticationListener;
 use Symfony\Component\Security\Http\Firewall\ContextListener;
 use Symfony\Component\Security\Http\Firewall\ExceptionListener;
@@ -49,9 +44,6 @@ use Symfony\Component\Security\Http\Logout\SessionLogoutHandler;
 use Symfony\Component\Security\Http\Logout\DefaultLogoutSuccessHandler;
 use Symfony\Component\Security\Http\AccessMap;
 use Symfony\Component\Security\Http\HttpUtils;
-use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
-use Symfony\Component\Security\Guard\Firewall\GuardAuthenticationListener;
-use Symfony\Component\Security\Guard\Provider\GuardAuthenticationProvider;
 
 /**
  * Symfony Security component Provider.
@@ -103,18 +95,8 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
         // by default, all users use the digest encoder
         $app['security.encoder_factory'] = function ($app) {
             return new EncoderFactory([
-                'Symfony\Component\Security\Core\User\UserInterface' => $app['security.default_encoder'],
+                'Symfony\Component\Security\Core\User\UserInterface' => new MessageDigestPasswordEncoder(),
             ]);
-        };
-
-        // to be backwards compatible, this method was adjusted to do the
-        // same thing silex 1.3 did.  long term thing about how to upgrade.
-        $app['security.default_encoder'] = function ($app) {
-            return $app['security.encoder.digest'];
-        };
-
-        $app['security.encoder.digest'] = function ($app) {
-            return new MessageDigestPasswordEncoder();
         };
 
         $app['security.user_checker'] = function ($app) {
@@ -299,7 +281,7 @@ class SecurityServiceProvider implements ServiceProviderInterface, \Api\Bootable
                         $listener = $app[$listenerId];
 
                         if (isset($app['security.remember_me.service.'.$name])) {
-                            if ($listener instanceof AbstractAuthenticationListener || $listener instanceof GuardAuthenticationListener) {
+                            if ($listener instanceof AbstractAuthenticationListener) {
                                 $listener->setRememberMeServices($app['security.remember_me.service.'.$name]);
                             }
                             if ($listener instanceof LogoutListener) {
