@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/RoutingServiceProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
-require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
@@ -26,6 +25,11 @@ use Doctrine\DBAL\Schema\Table;
 
 use Pimple\ServiceProviderInterface;
 
+use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\DriverManager;
+use Symfony\Bridge\Doctrine\Logger\DbalLogger;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -86,7 +90,7 @@ $app['csrf.token_manager'] = function ($app) {
 
 $app['csrf.token_storage'] = function ($app) {
     if (isset($app['session'])) {
-	return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
+        return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
     }
 
     return new NativeSessionTokenStorage($app['csrf.session_namespace']);
@@ -114,25 +118,22 @@ $app['form.type.guessers'] = function ($app) {
 
 $app['form.extension.csrf'] = function ($app) {
     if (isset($app['translator'])) {
-	$translationDomain = isset($app['validator.translation_domain']) ? $app['validator.translation_domain'] : null;
-
-	return new CsrfExtension($app['csrf.token_manager'], $app['translator'], $translationDomain);
+        $translationDomain = isset($app['validator.translation_domain']) ? $app['validator.translation_domain'] : null;
+        return new CsrfExtension($app['csrf.token_manager'], $app['translator'], $translationDomain);
     }
 
     return new CsrfExtension($app['csrf.token_manager']);
 };
 
 $app['form.extensions'] = function ($app) {
-    $extensions = [
-	new HttpFoundationExtension(),
-    ];
+    $extensions = [ new HttpFoundationExtension() ];
 
     if (isset($app['csrf.token_manager'])) {
-	$extensions[] = $app['form.extension.csrf'];
+        $extensions[] = $app['form.extension.csrf'];
     }
 
     if (isset($app['validator'])) {
-	$extensions[] = new FormValidatorExtension($app['validator']);
+        $extensions[] = new FormValidatorExtension($app['validator']);
     }
 
     return $extensions;
@@ -159,7 +160,77 @@ $app['translator.message_selector'] = function () {
     return new MessageFormatter();
 };
 
-$app->register(new Provider\DoctrineServiceProvider());
+$app['dbs.options'] = array(
+    'mysql_read' => array(
+      'driver'   => DB_DRIVER,
+      'dbname'   => DB_NAME,
+      'host'     => DB_HOST,
+      'port'     => DB_PORT,
+      'user'     => DB_READ_ONLY_USER,
+      'password' => DB_READ_ONLY_PASSWORD,
+      'charset'  => "utf8"),
+    'mysql_write' => array(
+      'driver'    => DB_DRIVER,
+      'dbname'    => DB_NAME,
+      'host'      => DB_HOST,
+      'port'      => DB_PORT,
+      'user'      => DB_USER,
+      'password'  => DB_PASSWORD,
+      'charset'   => "utf8"));
+
+$app['dbs.default'] = "mysql_read";
+
+$app['dbs'] = function() use ($app) {
+    $dbs = new Container();
+    foreach ($app['dbs.options'] as $name => $options) {
+        $config = $app['dbs.config']->getParameter($name);
+        $manager = $app['dbs.event_manager']->getParameter($name);
+        $dbs->setParameter($name, function () use ($options, $config, $manager) {
+            return DriverManager::getConnection($options, $config, $manager);
+        });
+    }
+
+    return $dbs;
+};
+
+$app['dbs.config'] = function() use ($app) {
+    $configs = new Container();
+    $addLogger = isset($app['logger']) && null !== $app['logger'] && class_exists('Symfony\Bridge\Doctrine\Logger\DbalLogger');
+    foreach ($app['dbs.options'] as $name => $options) {
+        $config = new Configuration();
+        if ($addLogger) {
+            $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
+        }
+        $configs->setParameter($name, $config);
+    }
+    return $configs;
+};
+
+$app['dbs.event_manager'] = function() use ($app) {
+    $managers = new Container();
+    foreach ($app['dbs.options'] as $name => $options) {
+        $managers->setParameter($name, new EventManager());
+    }
+
+    return $managers;
+};
+
+// shortcuts for the "first" DB
+$app['db'] = function() use ($app) {
+    $dbs = $app['dbs'];
+    return $dbs->getParameter($app['dbs.default']);
+};
+
+$app['db.config'] = function() use ($app) {
+    $dbs = $app['dbs.config'];
+    return $dbs->getParameter($app['dbs.default']);
+};
+
+$app['db.event_manager'] = function() use ($app) {
+    $dbs = $app['dbs.event_manager'];
+    return $dbs->getParameter($app['dbs.default']);
+};
+
 $app->register(new Provider\SessionServiceProvider());
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
