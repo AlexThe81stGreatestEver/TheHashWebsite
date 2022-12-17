@@ -16,7 +16,6 @@ require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
-require_once 'Provider/TranslationServiceProvider.php';
 require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
@@ -43,6 +42,9 @@ use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Translation\Formatter\MessageFormatter;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Component\Translation\Translator;
 
 $app = new Application();
 $app['locale'] = 'en';
@@ -71,7 +73,17 @@ $app->register(new Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
-$app->register(new Provider\TranslationServiceProvider());
+
+
+$app['translator'] = function ($app) {
+    $translator = new Translator($app['locale'], $app['translator.message_selector'], null, $app['debug']);
+    $translator->addLoader('array', new ArrayLoader());
+};
+
+$app['translator.message_selector'] = function () {
+    return new MessageFormatter();
+};
+
 $app->register(new Provider\DoctrineServiceProvider());
 $app->register(new Provider\SessionServiceProvider());
 

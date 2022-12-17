@@ -18,7 +18,6 @@ Provider/RoutingServiceProvider.php
 Provider/SecurityServiceProvider.php
 Provider/ServiceControllerServiceProvider.php
 Provider/SessionServiceProvider.php
-Provider/TranslationServiceProvider.php
 Provider/TwigServiceProvider.php
 Provider/Routing/LazyRequestMatcher.php
 Provider/Routing/RedirectableUrlMatcher.php
