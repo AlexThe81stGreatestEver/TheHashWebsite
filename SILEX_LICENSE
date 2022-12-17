@@ -10,7 +10,6 @@ Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
 Provider/DoctrineServiceProvider.php
-Provider/FormServiceProvider.php
 Provider/HttpKernelServiceProvider.php
 Provider/MonologServiceProvider.php
 Provider/RoutingServiceProvider.php
