@@ -16,7 +16,6 @@ Provider/HttpKernelServiceProvider.php
 Provider/MonologServiceProvider.php
 Provider/RoutingServiceProvider.php
 Provider/SecurityServiceProvider.php
-Provider/ServiceControllerServiceProvider.php
 Provider/SessionServiceProvider.php
 Provider/TwigServiceProvider.php
 Provider/Routing/LazyRequestMatcher.php

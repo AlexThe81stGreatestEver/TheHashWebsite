@@ -20,7 +20,6 @@ require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
-require_once 'Provider/ServiceControllerServiceProvider.php';
 require_once 'Provider/MonologServiceProvider.php';
 require_once 'Application.php';
 require_once 'Psr11ServiceProvider.php';
@@ -34,6 +33,7 @@ use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -68,7 +68,9 @@ $app->register(new Provider\HttpKernelServiceProvider());
 $app->register(new Provider\RoutingServiceProvider());
 $app->register(new Psr11ServiceProvider());
 
-$app->register(new Provider\ServiceControllerServiceProvider());
+$app->extend('resolver', function ($resolver, $app) {
+    return new ContainerControllerResolver($app['service_container'], $app['logger']);
+});
 
 $app->register(new Provider\CsrfServiceProvider());
 $app->register(new Provider\EventListenerProvider());
