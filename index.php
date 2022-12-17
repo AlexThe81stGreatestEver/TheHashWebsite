@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/RoutingServiceProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
-require_once 'Provider/SessionServiceProvider.php';
 require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Provider/MonologServiceProvider.php';
@@ -44,7 +43,12 @@ use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
+use Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
+use Symfony\Component\HttpKernel\EventListener\SessionListener;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -231,7 +235,33 @@ $app['db.event_manager'] = function() use ($app) {
     return $dbs->getParameter($app['dbs.default']);
 };
 
-$app->register(new Provider\SessionServiceProvider());
+
+$app['session'] = function ($app) {
+    return new Session($app['session.storage'], $app['session.attribute_bag'], $app['session.flash_bag']);
+};
+
+$app['session.storage'] = function ($app) {
+    return $app['session.storage.native'];
+};
+
+$app['session.storage.handler'] = function ($app) {
+    return new NativeFileSessionHandler($app['session.storage.save_path']);
+};
+
+$app['session.storage.native'] = function ($app) {
+    return new NativeSessionStorage($app['session.storage.options'], $app['session.storage.handler']);
+};
+
+$app['session.listener'] = function ($app) {
+    return new SessionListener($app['service_container']);
+};
+
+$app['session.storage.options'] = [];
+$app['session.storage.save_path'] = null;
+$app['session.attribute_bag'] = null;
+$app['session.flash_bag'] = null;
+
+$app['dispatcher']->addSubscriber($app['session.listener']);
 
 $app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
 $app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
