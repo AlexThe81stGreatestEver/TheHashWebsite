@@ -9,7 +9,6 @@ CallbackResolver.php
 Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
-Provider/CsrfServiceProvider.php
 Provider/DoctrineServiceProvider.php
 Provider/FormServiceProvider.php
 Provider/HttpKernelServiceProvider.php

@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/RoutingServiceProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
-require_once 'Provider/CsrfServiceProvider.php';
 require_once 'Provider/FormServiceProvider.php';
 require_once 'Provider/DoctrineServiceProvider.php';
 require_once 'Provider/SessionServiceProvider.php';
@@ -30,21 +29,25 @@ use Pimple\ServiceProviderInterface;
 
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\ErrorHandler\ErrorHandler;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\User;
-use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
+use Symfony\Component\Security\Core\Encoder\EncoderFactory;
+use Symfony\Component\Security\Core\User\User;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
+use Symfony\Component\Security\Csrf\TokenStorage\NativeSessionTokenStorage;
+use Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Validator\Constraints as Assert;
 
 $app = new Application();
 $app['locale'] = 'en';
@@ -72,7 +75,24 @@ $app->extend('resolver', function ($resolver, $app) {
     return new ContainerControllerResolver($app['service_container'], $app['logger']);
 });
 
-$app->register(new Provider\CsrfServiceProvider());
+$app['csrf.token_manager'] = function ($app) {
+    return new CsrfTokenManager($app['csrf.token_generator'], $app['csrf.token_storage']);
+};
+
+$app['csrf.token_storage'] = function ($app) {
+    if (isset($app['session'])) {
+	return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
+    }
+
+    return new NativeSessionTokenStorage($app['csrf.session_namespace']);
+};
+
+$app['csrf.token_generator'] = function ($app) {
+    return new UriSafeTokenGenerator();
+};
+
+$app['csrf.session_namespace'] = '_csrf';
+
 $app->register(new Provider\EventListenerProvider());
 $app->register(new Provider\FormServiceProvider());
 
