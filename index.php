@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/RoutingServiceProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
-require_once 'Provider/TwigServiceProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Provider/MonologServiceProvider.php';
 require_once 'Application.php';
@@ -28,6 +27,18 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
+use Symfony\Bridge\Twig\AppVariable;
+use Symfony\Bridge\Twig\Extension\AssetExtension;
+use Symfony\Bridge\Twig\Extension\DumpExtension;
+use Symfony\Bridge\Twig\Extension\FormExtension;
+use Symfony\Bridge\Twig\Extension\HttpFoundationExtension as TwigHttpFoundationExtension ;
+use Symfony\Bridge\Twig\Extension\HttpKernelExtension;
+use Symfony\Bridge\Twig\Extension\HttpKernelRuntime;
+use Symfony\Bridge\Twig\Extension\RoutingExtension;
+use Symfony\Bridge\Twig\Extension\SecurityExtension;
+use Symfony\Bridge\Twig\Extension\TranslationExtension;
+use Symfony\Bridge\Twig\Extension\WebLinkExtension;
+use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\ErrorHandler\ErrorHandler;
@@ -39,6 +50,7 @@ use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension as FormValidatorExtension;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Form\FormRegistry;
+use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,6 +59,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
+use Symfony\Component\HttpFoundation\UrlHelper;
 use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
 use Symfony\Component\HttpKernel\EventListener\SessionListener;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
@@ -61,6 +74,13 @@ use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Constraints as Assert;
+use Twig\Environment;
+use Twig\Extension\DebugExtension;
+use Twig\Loader\ArrayLoader as TwigArrayLoader;
+use Twig\Loader\ChainLoader;
+use Twig\Loader\FilesystemLoader;
+use Twig\RuntimeLoader\ContainerRuntimeLoader;
+use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 $app = new Application();
 $app['locale'] = 'en';
@@ -335,12 +355,160 @@ $twigClassPath = __DIR__.'vendor/twig/twig/lib';
 $twigTemplateSourceDirectory = __DIR__.'/Twig_Templates/source';
 $twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
 
-$app->register(new Provider\TwigServiceProvider(), array(
-  'twig.path' => $twigTemplateSourceDirectory,
-  'twig.class_path' =>$twigClassPath,
-  'twig.options' => array(
+$app['twig.path'] = $twigTemplateSourceDirectory;
+$app['twig.class_path'] = $twigClassPath;
+$app['twig.options'] = array(
     'cache' => $twigTemplateCompiledDirectory,
-    'auto_reload' => true)));
+    'auto_reload' => true);
+
+$app['twig.form.templates'] = ['form_div_layout.html.twig'];
+$app['twig.templates'] = [];
+
+$app['twig.date.format'] = 'F j, Y H:i';
+$app['twig.date.interval_format'] = '%d days';
+$app['twig.date.timezone'] = null;
+
+$app['twig.number_format.decimals'] = 0;
+$app['twig.number_format.decimal_point'] = '.';
+$app['twig.number_format.thousands_separator'] = ',';
+
+$app['twig'] = function ($app) {
+    $twig = $app['twig.environment_factory']($app);
+
+    $coreExtension = $twig->getExtension('Twig\Extension\CoreExtension');
+
+    $coreExtension->setDateFormat($app['twig.date.format'], $app['twig.date.interval_format']);
+
+    if (null !== $app['twig.date.timezone']) {
+        $coreExtension->setTimezone($app['twig.date.timezone']);
+    }
+
+    $coreExtension->setNumberFormat($app['twig.number_format.decimals'], $app['twig.number_format.decimal_point'], $app['twig.number_format.thousands_separator']);
+
+    if ($app['debug']) {
+        $twig->addExtension(new DebugExtension());
+    }
+
+    if (class_exists('Symfony\Bridge\Twig\Extension\RoutingExtension')) {
+        $app['twig.app_variable'] = function ($app) {
+            $var = new AppVariable();
+            if (isset($app['security.token_storage'])) {
+                $var->setTokenStorage($app['security.token_storage']);
+            }
+            if (isset($app['request_stack'])) {
+                $var->setRequestStack($app['request_stack']);
+            }
+            $var->setDebug($app['debug']);
+
+            return $var;
+        };
+
+        $twig->addGlobal('global', $app['twig.app_variable']);
+
+        if (isset($app['request_stack'])) {
+            $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
+            $twig->addExtension(new RoutingExtension($app['url_generator']));
+            $twig->addExtension(new WebLinkExtension($app['request_stack']));
+        }
+
+        if (isset($app['translator'])) {
+            $twig->addExtension(new TranslationExtension($app['translator']));
+        }
+
+        if (isset($app['security.authorization_checker'])) {
+            $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
+        }
+
+        if (isset($app['fragment.handler'])) {
+            $app['fragment.renderer.hinclude']->setTemplating($twig);
+
+            $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
+        }
+
+        if (isset($app['assets.packages'])) {
+            $twig->addExtension(new AssetExtension($app['assets.packages']));
+        }
+
+        if (isset($app['form.factory'])) {
+            $app['twig.form.engine'] = function ($app) use ($twig) {
+                return new TwigRendererEngine($app['twig.form.templates'], $twig);
+            };
+
+            $app['twig.form.renderer'] = function ($app) {
+                $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
+
+                return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
+            };
+
+            $twig->addExtension(new FormExtension());
+
+            // add loader for Symfony built-in form templates
+            $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
+            $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
+            $app['twig.loader']->addLoader(new FilesystemLoader($path));
+
+            $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
+                FormRenderer::class => function() use ($app) {
+                    return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+            })));
+        }
+
+        if (isset($app['var_dumper.cloner'])) {
+            $twig->addExtension(new DumpExtension($app['var_dumper.cloner']));
+        }
+
+        $twig->addRuntimeLoader($app['twig.runtime_loader']);
+    }
+
+    return $twig;
+};
+
+$app['twig.loader.filesystem'] = function ($app) {
+    $loader = new FilesystemLoader();
+    foreach (is_array($app['twig.path']) ? $app['twig.path'] : [$app['twig.path']] as $key => $val) {
+        if (is_string($key)) {
+            $loader->addPath($key, $val);
+        } else {
+            $loader->addPath($val);
+        }
+    }
+
+    return $loader;
+};
+
+$app['twig.loader.array'] = function ($app) {
+    return new TwigArrayLoader($app['twig.templates']);
+};
+
+$app['twig.loader'] = function ($app) {
+    return new ChainLoader([
+        $app['twig.loader.array'],
+        $app['twig.loader.filesystem'],
+    ]);
+};
+
+$app['twig.environment_factory'] = $app->protect(function ($app) {
+    return new Environment($app['twig.loader'], array_replace([
+        'charset' => $app['charset'],
+        'debug' => $app['debug'],
+        'strict_variables' => $app['debug'],
+    ], $app['twig.options']));
+});
+
+$app['twig.runtime.httpkernel'] = function ($app) {
+    return new HttpKernelRuntime($app['fragment.handler']);
+};
+
+$app['twig.runtimes'] = function ($app) {
+    return [
+        HttpKernelRuntime::class => 'twig.runtime.httpkernel',
+        FormRenderer::class => 'twig.form.renderer',
+    ];
+};
+
+$app['twig.runtime_loader'] = function ($app) {
+    return new ContainerRuntimeLoader($app['service_container']);
+};
 
 #Check users table in database-------------------------------------------------
 
