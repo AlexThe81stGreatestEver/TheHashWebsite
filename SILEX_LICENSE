@@ -10,7 +10,6 @@ Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
 Provider/HttpKernelServiceProvider.php
-Provider/MonologServiceProvider.php
 Provider/SecurityServiceProvider.php
 Provider/Routing/LazyRequestMatcher.php
 Provider/Routing/RedirectableUrlMatcher.php

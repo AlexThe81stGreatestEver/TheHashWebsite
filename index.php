@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
-require_once 'Provider/MonologServiceProvider.php';
 require_once 'Application.php';
 require_once 'ControllerCollection.php';
 require_once 'Provider/Routing/RedirectableUrlMatcher.php';
@@ -28,7 +27,14 @@ use Pimple\ServiceProviderInterface;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
+use Monolog\ErrorHandler as MonologErrorHandler;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler;
+use Monolog\Logger;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
+use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
+use Symfony\Bridge\Monolog\Logger as BridgeLogger;
+use Symfony\Bridge\Monolog\Processor\DebugProcessor;
 use Symfony\Bridge\Twig\AppVariable;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Symfony\Bridge\Twig\Extension\DumpExtension;
@@ -97,11 +103,55 @@ if($app['debug']) {
   Debug::enable();
 
   # Register the monolog logging service
-  $app->register(new Provider\MonologServiceProvider(), array(
-      'monolog.logfile' => __DIR__.'/development.log',
-      'monolog.level' => 'debug',
-      'monolog.bubble' => true
-  ));
+  $app['monolog.logfile'] = __DIR__.'/development.log';
+  $app['monolog.level'] = 'debug';
+  $app['monolog.bubble'] = true;
+
+  $app['logger'] = function () use ($app) {
+      return $app['monolog'];
+  };
+
+  $app['monolog.logger.class'] = 'Symfony\Bridge\Monolog\Logger';
+
+  $app['monolog'] = function ($app) {
+      $log = new $app['monolog.logger.class']($app['monolog.name']);
+
+      $handler = new Handler\GroupHandler($app['monolog.handlers']);
+      $log->pushHandler($handler);
+      $log->pushProcessor(new DebugProcessor());
+
+      return $log;
+  };
+
+  $app['monolog.formatter'] = function () {
+      return new LineFormatter();
+  };
+
+  $app['monolog.handler'] = $defaultHandler = function () use ($app) {
+      $level = Logger::toMonologLevel($app['monolog.level']);
+
+      $handler = new Handler\StreamHandler($app['monolog.logfile'], $level, $app['monolog.bubble'], $app['monolog.permission']);
+      $handler->setFormatter($app['monolog.formatter']);
+
+      return $handler;
+  };
+
+  $app['monolog.handlers'] = function () use ($app, $defaultHandler) {
+      $handlers = [];
+
+      // enables the default handler if a logfile was set or the monolog.handler service was redefined
+      if ($app['monolog.logfile'] || $defaultHandler !== $app->raw('monolog.handler')) {
+          $handlers[] = $app['monolog.handler'];
+      }
+
+      return $handlers;
+  };
+
+  $app['monolog.name'] = 'app';
+  $app['monolog.permission'] = null;
+  $app['monolog.exception.logger_filter'] = null;
+  $app['monolog.use_error_handler'] = false;
+
 } else {
   $app['logger'] = null;
   ErrorHandler::register();
