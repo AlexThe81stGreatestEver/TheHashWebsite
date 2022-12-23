@@ -6,8 +6,6 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-require_once 'Api/BootableProviderInterface.php';
-require_once 'Api/EventListenerProviderInterface.php';
 
 /**
  * The Silex framework class.
@@ -16,7 +14,6 @@ require_once 'Api/EventListenerProviderInterface.php';
  */
 class Application extends Container implements HttpKernelInterface, TerminableInterface
 {
-    protected $providers = [];
     protected $booted = false;
 
     /**
@@ -35,21 +32,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     }
 
     /**
-     * Registers a service provider.
-     *
-     * @param ServiceProviderInterface $provider A ServiceProviderInterface instance
-     * @param array                    $values   An array of values that customizes the provider
-     *
-     * @return Application
-     */
-    public function register(ServiceProviderInterface $provider, array $values = [])
-    {
-        $this->providers[] = $provider;
-        parent::register($provider);
-        return $this;
-    }
-
-    /**
      * Boots all service providers.
      *
      * This method is automatically called by handle(), but you can use it
@@ -62,16 +44,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
         }
 
         $this->booted = true;
-
-        foreach ($this->providers as $provider) {
-            if ($provider instanceof \Api\EventListenerProviderInterface) {
-                $provider->subscribe($this, $this['dispatcher']);
-            }
-
-            if ($provider instanceof \Api\BootableProviderInterface) {
-                $provider->boot($this);
-            }
-        }
     }
 
     /**
