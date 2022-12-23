@@ -9,7 +9,6 @@ Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
 Provider/Routing/LazyRequestMatcher.php
-Provider/Routing/RedirectableUrlMatcher.php
 
 Copyright (c) 2010-2017 Fabien Potencier
 

@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Subscriber/KernelEventSubscriber.php';
 require_once 'Application.php';
 require_once 'ControllerCollection.php';
-require_once 'Provider/Routing/RedirectableUrlMatcher.php';
 require_once 'Provider/Routing/LazyRequestMatcher.php';
 require_once 'Psr11ServiceProvider.php';
 
@@ -76,6 +75,7 @@ use Symfony\Component\HttpKernel\EventListener\RouterListener;
 use Symfony\Component\HttpKernel\EventListener\SessionListener;
 use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -236,7 +236,7 @@ $app['url_generator'] = function ($app) {
 };
 
 $app['request_matcher'] = function ($app) {
-    return new Provider\Routing\RedirectableUrlMatcher($app['routes'], $app['request_context']);
+    return new UrlMatcher($app['routes'], $app['request_context']);
 };
 
 $app['controllers'] = function ($app) {
