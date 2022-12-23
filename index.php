@@ -37,7 +37,6 @@ use Symfony\Bridge\Monolog\Logger as BridgeLogger;
 use Symfony\Bridge\Monolog\Processor\DebugProcessor;
 use Symfony\Bridge\Twig\AppVariable;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
-use Symfony\Bridge\Twig\Extension\DumpExtension;
 use Symfony\Bridge\Twig\Extension\FormExtension;
 use Symfony\Bridge\Twig\Extension\HttpFoundationExtension as TwigHttpFoundationExtension ;
 use Symfony\Bridge\Twig\Extension\HttpKernelExtension;
@@ -89,7 +88,6 @@ use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Constraints as Assert;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
-use Twig\Loader\ArrayLoader as TwigArrayLoader;
 use Twig\Loader\ChainLoader;
 use Twig\Loader\FilesystemLoader;
 use Twig\RuntimeLoader\ContainerRuntimeLoader;
@@ -138,22 +136,15 @@ if($app['debug']) {
 
   $app['monolog.handlers'] = function () use ($app, $defaultHandler) {
       $handlers = [];
-
-      // enables the default handler if a logfile was set or the monolog.handler service was redefined
-      if ($app['monolog.logfile'] || $defaultHandler !== $app->raw('monolog.handler')) {
-          $handlers[] = $app['monolog.handler'];
-      }
-
+      $handlers[] = $app['monolog.handler'];
       return $handlers;
   };
 
   $app['monolog.name'] = 'app';
   $app['monolog.permission'] = null;
-  $app['monolog.exception.logger_filter'] = null;
-  $app['monolog.use_error_handler'] = false;
-
 } else {
   $app['logger'] = null;
+  // TODO: how do we log errors in production mode?
   ErrorHandler::register();
 }
 
@@ -234,18 +225,6 @@ $app['csrf.token_generator'] = function ($app) {
 $app['csrf.session_namespace'] = '_csrf';
 
 $app->register(new Provider\EventListenerProvider());
-
-$app['form.types'] = function ($app) {
-    return [];
-};
-
-$app['form.type.extensions'] = function ($app) {
-    return [];
-};
-
-$app['form.type.guessers'] = function ($app) {
-    return [];
-};
 
 $app['form.extension.csrf'] = function ($app) {
     if (isset($app['translator'])) {
@@ -469,7 +448,6 @@ $app['twig.options'] = array(
     'auto_reload' => true);
 
 $app['twig.form.templates'] = ['form_div_layout.html.twig'];
-$app['twig.templates'] = [];
 
 $app['twig.date.format'] = 'F j, Y H:i';
 $app['twig.date.interval_format'] = '%d days';
@@ -560,10 +538,6 @@ $app['twig'] = function ($app) {
             })));
         }
 
-        if (isset($app['var_dumper.cloner'])) {
-            $twig->addExtension(new DumpExtension($app['var_dumper.cloner']));
-        }
-
         $twig->addRuntimeLoader($app['twig.runtime_loader']);
     }
 
@@ -572,24 +546,12 @@ $app['twig'] = function ($app) {
 
 $app['twig.loader.filesystem'] = function ($app) {
     $loader = new FilesystemLoader();
-    foreach (is_array($app['twig.path']) ? $app['twig.path'] : [$app['twig.path']] as $key => $val) {
-        if (is_string($key)) {
-            $loader->addPath($key, $val);
-        } else {
-            $loader->addPath($val);
-        }
-    }
-
+    $loader->addPath($app['twig.path']);
     return $loader;
-};
-
-$app['twig.loader.array'] = function ($app) {
-    return new TwigArrayLoader($app['twig.templates']);
 };
 
 $app['twig.loader'] = function ($app) {
     return new ChainLoader([
-        $app['twig.loader.array'],
         $app['twig.loader.filesystem'],
     ]);
 };
