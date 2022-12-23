@@ -1799,25 +1799,11 @@ class HashController extends BaseController
     $showNeighborhood = true;
     $showPostalCode = true;
 
-    if(strlen($state)==0){
-      $showState = false;
-    }
-
-    if(strlen($county)==0){
-      $showCounty = false;
-    }
-
-    if(strlen($city)==0){
-      $showCity = false;
-    }
-
-    if(strlen($neighborhood)==0){
-      $showNeighborhood = false;
-    }
-
-    if(strlen($postalCode)==0){
-      $showPostalCode = false;
-    }
+    $showState = !$this->isNullOrEmpty($state);
+    $showCounty = !$this->isNullOrEmpty($county);
+    $showCity = !$this->isNullOrEmpty($city);
+    $showNeighborhood = !$this->isNullOrEmpty($neighborhood);
+    $showPostalCode = !$this->isNullOrEmpty($postalCode);
 
     # Establish and set the return value
     $returnValue = $this->render('hash_details.twig',array(
@@ -2033,47 +2019,47 @@ class HashController extends BaseController
 
     # Obtain information for this particular hash
     $theHashEventState = $theHashValue['EVENT_STATE'];
-    if(strlen($theHashEventState)==0){
+    if($this->isNullOrEmpty($theHashEventState)) {
       $theHashEventState = "UNKNOWN";
     }
 
     $theHashYear = $theHashValue['THE_YEAR'];
-    if(strlen($theHashYear)==0){
+    if($this->isNullOrEmpty($theHashYear)) {
       $theHashYear = "UNKNOWN";
     }
 
     $theHashMonth = $theHashValue['THE_MONTH'];
-    if(strlen($theHashMonth)==0){
+    if($this->isNullOrEmpty($theHashMonth)) {
       $theHashMonth = "UNKNOWN";
     }
 
     $theHashDay = $theHashValue['THE_DAY'];
-    if(strlen($theHashDay)==0){
+    if($this->isNullOrEmpty($theHashDay)) {
       $theHashDay = "UNKNOWN";
     }
 
     $theHashEventCity = $theHashValue['EVENT_CITY'];
-    if(strlen($theHashEventCity)==0){
+    if($this->isNullOrEmpty($theHashEventCity)) {
       $theHashEventCity = "UNKNOWN";
     }
 
     $theHashEventNeighborhood = $theHashValue['NEIGHBORHOOD'];
-    if(strlen($theHashEventNeighborhood)==0){
+    if($this->isNullOrEmpty($theHashEventNeighborhood)) {
       $theHashEventNeighborhood = "UNKNOWN";
     }
 
     $theHashEventCounty = $theHashValue['COUNTY'];
-    if(strlen($theHashEventCounty)==0){
+    if($this->isNullOrEmpty($theHashEventCounty)) {
       $theHashEventCounty = "UNKNOWN";
     }
 
     $theHashEventZip = $theHashValue['POSTAL_CODE'];
-    if(strlen($theHashEventZip)==0){
+    if($this->isNullOrEmpty($theHashEventZip)) {
       $theHashEventZip = "UNKNOWN";
     }
 
     $theHashEventRoute = $theHashValue['ROUTE'];
-    if(strlen($theHashEventRoute)==0){
+    if($this->isNullOrEmpty($theHashEventRoute)) {
       $theHashEventRoute = "UNKNOWN";
     }
 
@@ -2318,7 +2304,7 @@ class HashController extends BaseController
 
     # Obtain information for this particular hash
     $theHashEventCounty = $theHashValue['COUNTY'];
-    if(strlen($theHashEventCounty)==0){
+    if($this->isNullOrEmpty($theHashEventCounty)) {
       $theHashEventCounty = "UNKNOWN";
     }
 
@@ -2375,7 +2361,7 @@ class HashController extends BaseController
 
     # Obtain information for this particular hash
     $theHashEventPostalCode = $theHashValue['POSTAL_CODE'];
-    if(strlen($theHashEventPostalCode)==0){
+    if($this->isNullOrEmpty($theHashEventPostalCode)) {
       $theHashEventPostalCode = "UNKNOWN";
     }
 
@@ -2433,7 +2419,7 @@ class HashController extends BaseController
 
     # Obtain information for this particular hash
     $theHashEventState = $theHashValue['EVENT_STATE'];
-    if(strlen($theHashEventState)==0){
+    if($this->isNullOrEmpty($theHashEventState)) {
       $theHashEventState = "UNKNOWN";
     }
 
@@ -2491,7 +2477,7 @@ class HashController extends BaseController
 
     # Obtain information for this particular hash
     $theHashEventNeighborhood = $theHashValue['NEIGHBORHOOD'];
-    if(strlen($theHashEventNeighborhood)==0){
+    if($this->isNullOrEmpty($theHashEventNeighborhood)) {
       $theHashEventNeighborhood = "UNKNOWN";
     }
 

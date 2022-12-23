@@ -21,6 +21,10 @@ class BaseController {
     new \DatabaseUpdater($this->dbw, DB_NAME);
   }
 
+  protected function isNullOrEmpty($str) {
+    return ($str == null) || (strlen($str) == 0);
+  }
+
   // fetch all - ignore query errors
   // used in slashaction2 to allow the home page to render even if there
   // are integrity issues in the database (currently having duplicate event
