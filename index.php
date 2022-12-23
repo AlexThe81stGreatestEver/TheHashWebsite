@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Subscriber/KernelEventSubscriber.php';
 require_once 'Application.php';
 require_once 'ControllerCollection.php';
-require_once 'Provider/Routing/LazyRequestMatcher.php';
 require_once 'Psr11ServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
@@ -249,11 +248,7 @@ $controllers_factory = function () use ($app, &$controllers_factory) {
 $app['controllers_factory'] = $app->factory($controllers_factory);
 
 $app['routing.listener'] = function ($app) {
-    $urlMatcher = new Provider\Routing\LazyRequestMatcher(function () use ($app) {
-        return $app['request_matcher'];
-    });
-
-    return new RouterListener($urlMatcher, $app['request_stack'], $app['request_context'], $app['logger'], null, isset($app['debug']) ? $app['debug'] : false);
+    return new RouterListener($app['request_matcher'], $app['request_stack'], $app['request_context'], $app['logger'], null, $app['debug']);
 };
 
 $app['dispatcher']->addSubscriber($app['routing.listener']);
