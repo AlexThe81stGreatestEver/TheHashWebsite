@@ -20,8 +20,9 @@ class KernelEventSubscriber implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
+        $contentType = $request->headers->get('Content-Type');
 
-        if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+        if (($contentType != null) && (0 === strpos($contentType, 'application/json'))) {
             $data = json_decode($request->getContent(), true);
             $request->request->replace(is_array($data) ? $data : array());
         }
