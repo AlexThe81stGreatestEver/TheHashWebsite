@@ -11,8 +11,8 @@ require_once 'HASH/Controller/AdminController.php';
 require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
-require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
+require_once 'Subscriber/KernelEventSubscriber.php';
 require_once 'Application.php';
 require_once 'ControllerCollection.php';
 require_once 'Provider/Routing/RedirectableUrlMatcher.php';
@@ -247,7 +247,7 @@ $app['csrf.token_generator'] = function ($app) {
 
 $app['csrf.session_namespace'] = '_csrf';
 
-$app->register(new Provider\EventListenerProvider());
+$app['dispatcher']->addSubscriber(new \Subscriber\KernelEventSubscriber());
 
 $app['form.extension.csrf'] = function ($app) {
     if (isset($app['translator'])) {
