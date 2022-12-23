@@ -11,7 +11,6 @@ require_once 'HASH/Controller/AdminController.php';
 require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
-require_once 'Provider/HttpKernelServiceProvider.php';
 require_once 'Provider/EventListenerProvider.php';
 require_once 'Provider/SecurityServiceProvider.php';
 require_once 'Application.php';
@@ -49,6 +48,7 @@ use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\ErrorHandler\ErrorHandler;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -61,6 +61,7 @@ use Symfony\Component\Form\FormRenderer;
 use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
@@ -68,8 +69,12 @@ use Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\UrlHelper;
 use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory;
+use Symfony\Component\HttpKernel\EventListener\ResponseListener;
 use Symfony\Component\HttpKernel\EventListener\RouterListener;
 use Symfony\Component\HttpKernel\EventListener\SessionListener;
+use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
@@ -148,7 +153,25 @@ if($app['debug']) {
   ErrorHandler::register();
 }
 
-$app->register(new Provider\HttpKernelServiceProvider());
+$app['resolver'] = function ($app) {
+  return new ControllerResolver($app['logger']);
+};
+
+$app['argument_metadata_factory'] = function ($app) {
+  return new ArgumentMetadataFactory();
+};
+
+$app['kernel'] = function ($app) {
+  return new HttpKernel($app['dispatcher'], $app['resolver'], $app['request_stack'], null);
+};
+
+$app['request_stack'] = function () {
+  return new RequestStack();
+};
+
+$app['dispatcher'] = function () {
+  return new EventDispatcher();
+};
 
 $app['route_class'] = 'Symfony\Component\Routing\Route';
 
@@ -970,5 +993,7 @@ $controllers->post('/{kennel_abbreviation}/hashers/retrieve',                   
 
 # kennel home page
 $controllers->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
+
+$app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
 $app->run();

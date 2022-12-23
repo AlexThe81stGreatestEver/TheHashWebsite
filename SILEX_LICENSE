@@ -5,11 +5,9 @@ the copyright notice that appears below.
 Api/BootableProviderInterface.php
 Api/EventListenerProviderInterface.php
 Application.php
-CallbackResolver.php
 Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
-Provider/HttpKernelServiceProvider.php
 Provider/SecurityServiceProvider.php
 Provider/Routing/LazyRequestMatcher.php
 Provider/Routing/RedirectableUrlMatcher.php
