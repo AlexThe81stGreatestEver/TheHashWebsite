@@ -32,13 +32,11 @@ class ControllerCollection
     protected $controllers = [];
     protected $defaultRoute;
     protected $prefix;
-    protected $routesFactory;
     protected $controllersFactory;
 
-    public function __construct(Route $defaultRoute, RouteCollection $routesFactory = null, $controllersFactory = null)
+    public function __construct(Route $defaultRoute, $controllersFactory = null)
     {
         $this->defaultRoute = $defaultRoute;
-        $this->routesFactory = $routesFactory;
         $this->controllersFactory = $controllersFactory;
     }
 
@@ -124,12 +122,7 @@ class ControllerCollection
      */
     public function flush()
     {
-        if (null === $this->routesFactory) {
-            $routes = new RouteCollection();
-        } else {
-            $routes = $this->routesFactory;
-        }
-
+        $routes = new RouteCollection();
         return $this->doFlush('', $routes);
     }
 

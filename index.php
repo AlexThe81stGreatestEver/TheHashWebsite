@@ -129,22 +129,25 @@ use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 class HttpKernelImpl implements HttpKernelInterface 
 {
-  private $container;
+  private PimpleContainer $container;
+  private RouteCollection $routeCollection;
 
-  public function __construct($container) {
+  public function __construct(PimpleContainer $container, RouteCollection $routeCollection) {
     $this->container = $container;
+    $this->routeCollection = $routeCollection;
   }
 
   public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
-    $this->container['routes']->addCollection($this->container['controllers']->flush());
+    $this->routeCollection->addCollection($this->container['controllers']->flush());
     return $this->container['kernel']->handle($request, $type, $catch);
   }
 }
 
+$routeCollection = new RouteCollection();
 $fakeRoutes = [];
 
 $app = new PimpleContainer();
-$httpKernelImpl = new HttpKernelImpl($app);
+$httpKernelImpl = new HttpKernelImpl($app, $routeCollection);
 $app['request.http_port'] = 80;
 $app['request.https_port'] = 443;
 $app['charset'] = 'UTF-8';
@@ -235,20 +238,12 @@ $app['route_factory'] = $app->factory(function ($app) {
   return new Route('/');
 });
 
-$app['routes_factory'] = $app->factory(function () {
-  return new RouteCollection();
-});
-
-$app['routes'] = function ($app) {
-  return $app['routes_factory'];
+$app['url_generator'] = function ($app) use($routeCollection) {
+  return new UrlGenerator($routeCollection, $app['request_context']);
 };
 
-$app['url_generator'] = function ($app) {
-  return new UrlGenerator($app['routes'], $app['request_context']);
-};
-
-$app['request_matcher'] = function ($app) {
-  return new UrlMatcher($app['routes'], $app['request_context']);
+$app['request_matcher'] = function ($app) use($routeCollection) {
+  return new UrlMatcher($routeCollection, $app['request_context']);
 };
 
 $app['controllers'] = function ($app) {
@@ -256,7 +251,7 @@ $app['controllers'] = function ($app) {
 };
 
 $app['controllers_factory'] = $app->factory(function () use ($app, &$controllers_factory) {
-  return new \ControllerCollection($app['route_factory'], $app['routes_factory'], $controllers_factory);
+  return new \ControllerCollection(new Route('/'), $controllers_factory);
 });
 
 $app['routing.listener'] = function ($app) {
