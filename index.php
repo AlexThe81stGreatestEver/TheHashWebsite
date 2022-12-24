@@ -1142,7 +1142,7 @@ if (!$schema->tablesExist('USERS')) {
 # Register the URls
 $controllers = $app['controllers'];
 
-$controllers->get('/',                                                    'HashController:slashAction')->getRoute()->setOption('routeName', 'homepage');
+$controllers->get('/',                                                    'HashController:slashAction')->setOption('routeName', 'homepage');
 $controllers->get('/{kennel_abbreviation}/rss',                           'HashController:rssAction');
 $controllers->get('/{kennel_abbreviation}/events/rss',                    'HashController:eventsRssAction');
 
@@ -1487,7 +1487,7 @@ $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 $controllersFactory = $app['controllers_factory'];
 foreach ($fakeRoutes as $route) {
   list($method, $pattern, $name) = $route;
-  $controllersFactory->$method($pattern)->setDefault('_controller', null)->getRoute()->setOption("routeName", $name);
+  $controllersFactory->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);
 }
 $controllers->mount('/', $controllersFactory);
 

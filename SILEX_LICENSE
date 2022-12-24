@@ -2,7 +2,6 @@ The following files were adapted from the abandoned Silex framework.
 The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
-Controller.php
 ControllerCollection.php
 
 Copyright (c) 2010-2017 Fabien Potencier

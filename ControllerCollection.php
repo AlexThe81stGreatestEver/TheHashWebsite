@@ -3,7 +3,6 @@
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
-require_once 'Controller.php';
 
 /**
  * Builds Silex controllers.
@@ -75,10 +74,10 @@ class ControllerCollection
     {
         $route = clone $this->defaultRoute;
         $route->setPath($pattern);
-        $this->controllers[] = $controller = new Controller($route);
+        $this->controllers[] = $route;
         $route->setDefault('_controller', null === $to ? $this->defaultController : $to);
 
-        return $controller;
+        return $route;
     }
 
     /**
@@ -138,8 +137,7 @@ class ControllerCollection
         return $this->doFlush('', $routes);
     }
 
-    private function generateRouteName($controller) {
-        $route = $controller->getRoute();
+    private function generateRouteName($route) {
         $methods = implode('_', $route->getMethods()).'_';
 
         $routeName = $methods.$route->getPath();
@@ -158,17 +156,17 @@ class ControllerCollection
         }
 
         foreach ($this->controllers as $controller) {
-            if ($controller instanceof Controller) {
-                $controller->getRoute()->setPath($prefix.$controller->getRoute()->getPath());
-                if (!$name = $controller->getRoute()->getOption("routeName")) {
+            if ($controller instanceof Route) {
+                $controller->setPath($prefix.$controller->getPath());
+                if (!$name = $controller->getOption("routeName")) {
                     $name = $base = $this->generateRouteName($controller);
                     $i = 0;
                     while ($routes->get($name)) {
                         $name = $base.'_'.++$i;
                     }
-                    $controller->getRoute()->setOption("routeName", $name);
+                    $controller->setOption("routeName", $name);
                 }
-                $routes->add($name, $controller->getRoute());
+                $routes->add($name, $controller);
             } else {
                 $controller->doFlush($prefix.$controller->prefix, $routes);
             }
