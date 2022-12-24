@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\Routing\Route;
-require_once 'Exception/ControllerFrozenException.php';
 
 /**
  * A wrapper for a controller, mapped to a route.
@@ -25,7 +24,6 @@ class Controller
 {
     private $route;
     private $routeName;
-    private $isFrozen = false;
 
     /**
      * Constructor.
@@ -66,12 +64,11 @@ class Controller
      */
     public function bind($routeName)
     {
-        if ($this->isFrozen) {
-            throw new ControllerFrozenException(sprintf('Calling %s on frozen %s instance.', __METHOD__, __CLASS__));
+        if ($this->routeName != null) {
+            throw new \RuntimeException(sprintf('Calling %s on frozen %s instance.', __METHOD__, __CLASS__));
         }
 
         $this->routeName = $routeName;
-
         return $this;
     }
 
@@ -82,17 +79,6 @@ class Controller
         }
 
         call_user_func_array([$this->route, $method], $arguments);
-
         return $this;
-    }
-
-    /**
-     * Freezes the controller.
-     *
-     * Once the controller is frozen, you can no longer change the route name
-     */
-    public function freeze()
-    {
-        $this->isFrozen = true;
     }
 }

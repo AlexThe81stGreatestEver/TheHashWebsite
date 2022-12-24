@@ -4,7 +4,6 @@ the copyright notice that appears below.
 
 Controller.php
 ControllerCollection.php
-Exception/ControllerFrozenException.php
 
 Copyright (c) 2010-2017 Fabien Potencier
 

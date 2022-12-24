@@ -179,7 +179,6 @@ class ControllerCollection
                     $controller->bind($name);
                 }
                 $routes->add($name, $controller->getRoute());
-                $controller->freeze();
             } else {
                 $controller->doFlush($prefix.$controller->prefix, $routes);
             }
