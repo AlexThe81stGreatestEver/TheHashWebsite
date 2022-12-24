@@ -44,33 +44,6 @@ class Controller
         return $this->route;
     }
 
-    /**
-     * Gets the controller's route name.
-     *
-     * @return string
-     */
-    public function getRouteName()
-    {
-        return $this->route->getOption("routeName");
-    }
-
-    /**
-     * Sets the controller's route.
-     *
-     * @param string $routeName
-     *
-     * @return Controller $this The current Controller instance
-     */
-    public function bind($routeName)
-    {
-        if ($this->getRouteName() != null) {
-            throw new \RuntimeException(sprintf('Calling %s on frozen %s instance.', __METHOD__, __CLASS__));
-        }
-
-        $this->route->setOption("routeName", $routeName);
-        return $this;
-    }
-
     public function __call($method, $arguments)
     {
         if (!method_exists($this->route, $method)) {

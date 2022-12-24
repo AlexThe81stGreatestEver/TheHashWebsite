@@ -170,13 +170,13 @@ class ControllerCollection
         foreach ($this->controllers as $controller) {
             if ($controller instanceof Controller) {
                 $controller->getRoute()->setPath($prefix.$controller->getRoute()->getPath());
-                if (!$name = $controller->getRouteName()) {
+                if (!$name = $controller->getRoute()->getOption("routeName")) {
                     $name = $base = $this->generateRouteName($controller);
                     $i = 0;
                     while ($routes->get($name)) {
                         $name = $base.'_'.++$i;
                     }
-                    $controller->bind($name);
+                    $controller->getRoute()->setOption("routeName", $name);
                 }
                 $routes->add($name, $controller->getRoute());
             } else {
