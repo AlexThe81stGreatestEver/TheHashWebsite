@@ -145,7 +145,7 @@ class HttpKernelImpl implements HttpKernelInterface
   }
 }
 
-$controllers = new \ControllerCollection(new Route('/'));
+$controllers = new \ControllerCollection();
 $routeCollection = new RouteCollection();
 $fakeRoutes = [];
 $app = new PimpleContainer();
@@ -1462,7 +1462,7 @@ $controllers->get('/{kennel_abbreviation}',                               'HashC
 
 $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
-$fakeRoutesCollection = new \ControllerCollection(new Route('/'));
+$fakeRoutesCollection = new \ControllerCollection();
 foreach ($fakeRoutes as $route) {
   list($method, $pattern, $name) = $route;
   $fakeRoutesCollection->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);

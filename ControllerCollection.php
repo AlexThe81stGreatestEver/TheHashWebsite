@@ -30,12 +30,14 @@ use Symfony\Component\Routing\Route;
 class ControllerCollection
 {
     protected $controllers = [];
-    protected $defaultRoute;
+    static $defaultRoute;
     protected $prefix;
 
-    public function __construct(Route $defaultRoute)
+    public function __construct()
     {
-        $this->defaultRoute = $defaultRoute;
+        if(self::$defaultRoute == null) {
+            self::$defaultRoute = new Route('/');
+        }
     }
 
     /**
@@ -64,7 +66,7 @@ class ControllerCollection
      */
     public function match($pattern, $to = null)
     {
-        $route = clone $this->defaultRoute;
+        $route = clone self::$defaultRoute;
         $route->setPath($pattern);
         $this->controllers[] = $route;
         $route->setDefault('_controller', $to);
@@ -100,11 +102,7 @@ class ControllerCollection
 
     public function __call($method, $arguments)
     {
-        if (!method_exists($this->defaultRoute, $method)) {
-            throw new \BadMethodCallException(sprintf('Method "%s::%s" does not exist.', get_class($this->defaultRoute), $method));
-        }
-
-        call_user_func_array([$this->defaultRoute, $method], $arguments);
+        call_user_func_array([self::$defaultRoute, $method], $arguments);
 
         foreach ($this->controllers as $controller) {
             call_user_func_array([$controller, $method], $arguments);
