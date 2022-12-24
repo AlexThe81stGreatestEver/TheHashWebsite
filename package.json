@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "chart.js": "^4.1.0",
+    "chart.js": "^4.1.1",
     "datatables.net-responsive": "^2.4.0",
     "datatables.net-responsive-dt": "^2.4.0",
     "echarts": "^5.4.1",
