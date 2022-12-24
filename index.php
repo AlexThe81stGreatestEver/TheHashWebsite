@@ -11,7 +11,6 @@ require_once 'HASH/Controller/AdminController.php';
 require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
-require_once 'Subscriber/KernelEventSubscriber.php';
 require_once 'ControllerCollection.php';
 
 use Doctrine\DBAL\Schema\Table;
@@ -299,8 +298,6 @@ $app['csrf.token_generator'] = function ($app) {
 };
 
 $app['csrf.session_namespace'] = '_csrf';
-
-$app['dispatcher']->addSubscriber(new \Subscriber\KernelEventSubscriber());
 
 $app['form.extension.csrf'] = function ($app) {
   if (isset($app['translator'])) {
@@ -1499,6 +1496,16 @@ foreach ($fakeRoutes as $route) {
 $controllers->mount('/', $controllersFactory);
 
 $request = Request::createFromGlobals();
+$contentType = $request->headers->get('Content-Type');
+if (($contentType != null) && (0 === strpos($contentType, 'application/json'))) {
+  $data = json_decode($request->getContent(), true);
+  $request->request->replace(is_array($data) ? $data : array());
+}
+
 $response = $httpKernelImpl->handle($request);
+$response->headers->set('X-Content-Type-Options', 'nosniff');
+$response->headers->set('X-XSS-Protection','1; mode=block');
+$response->headers->set('x-frame-options','SAMEORIGIN');
 $response->send();
+
 $app['kernel']->terminate($request, $response);
