@@ -234,10 +234,6 @@ $app['request_context'] = function ($app) {
   return $context;
 };
 
-$app['route_factory'] = $app->factory(function ($app) {
-  return new Route('/');
-});
-
 $app['url_generator'] = function ($app) use($routeCollection) {
   return new UrlGenerator($routeCollection, $app['request_context']);
 };
@@ -251,7 +247,7 @@ $app['controllers'] = function ($app) {
 };
 
 $app['controllers_factory'] = $app->factory(function () use ($app, &$controllers_factory) {
-  return new \ControllerCollection(new Route('/'), $controllers_factory);
+  return new \ControllerCollection(new Route('/'));
 });
 
 $app['routing.listener'] = function ($app) {

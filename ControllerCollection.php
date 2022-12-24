@@ -32,12 +32,10 @@ class ControllerCollection
     protected $controllers = [];
     protected $defaultRoute;
     protected $prefix;
-    protected $controllersFactory;
 
-    public function __construct(Route $defaultRoute, $controllersFactory = null)
+    public function __construct(Route $defaultRoute)
     {
         $this->defaultRoute = $defaultRoute;
-        $this->controllersFactory = $controllersFactory;
     }
 
     /**
