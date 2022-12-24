@@ -95,18 +95,4 @@ class Controller
     {
         $this->isFrozen = true;
     }
-
-    public function generateRouteName($prefix)
-    {
-        $methods = implode('_', $this->route->getMethods()).'_';
-
-        $routeName = $methods.$prefix.$this->route->getPath();
-        $routeName = str_replace(['/', ':', '|', '-'], '_', $routeName);
-        $routeName = preg_replace('/[^a-z0-9A-Z_.]+/', '', $routeName);
-
-        // Collapse consecutive underscores down into a single underscore.
-        $routeName = preg_replace('/_+/', '_', $routeName);
-
-        return $routeName;
-    }
 }

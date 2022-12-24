@@ -148,6 +148,19 @@ class ControllerCollection
         return $this->doFlush('', $routes);
     }
 
+    private function generateRouteName($controller) {
+        $route = $controller->getRoute();
+        $methods = implode('_', $route->getMethods()).'_';
+
+        $routeName = $methods.$route->getPath();
+        $routeName = str_replace(['/', ':', '|', '-'], '_', $routeName);
+        $routeName = preg_replace('/[^a-z0-9A-Z_.]+/', '', $routeName);
+
+        // Collapse consecutive underscores down into a single underscore.
+        $routeName = preg_replace('/_+/', '_', $routeName);
+        return $routeName;
+    }
+
     private function doFlush($prefix, RouteCollection $routes)
     {
         if ('' !== $prefix) {
@@ -158,7 +171,7 @@ class ControllerCollection
             if ($controller instanceof Controller) {
                 $controller->getRoute()->setPath($prefix.$controller->getRoute()->getPath());
                 if (!$name = $controller->getRouteName()) {
-                    $name = $base = $controller->generateRouteName('');
+                    $name = $base = $this->generateRouteName($controller);
                     $i = 0;
                     while ($routes->get($name)) {
                         $name = $base.'_'.++$i;
