@@ -14,7 +14,6 @@ require_once 'HASH/UserProvider.php';
 require_once 'Subscriber/KernelEventSubscriber.php';
 require_once 'Application.php';
 require_once 'ControllerCollection.php';
-require_once 'Psr11ServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -25,6 +24,7 @@ use Monolog\ErrorHandler as MonologErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler;
 use Monolog\Logger;
+use Pimple\Psr11\Container as Psr11Container;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
 use Symfony\Bridge\Monolog\Logger as BridgeLogger;
@@ -276,7 +276,7 @@ $app['routing.listener'] = function ($app) {
 
 $app['dispatcher']->addSubscriber($app['routing.listener']);
 
-$app->register(new Psr11ServiceProvider());
+$app['service_container'] = new Psr11Container($app);
 
 $app->extend('resolver', function ($resolver, $app) {
   return new ContainerControllerResolver($app['service_container'], $app['logger']);
