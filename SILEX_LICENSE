@@ -1,8 +1,5 @@
-The following files were adapted from the abandoned Silex framework.
-The files were originally distributed with the Silex project and contained
-the copyright notice that appears below.
-
-ControllerCollection.php
+Some code in index.php was adapted from the abandoned Silex framework.
+That code was originally published with the copyright notice below.
 
 Copyright (c) 2010-2017 Fabien Potencier
 

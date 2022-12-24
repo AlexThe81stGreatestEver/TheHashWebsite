@@ -1,6 +1,5 @@
 <?php
 
-// web/index.php
 require_once 'vendor/autoload.php';
 require_once 'config/ProdConfig.php';
 require_once 'HASH/Controller/HashController.php';
@@ -11,7 +10,6 @@ require_once 'HASH/Controller/AdminController.php';
 require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
-require_once 'ControllerCollection.php';
 
 use Doctrine\DBAL\Schema\Table;
 
@@ -127,29 +125,68 @@ use Twig\Loader\FilesystemLoader;
 use Twig\RuntimeLoader\ContainerRuntimeLoader;
 use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
-class HttpKernelImpl implements HttpKernelInterface 
-{
-  private \ControllerCollection $controllers;
-  private RouteCollection $routeCollection;
+class HttpKernelImpl implements HttpKernelInterface {
   private PimpleContainer $container;
 
-  public function __construct(PimpleContainer $container, \ControllerCollection $controllers, RouteCollection $routeCollection) {
+  public function __construct(PimpleContainer $container) {
     $this->container = $container;
-    $this->controllers = $controllers;
-    $this->routeCollection = $routeCollection;
   }
 
   public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
-    $this->routeCollection->addCollection($this->controllers->flush());
     return $this->container['kernel']->handle($request, $type, $catch);
   }
 }
 
-$controllers = new \ControllerCollection();
 $routeCollection = new RouteCollection();
+$defaultRoute = new Route('/');
 $fakeRoutes = [];
 $app = new PimpleContainer();
-$httpKernelImpl = new HttpKernelImpl($app, $controllers, $routeCollection);
+
+$httpKernelImpl = new HttpKernelImpl($app);
+
+function generateRouteName($route) {
+  $methods = implode('_', $route->getMethods()).'_';
+
+  $routeName = $methods.$route->getPath();
+  $routeName = str_replace(['/', ':', '|', '-'], '_', $routeName);
+  $routeName = preg_replace('/[^a-z0-9A-Z_.]+/', '', $routeName);
+
+  // Collapse consecutive underscores down into a single underscore.
+  $routeName = preg_replace('/_+/', '_', $routeName);
+  return $routeName;
+}
+
+function createRoute($pattern, $to = null, $routeName = null) {
+  global $defaultRoute, $routeCollection;
+  $route = clone $defaultRoute;
+  $route->setPath($pattern);
+  $route->setDefault('_controller', $to);
+  if ($routeName == null) {
+    $routeName = $base = generateRouteName($route);
+    $i = 0;
+    while ($routeCollection->get($routeName)) {
+      $routeName = $base.'_'.++$i;
+    }
+  }
+  $routeCollection->add($routeName, $route);
+  return $route;
+}
+
+function get($pattern, $to = null, $routeName = null) {
+  return createRoute($pattern, $to, $routeName)->setMethods('GET');
+}
+
+function post($pattern, $to = null, $routeName = null) {
+  return createRoute($pattern, $to, $routeName)->setMethods('POST');
+}
+
+function setRequirement(string $parameterName, string $pattern) {
+  global $defaultRoute, $routeCollection;
+  $defaultRoute->setRequirement($parameterName, $pattern);
+  foreach ($routeCollection->all() as $route) {
+    $route->setRequirement($parameterName, $pattern);
+  }
+}
 
 $app['request.http_port'] = 80;
 $app['request.https_port'] = 443;
@@ -805,7 +842,7 @@ $app['security.authentication.failure_handler._proto'] = $app->protect(function 
 $app['security.authentication_listener.form._proto'] = $app->protect(function ($name, $options) use ($app, &$fakeRoutes) {
   return function () use ($app, $name, $options, &$fakeRoutes) {
     $fakeRoutes[] = [
-      'match',
+      'createRoute',
       $tmp = isset($options['check_path']) ? $options['check_path'] : '/login_check',
       str_replace('/', '_', ltrim($tmp, '/'))
     ];
@@ -918,27 +955,26 @@ $app['dispatcher']->addSubscriber($app['security.firewall']);
 #-------------------------------------------------------------------------------
 
 #Set your global assertions and stuff ------------------------------------------
-$controllers
-  ->setRequirement("hash_id", "\d+")
-  ->setRequirement("hasher_id", "\d+")
-  ->setRequirement("hasher_id2", "\d+")
-  ->setRequirement("hare_id", "\d+")
-  ->setRequirement("user_id", "\d+")
-  ->setRequirement("hare_type", "\d+")
-  ->setRequirement("hash_type", "\d+")
-  ->setRequirement("event_tag_ky", "\d+")
-  ->setRequirement("year_value", "\d+")
-  ->setRequirement("day_count","\d+")
-  ->setRequirement("month_count","\d+")
-  ->setRequirement("min_hash_count","\d+")
-  ->setRequirement("max_percentage","\d+")
-  ->setRequirement("analversary_number","\d+")
-  ->setRequirement("row_limit","\d+")
-  ->setRequirement("kennel_ky","\d+")
-  ->setRequirement("horizon","\d+")
-  ->setRequirement("kennel_abbreviation","^[A-Za-z0-9]+$")
-  ->setRequirement("name","^[a-z_]+$")
-  ->setRequirement("ridiculous","^ridiculous\d+$");
+setRequirement("hash_id", "\d+");
+setRequirement("hasher_id", "\d+");
+setRequirement("hasher_id2", "\d+");
+setRequirement("hare_id", "\d+");
+setRequirement("user_id", "\d+");
+setRequirement("hare_type", "\d+");
+setRequirement("hash_type", "\d+");
+setRequirement("event_tag_ky", "\d+");
+setRequirement("year_value", "\d+");
+setRequirement("day_count","\d+");
+setRequirement("month_count","\d+");
+setRequirement("min_hash_count","\d+");
+setRequirement("max_percentage","\d+");
+setRequirement("analversary_number","\d+");
+setRequirement("row_limit","\d+");
+setRequirement("kennel_ky","\d+");
+setRequirement("horizon","\d+");
+setRequirement("kennel_abbreviation","^[A-Za-z0-9]+$");
+setRequirement("name","^[a-z_]+$");
+setRequirement("ridiculous","^ridiculous\d+$");
 #-------------------------------------------------------------------------------
 
 $twigClassPath = __DIR__.'vendor/twig/twig/lib';
@@ -1120,354 +1156,352 @@ if (!$schema->tablesExist('USERS')) {
 }
 
 # Register the URls
-$controllers->get('/',                                                    'HashController:slashAction')->setOption('routeName', 'homepage');
-$controllers->get('/{kennel_abbreviation}/rss',                           'HashController:rssAction');
-$controllers->get('/{kennel_abbreviation}/events/rss',                    'HashController:eventsRssAction');
+get('/',                                                    'HashController:slashAction', 'homepage');
+get('/{kennel_abbreviation}/rss',                           'HashController:rssAction');
+get('/{kennel_abbreviation}/events/rss',                    'HashController:eventsRssAction');
 
 #Admin section logon
-$controllers->get('/logonscreen',                                         'HashController:logonScreenAction');
-$controllers->get('/admin/logoutaction',                                  'AdminController:logoutAction');
-$controllers->get('/admin/hello',                                         'AdminController:helloAction');
+get('/logonscreen',                                         'HashController:logonScreenAction');
+get('/admin/logoutaction',                                  'AdminController:logoutAction');
+get('/admin/hello',                                         'AdminController:helloAction');
 
 #Superadmin section logon
-$controllers->get('/logonscreen/sa',                                        'SuperAdminController:logonScreenAction');
-$controllers->get('/superadmin/logoutaction',                               'SuperAdminController:logoutAction');
-$controllers->get('/superadmin/hello',                                      'SuperAdminController:helloAction');
-$controllers->get('/superadmin/integrity',                                  'SuperAdminController:integrityChecks');
-$controllers->get('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',  'SuperAdminController:modifyKennelAjaxPreAction');
-$controllers->post('/superadmin/{kennel_abbreviation}/editkennel/ajaxform', 'SuperAdminController:modifyKennelAjaxPostAction');
-$controllers->get('/superadmin/{hare_type}/editharetype/ajaxform',          'SuperAdminController:modifyHareTypeAjaxPreAction');
-$controllers->post('/superadmin/{hare_type}/editharetype/ajaxform',         'SuperAdminController:modifyHareTypeAjaxPostAction');
-$controllers->get('/superadmin/{hash_type}/edithashtype/ajaxform',          'SuperAdminController:modifyHashTypeAjaxPreAction');
-$controllers->post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController:modifyHashTypeAjaxPostAction');
-$controllers->get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController:modifyUserAjaxPreAction');
-$controllers->post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController:modifyUserAjaxPostAction');
-$controllers->get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController:modifySiteConfigAjaxPreAction');
-$controllers->post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController:modifySiteConfigAjaxPostAction');
-$controllers->get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController:modifyRidiculousAjaxPreAction');
-$controllers->post('/superadmin/{ridiculous}/editridiculous/ajaxform',      'SuperAdminController:modifyRidiculousAjaxPostAction');
-$controllers->post('/superadmin/deleteridiculous',                          'SuperAdminController:deleteRidiculous');
-$controllers->post('/superadmin/deleteuser',                                'SuperAdminController:deleteUser');
-$controllers->post('/superadmin/deletekennel',                              'SuperAdminController:deleteKennel');
-$controllers->post('/superadmin/deletehashtype',                            'SuperAdminController:deleteHashType');
-$controllers->post('/superadmin/deleteharetype',                            'SuperAdminController:deleteHareType');
-$controllers->get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController:newRidiculousAjaxPreAction');
-$controllers->post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController:newRidiculousAjaxPostAction');
-$controllers->get('/superadmin/newuser/ajaxform',                           'SuperAdminController:newUserAjaxPreAction');
-$controllers->post('/superadmin/newuser/ajaxform',                          'SuperAdminController:newUserAjaxPostAction');
-$controllers->get('/superadmin/newkennel/ajaxform',                         'SuperAdminController:newKennelAjaxPreAction');
-$controllers->post('/superadmin/newkennel/ajaxform',                        'SuperAdminController:newKennelAjaxPostAction');
-$controllers->get('/superadmin/newhashtype/ajaxform',                       'SuperAdminController:newHashTypeAjaxPreAction');
-$controllers->post('/superadmin/newhashtype/ajaxform',                      'SuperAdminController:newHashTypeAjaxPostAction');
-$controllers->get('/superadmin/newharetype/ajaxform',                       'SuperAdminController:newHareTypeAjaxPreAction');
-$controllers->post('/superadmin/newharetype/ajaxform',                      'SuperAdminController:newHareTypeAjaxPostAction');
-$controllers->get('/superadmin/export',                                     'SuperAdminController:exportDatabaseAction');
+get('/logonscreen/sa',                                        'SuperAdminController:logonScreenAction');
+get('/superadmin/logoutaction',                               'SuperAdminController:logoutAction');
+get('/superadmin/hello',                                      'SuperAdminController:helloAction');
+get('/superadmin/integrity',                                  'SuperAdminController:integrityChecks');
+get('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',  'SuperAdminController:modifyKennelAjaxPreAction');
+post('/superadmin/{kennel_abbreviation}/editkennel/ajaxform', 'SuperAdminController:modifyKennelAjaxPostAction');
+get('/superadmin/{hare_type}/editharetype/ajaxform',          'SuperAdminController:modifyHareTypeAjaxPreAction');
+post('/superadmin/{hare_type}/editharetype/ajaxform',         'SuperAdminController:modifyHareTypeAjaxPostAction');
+get('/superadmin/{hash_type}/edithashtype/ajaxform',          'SuperAdminController:modifyHashTypeAjaxPreAction');
+post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController:modifyHashTypeAjaxPostAction');
+get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController:modifyUserAjaxPreAction');
+post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController:modifyUserAjaxPostAction');
+get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController:modifySiteConfigAjaxPreAction');
+post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController:modifySiteConfigAjaxPostAction');
+get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController:modifyRidiculousAjaxPreAction');
+post('/superadmin/{ridiculous}/editridiculous/ajaxform',      'SuperAdminController:modifyRidiculousAjaxPostAction');
+post('/superadmin/deleteridiculous',                          'SuperAdminController:deleteRidiculous');
+post('/superadmin/deleteuser',                                'SuperAdminController:deleteUser');
+post('/superadmin/deletekennel',                              'SuperAdminController:deleteKennel');
+post('/superadmin/deletehashtype',                            'SuperAdminController:deleteHashType');
+post('/superadmin/deleteharetype',                            'SuperAdminController:deleteHareType');
+get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController:newRidiculousAjaxPreAction');
+post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController:newRidiculousAjaxPostAction');
+get('/superadmin/newuser/ajaxform',                           'SuperAdminController:newUserAjaxPreAction');
+post('/superadmin/newuser/ajaxform',                          'SuperAdminController:newUserAjaxPostAction');
+get('/superadmin/newkennel/ajaxform',                         'SuperAdminController:newKennelAjaxPreAction');
+post('/superadmin/newkennel/ajaxform',                        'SuperAdminController:newKennelAjaxPostAction');
+get('/superadmin/newhashtype/ajaxform',                       'SuperAdminController:newHashTypeAjaxPreAction');
+post('/superadmin/newhashtype/ajaxform',                      'SuperAdminController:newHashTypeAjaxPostAction');
+get('/superadmin/newharetype/ajaxform',                       'SuperAdminController:newHareTypeAjaxPreAction');
+post('/superadmin/newharetype/ajaxform',                      'SuperAdminController:newHareTypeAjaxPostAction');
+get('/superadmin/export',                                     'SuperAdminController:exportDatabaseAction');
 
-$controllers->get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController:adminCreateHashAjaxPreAction');
-$controllers->post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController:adminCreateHashAjaxPostAction');
-$controllers->get('/admin/{hash_id}/duplicateHash',                 'HashEventController:adminDuplicateHash');
+get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController:adminCreateHashAjaxPreAction');
+post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController:adminCreateHashAjaxPostAction');
+get('/admin/{hash_id}/duplicateHash',                 'HashEventController:adminDuplicateHash');
 
 # Hash event modification (ajaxified)
-$controllers->get('/admin/edithash/ajaxform/{hash_id}', 'HashEventController:adminModifyHashAjaxPreAction');
-$controllers->post('/admin/edithash/ajaxform/{hash_id}', 'HashEventController:adminModifyHashAjaxPostAction');
+get('/admin/edithash/ajaxform/{hash_id}', 'HashEventController:adminModifyHashAjaxPreAction');
+post('/admin/edithash/ajaxform/{hash_id}', 'HashEventController:adminModifyHashAjaxPostAction');
 
 # Hash person modification
-$controllers->get('/admin/modifyhasher/form/{hasher_id}',                 'HashPersonController:modifyHashPersonAction');
-$controllers->post('/admin/modifyhasher/form/{hasher_id}',                'HashPersonController:modifyHashPersonAction');
+get('/admin/modifyhasher/form/{hasher_id}',                 'HashPersonController:modifyHashPersonAction');
+post('/admin/modifyhasher/form/{hasher_id}',                'HashPersonController:modifyHashPersonAction');
 
 # Hash person deletion
-$controllers->get('/admin/deleteHasher/{hasher_id}',                      'HashPersonController:deleteHashPersonPreAction');
-$controllers->post('/admin/deleteHasherPost',                      'HashPersonController:deleteHashPersonAjaxAction');
+get('/admin/deleteHasher/{hasher_id}',                      'HashPersonController:deleteHashPersonPreAction');
+post('/admin/deleteHasherPost',                      'HashPersonController:deleteHashPersonAjaxAction');
 
 # Hash person creation
-$controllers->get('/admin/newhasher/form',                                'HashPersonController:createHashPersonAction');
-$controllers->post('/admin/newhasher/form',                               'HashPersonController:createHashPersonAction');
+get('/admin/newhasher/form',                                'HashPersonController:createHashPersonAction');
+post('/admin/newhasher/form',                               'HashPersonController:createHashPersonAction');
 
 # Change admin password
-$controllers->get('/admin/newPassword/form',                                'AdminController:newPasswordAction');
-$controllers->post('/admin/newPassword/form',                               'AdminController:newPasswordAction');
+get('/admin/newPassword/form',                                'AdminController:newPasswordAction');
+post('/admin/newPassword/form',                               'AdminController:newPasswordAction');
 
 # View audit records
-$controllers->get('/admin/viewAuditRecords',                                  'AdminController:viewAuditRecordsPreActionJson');
-$controllers->post('/admin/viewAuditRecords',                                 'AdminController:viewAuditRecordsJson');
+get('/admin/viewAuditRecords',                                  'AdminController:viewAuditRecordsPreActionJson');
+post('/admin/viewAuditRecords',                                 'AdminController:viewAuditRecordsJson');
 
 # Modify the participation for an event
-$controllers->get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController:hashParticipationJsonPreAction');
-$controllers->post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController:hashParticipationJsonPostAction');
+get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController:hashParticipationJsonPreAction');
+post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController:hashParticipationJsonPostAction');
 
 # Page to manage the event tags
-$controllers->get('/admin/tags/manageeventtags',                            'TagController:manageEventTagsPreAction');
-$controllers->get('/admin/tags/geteventtagswithcounts',                     'TagController:getEventTagsWithCountsJsonAction');
-$controllers->get('/admin/tags/getalleventtags',                            'TagController:getAllEventTagsJsonAction');
-$controllers->get('/admin/tags/getmatchingeventtags',                       'TagController:getMatchingEventTagsJsonAction');
-#$controllers->post('/admin/tags/manageeventtags',                           'TagController:manageEventTagsJsonPostAction');
-$controllers->post('/admin/tags/addneweventtag',                            'TagController:addNewEventTag');
+get('/admin/tags/manageeventtags',                            'TagController:manageEventTagsPreAction');
+get('/admin/tags/geteventtagswithcounts',                     'TagController:getEventTagsWithCountsJsonAction');
+get('/admin/tags/getalleventtags',                            'TagController:getAllEventTagsJsonAction');
+get('/admin/tags/getmatchingeventtags',                       'TagController:getMatchingEventTagsJsonAction');
+#$post('/admin/tags/manageeventtags',                           'TagController:manageEventTagsJsonPostAction');
+post('/admin/tags/addneweventtag',                            'TagController:addNewEventTag');
 
 # Add or remove tags to events
-$controllers->post('/admin/tags/addtagtoevent',                             'TagController:addTagToEventJsonAction');
-$controllers->post('/admin/tags/removetagfromevent',                        'TagController:removeTagFromEventJsonAction');
-$controllers->get('/admin/tags/eventscreen/{hash_id}',                      'TagController:showEventForTaggingPreAction');
+post('/admin/tags/addtagtoevent',                             'TagController:addTagToEventJsonAction');
+post('/admin/tags/removetagfromevent',                        'TagController:removeTagFromEventJsonAction');
+get('/admin/tags/eventscreen/{hash_id}',                      'TagController:showEventForTaggingPreAction');
 
 # Functions to add and delete hounds and hares to the hashes
-$controllers->post('/admin/hash/addHasherToHash',                         'HashEventController:addHashParticipant');
-$controllers->post('/admin/hash/addHareToHash',                           'HashEventController:addHashOrganizer');
-$controllers->post('/admin/hash/deleteHasherFromHash',                    'HashEventController:deleteHashParticipant');
-$controllers->post('/admin/hash/deleteHareFromHash',                      'HashEventController:deleteHashOrganizer');
+post('/admin/hash/addHasherToHash',                         'HashEventController:addHashParticipant');
+post('/admin/hash/addHareToHash',                           'HashEventController:addHashOrganizer');
+post('/admin/hash/deleteHasherFromHash',                    'HashEventController:deleteHashParticipant');
+post('/admin/hash/deleteHareFromHash',                      'HashEventController:deleteHashOrganizer');
 
-$controllers->post('/admin/hash/getHaresForEvent',                        'HashEventController:getHaresForEvent');
-$controllers->post('/admin/hash/getHashersForEvent',                      'HashEventController:getHashersForEvent');
+post('/admin/hash/getHaresForEvent',                        'HashEventController:getHaresForEvent');
+post('/admin/hash/getHashersForEvent',                      'HashEventController:getHashersForEvent');
 
-$controllers->get('/admin/listOrphanedHashers',                             'AdminController:listOrphanedHashersAction');
+get('/admin/listOrphanedHashers',                             'AdminController:listOrphanedHashersAction');
 
-$controllers->get('/admin/legacy',                                          'AdminController:legacy');
-$controllers->get('/admin/{kennel_abbreviation}/legacy',                    'AdminController:legacy');
-$controllers->post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController:legacyUpdate');
-$controllers->get('/admin/roster',                                          'AdminController:roster');
-$controllers->get('/admin/{kennel_abbreviation}/roster',                    'AdminController:roster');
-$controllers->get('/admin/awards/{type}',                                   'AdminController:awards');
-$controllers->get('/admin/{kennel_abbreviation}/awards/{type}',             'AdminController:awards');
-$controllers->get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController:awards');
-$controllers->post('/admin/updateHasherAward',                              'AdminController:updateHasherAwardAjaxAction');
+get('/admin/legacy',                                          'AdminController:legacy');
+get('/admin/{kennel_abbreviation}/legacy',                    'AdminController:legacy');
+post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController:legacyUpdate');
+get('/admin/roster',                                          'AdminController:roster');
+get('/admin/{kennel_abbreviation}/roster',                    'AdminController:roster');
+get('/admin/awards/{type}',                                   'AdminController:awards');
+get('/admin/{kennel_abbreviation}/awards/{type}',             'AdminController:awards');
+get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController:awards');
+post('/admin/updateHasherAward',                              'AdminController:updateHasherAwardAjaxAction');
 
-$controllers->get('/admin/listhashes2',                                    'AdminController:listHashesPreActionJson');
-$controllers->get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController:listHashesPreActionJson');
-$controllers->post('/admin/{kennel_abbreviation}/listhashes2',             'AdminController:getHashListJson');
+get('/admin/listhashes2',                                    'AdminController:listHashesPreActionJson');
+get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController:listHashesPreActionJson');
+post('/admin/{kennel_abbreviation}/listhashes2',             'AdminController:getHashListJson');
 
-$controllers->get('/admin/listhashers2',                                    'AdminController:listHashersPreActionJson');
-$controllers->post('/admin/listhashers2',                                   'AdminController:getHashersListJson');
+get('/admin/listhashers2',                                    'AdminController:listHashersPreActionJson');
+post('/admin/listhashers2',                                   'AdminController:getHashersListJson');
 
-$controllers->post('/admin/listhashers3',                                   'AdminController:getHashersParticipationListJson');
+post('/admin/listhashers3',                                   'AdminController:getHashersParticipationListJson');
 
-$controllers->get('/admin/hasherDetailsKennelSelection/{hasher_id}',        'AdminController:hasherDetailsKennelSelection');
-$controllers->post('/admin/deleteHash',                                     'AdminController:deleteHash');
+get('/admin/hasherDetailsKennelSelection/{hasher_id}',        'AdminController:hasherDetailsKennelSelection');
+post('/admin/deleteHash',                                     'AdminController:deleteHash');
 
 #The per event budget screen
-$controllers->get('/admin/eventBudget/{hash_id}','AdminController:eventBudgetPreAction');
+get('/admin/eventBudget/{hash_id}','AdminController:eventBudgetPreAction');
 
-$controllers->get('/{kennel_abbreviation}/mia',                                       'HashController:miaPreActionJson');
-$controllers->post('/{kennel_abbreviation}/mia',                                       'HashController:miaPostActionJson');
+get('/{kennel_abbreviation}/mia',                                       'HashController:miaPreActionJson');
+post('/{kennel_abbreviation}/mia',                                       'HashController:miaPostActionJson');
 
-$controllers->post('/{kennel_abbreviation}/listhashers2',                                       'HashController:getHasherListJson');
+post('/{kennel_abbreviation}/listhashers2',                                       'HashController:getHasherListJson');
 
-$controllers->get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController:listVirginHaringsPreActionJson');
-$controllers->post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController:getVirginHaringsListJson');
+get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController:listVirginHaringsPreActionJson');
+post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController:getVirginHaringsListJson');
 
-$controllers->get('/{kennel_abbreviation}/attendancePercentages',                                'HashController:attendancePercentagesPreActionJson');
-$controllers->post('/{kennel_abbreviation}/attendancePercentages',                               'HashController:attendancePercentagesPostActionJson');
+get('/{kennel_abbreviation}/attendancePercentages',                                'HashController:attendancePercentagesPreActionJson');
+post('/{kennel_abbreviation}/attendancePercentages',                               'HashController:attendancePercentagesPostActionJson');
 
-$controllers->get('/{kennel_abbreviation}/CohareCounts/{hare_type}',                                    'HashController:cohareCountsPreActionJson');
-$controllers->get('/{kennel_abbreviation}/allCohareCounts',                                      'HashController:allCohareCountsPreActionJson');
-$controllers->post('/{kennel_abbreviation}/cohareCounts',                                        'HashController:getCohareCountsJson');
+get('/{kennel_abbreviation}/CohareCounts/{hare_type}',                                    'HashController:cohareCountsPreActionJson');
+get('/{kennel_abbreviation}/allCohareCounts',                                      'HashController:allCohareCountsPreActionJson');
+post('/{kennel_abbreviation}/cohareCounts',                                        'HashController:getCohareCountsJson');
 
-$controllers->get('/{kennel_abbreviation}/locationCounts',                                       'HashController:listLocationCountsPreActionJson');
-$controllers->post('/{kennel_abbreviation}/locationCounts',                                      'HashController:getLocationCountsJson');
+get('/{kennel_abbreviation}/locationCounts',                                       'HashController:listLocationCountsPreActionJson');
+post('/{kennel_abbreviation}/locationCounts',                                      'HashController:getLocationCountsJson');
 
-$controllers->get('/{kennel_abbreviation}/listhashes2',                                         'HashEventController:listHashesPreActionJson');
-$controllers->post('/{kennel_abbreviation}/listhashes2',                                        'HashEventController:listHashesPostActionJson');
+get('/{kennel_abbreviation}/listhashes2',                                         'HashEventController:listHashesPreActionJson');
+post('/{kennel_abbreviation}/listhashes2',                                        'HashEventController:listHashesPostActionJson');
 
-$controllers->get('/{kennel_abbreviation}/eventsHeatMap',                                        'ObscureStatisticsController:kennelEventsHeatMap');
-$controllers->get('/{kennel_abbreviation}/eventsClusterMap',                                        'ObscureStatisticsController:kennelEventsClusterMap');
-$controllers->get('/{kennel_abbreviation}/eventsMarkerMap',                                        'ObscureStatisticsController:kennelEventsMarkerMap');
+get('/{kennel_abbreviation}/eventsHeatMap',                                        'ObscureStatisticsController:kennelEventsHeatMap');
+get('/{kennel_abbreviation}/eventsClusterMap',                                        'ObscureStatisticsController:kennelEventsClusterMap');
+get('/{kennel_abbreviation}/eventsMarkerMap',                                        'ObscureStatisticsController:kennelEventsMarkerMap');
 
-$controllers->get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController:listStreakersByHashAction');
+get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController:listStreakersByHashAction');
 
-$controllers->get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'HashController:attendanceRecordForHasherAction');
+get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'HashController:attendanceRecordForHasherAction');
 
-$controllers->get('/{kennel_abbreviation}/listhashers/byhash/{hash_id}',                        'HashController:listHashersByHashAction');
-$controllers->get('/{kennel_abbreviation}/listhares/byhash/{hash_id}',                          'HashController:listHaresByHashAction');
-$controllers->get('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}',                     'HashController:listHashesByHasherAction');
-$controllers->get('/{kennel_abbreviation}/listhashes/byhare/{hasher_id}',                       'HashController:listHashesByHareAction');
-$controllers->get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController:viewHasherChartsAction');
-$controllers->get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController:hashedWithAction');
+get('/{kennel_abbreviation}/listhashers/byhash/{hash_id}',                        'HashController:listHashersByHashAction');
+get('/{kennel_abbreviation}/listhares/byhash/{hash_id}',                          'HashController:listHaresByHashAction');
+get('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}',                     'HashController:listHashesByHasherAction');
+get('/{kennel_abbreviation}/listhashes/byhare/{hasher_id}',                       'HashController:listHashesByHareAction');
+get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController:viewHasherChartsAction');
+get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController:hashedWithAction');
 
-$controllers->get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController:viewOverallHareChartsAction');
-$controllers->get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController:viewHareChartsAction');
+get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController:viewOverallHareChartsAction');
+get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController:viewHareChartsAction');
 
-$controllers->get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController:viewKennelChartsAction');
+get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController:viewKennelChartsAction');
 
-$controllers->get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController:viewAttendanceChartsAction');
+get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController:viewAttendanceChartsAction');
 
 #First timers / last timers
-$controllers->get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',              'ObscureStatisticsController:viewFirstTimersChartsAction');
-$controllers->get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'ObscureStatisticsController:viewLastTimersChartsAction');
+get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',              'ObscureStatisticsController:viewFirstTimersChartsAction');
+get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'ObscureStatisticsController:viewLastTimersChartsAction');
 
 #Virgin harings charts
-$controllers->get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController:virginHaringsChartsAction');
+get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController:virginHaringsChartsAction');
 
 #Distinct Hasher hashings charts
-$controllers->get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStatisticsController:distinctHasherChartsAction');
+get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStatisticsController:distinctHasherChartsAction');
 
-$controllers->get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'ObscureStatisticsController:distinctHaresChartsAction');
+get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'ObscureStatisticsController:distinctHaresChartsAction');
 
-$controllers->get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HashController:viewHashAction');
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HashController:hasherCountsForEventAction');
+get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HashController:viewHashAction');
+get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HashController:hasherCountsForEventAction');
 
-$controllers->get('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}',               'HashController:omniAnalversariesForEventAction');
+get('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}',               'HashController:omniAnalversariesForEventAction');
 
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}',               'HashController:hasherCountsForEventCountyAction');
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}',               'HashController:hasherCountsForEventPostalCodeAction');
+get('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}',               'HashController:hasherCountsForEventCountyAction');
+get('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}',               'HashController:hasherCountsForEventPostalCodeAction');
 
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}',            'HashController:hasherCountsForEventStateAction');
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}',             'HashController:hasherCountsForEventCityAction');
-$controllers->get('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}',     'HashController:hasherCountsForEventNeighborhoodAction');
+get('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}',            'HashController:hasherCountsForEventStateAction');
+get('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}',             'HashController:hasherCountsForEventCityAction');
+get('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}',     'HashController:hasherCountsForEventNeighborhoodAction');
 
-$controllers->get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',                     'HashController:backSlidersForEventV2Action');
+get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',                     'HashController:backSlidersForEventV2Action');
 
-$controllers->get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HashController:consolidatedEventAnalversariesAction');
+get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HashController:consolidatedEventAnalversariesAction');
 
-$controllers->get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'ObscureStatisticsController:trendingHashersAction');
-$controllers->get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'ObscureStatisticsController:trendingHaresAction');
+get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'ObscureStatisticsController:trendingHashersAction');
+get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'ObscureStatisticsController:trendingHaresAction');
 
 #Ajax version of untrending hares graphs
-$controllers->get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController:unTrendingHaresJsonPreAction');
-$controllers->get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController:unTrendingHaresJsonPostAction');
+get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController:unTrendingHaresJsonPreAction');
+get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController:unTrendingHaresJsonPostAction');
 
-$controllers->get('/{kennel_abbreviation}/pendingHasherAnalversaries',                          'HashController:pendingHasherAnalversariesAction');
-$controllers->get('/{kennel_abbreviation}/predictedHasherAnalversaries',                        'HashController:predictedHasherAnalversariesAction');
-$controllers->get('/{kennel_abbreviation}/predictedCenturions',                                 'HashController:predictedCenturionsAction');
-$controllers->get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HashController:pendingHareAnalversariesAction');
-$controllers->get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HashController:haringPercentageAllHashesAction');
-$controllers->get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HashController:haringPercentageAction');
-$controllers->get('/{kennel_abbreviation}/hashingCounts',                                       'HashController:hashingCountsAction');
-$controllers->get('/{kennel_abbreviation}/haringCounts',                                        'HashController:haringCountsAction');
-$controllers->get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HashController:haringTypeCountsAction');
-$controllers->get('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',             'HashController:coharelistByHareAllHashesAction');
-$controllers->get('/{kennel_abbreviation}/coharelist/byhare/{hare_type}/{hasher_id}',           'HashController:coharelistByHareAction');
-$controllers->get('/{kennel_abbreviation}/coharecount/byhare/allhashes/{hasher_id}',            'HashController:cohareCountByHareAllHashesAction');
-$controllers->get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',          'HashController:cohareCountByHareAction');
-$controllers->get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HashController:hashAttendanceByHareLowestAction');
-$controllers->get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HashController:hashAttendanceByHareHighestAction');
-$controllers->get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HashController:hashAttendanceByHareAverageAction');
-$controllers->get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController:hashAttendanceByHareGrandTotalNonDistinctHashersAction');
-$controllers->get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController:hashAttendanceByHareGrandTotalDistinctHashersAction');
-$controllers->get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController:hasherCountsByHareAction');
-$controllers->get('/{kennel_abbreviation}/percentages/harings',                                 'HashController:percentageHarings');
-$controllers->get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController:getHasherAnalversariesAction');
-$controllers->get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController:getHareAnalversariesAction');
-$controllers->get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController:getHareAnalversariesByHareTypeAction');
-$controllers->get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController:getProjectedHasherAnalversariesAction');
+get('/{kennel_abbreviation}/pendingHasherAnalversaries',                          'HashController:pendingHasherAnalversariesAction');
+get('/{kennel_abbreviation}/predictedHasherAnalversaries',                        'HashController:predictedHasherAnalversariesAction');
+get('/{kennel_abbreviation}/predictedCenturions',                                 'HashController:predictedCenturionsAction');
+get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HashController:pendingHareAnalversariesAction');
+get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HashController:haringPercentageAllHashesAction');
+get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HashController:haringPercentageAction');
+get('/{kennel_abbreviation}/hashingCounts',                                       'HashController:hashingCountsAction');
+get('/{kennel_abbreviation}/haringCounts',                                        'HashController:haringCountsAction');
+get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HashController:haringTypeCountsAction');
+get('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',             'HashController:coharelistByHareAllHashesAction');
+get('/{kennel_abbreviation}/coharelist/byhare/{hare_type}/{hasher_id}',           'HashController:coharelistByHareAction');
+get('/{kennel_abbreviation}/coharecount/byhare/allhashes/{hasher_id}',            'HashController:cohareCountByHareAllHashesAction');
+get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',          'HashController:cohareCountByHareAction');
+get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HashController:hashAttendanceByHareLowestAction');
+get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HashController:hashAttendanceByHareHighestAction');
+get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HashController:hashAttendanceByHareAverageAction');
+get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController:hashAttendanceByHareGrandTotalNonDistinctHashersAction');
+get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController:hashAttendanceByHareGrandTotalDistinctHashersAction');
+get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController:hasherCountsByHareAction');
+get('/{kennel_abbreviation}/percentages/harings',                                 'HashController:percentageHarings');
+get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController:getHasherAnalversariesAction');
+get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController:getHareAnalversariesAction');
+get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController:getHareAnalversariesByHareTypeAction');
+get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController:getProjectedHasherAnalversariesAction');
 
-$controllers->get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController:getLongestStreaksAction');
-$controllers->get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController:aboutContactAction');
+get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController:getLongestStreaksAction');
+get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController:aboutContactAction');
 
 # Hash name (substring) analysis
-$controllers->get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController:hasherNameAnalysisAction');
-$controllers->get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsController:hasherNameAnalysisAction2');
-$controllers->get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController:hasherNameAnalysisWordCloudAction');
+get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController:hasherNameAnalysisAction');
+get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsController:hasherNameAnalysisAction2');
+get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController:hasherNameAnalysisWordCloudAction');
 
 # View the jumbo counts table
-$controllers->get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController:jumboCountsTablePreActionJson');
-$controllers->post('/{kennel_abbreviation}/jumboCountsTable',                'HashController:jumboCountsTablePostActionJson');
+get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController:jumboCountsTablePreActionJson');
+post('/{kennel_abbreviation}/jumboCountsTable',                'HashController:jumboCountsTablePostActionJson');
 
 # View the jumbo percentages table
-$controllers->get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HashController:jumboPercentagesTablePreActionJson');
-$controllers->post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController:jumboPercentagesTablePostActionJson');
+get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HashController:jumboPercentagesTablePreActionJson');
+post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController:jumboPercentagesTablePostActionJson');
 
 #Show events by event tag
-$controllers->get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController:listHashesByEventTagAction');
-$controllers->get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController:chartsGraphsByEventTagAction');
+get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController:listHashesByEventTagAction');
+get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController:chartsGraphsByEventTagAction');
 
 # Functions for the "by year" statistics
-$controllers->get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController:getYearInReviewAction');
-$controllers->post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'ObscureStatisticsController:getHasherCountsByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'ObscureStatisticsController:getTotalHareCountsByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'ObscureStatisticsController:getHareCountsByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'ObscureStatisticsController:getNewbieHasherListByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'ObscureStatisticsController:getNewbieHareListByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'ObscureStatisticsController:getNewbieOverallHareListByYear');
+get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController:getYearInReviewAction');
+post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'ObscureStatisticsController:getHasherCountsByYear');
+post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'ObscureStatisticsController:getTotalHareCountsByYear');
+post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'ObscureStatisticsController:getHareCountsByYear');
+post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'ObscureStatisticsController:getNewbieHasherListByYear');
+post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'ObscureStatisticsController:getNewbieHareListByYear');
+post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'ObscureStatisticsController:getNewbieOverallHareListByYear');
 
 # Mappings for hasher specific statistics
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController:getHashersVirginHash');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',                      'ObscureStatisticsController:getHashersLatestHash');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/firstHare',                           'ObscureStatisticsController:getHashersVirginHare');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController:getHashersLatestHare');
+post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController:getHashersVirginHash');
+post('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',                      'ObscureStatisticsController:getHashersLatestHash');
+post('/{kennel_abbreviation}/statistics/hasher/firstHare',                           'ObscureStatisticsController:getHashersVirginHare');
+post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController:getHashersLatestHare');
 
 # Mappings for kennel specific statistics
-$controllers->post('/{kennel_abbreviation}/statistics/kennel/firstHash',                           'ObscureStatisticsController:getKennelsVirginHash');
-$controllers->post('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',                      'ObscureStatisticsController:getKennelsLatestHash');
+post('/{kennel_abbreviation}/statistics/kennel/firstHash',                           'ObscureStatisticsController:getKennelsVirginHash');
+post('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',                      'ObscureStatisticsController:getKennelsLatestHash');
 
 # Mappings for hasher hashes by (year/month/state/etc)
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/year',                      'ObscureStatisticsController:getHasherHashesByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/quarter',                   'ObscureStatisticsController:getHasherHashesByQuarter');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/month',                     'ObscureStatisticsController:getHasherHashesByMonth');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/dayname',                   'ObscureStatisticsController:getHasherHashesByDayName');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/state',                     'ObscureStatisticsController:getHasherHashesByState');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',                      'ObscureStatisticsController:getHasherHashesByCity');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/year',                      'ObscureStatisticsController:getHasherHashesByYear');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/quarter',                   'ObscureStatisticsController:getHasherHashesByQuarter');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/month',                     'ObscureStatisticsController:getHasherHashesByMonth');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/dayname',                   'ObscureStatisticsController:getHasherHashesByDayName');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/state',                     'ObscureStatisticsController:getHasherHashesByState');
+post('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',                      'ObscureStatisticsController:getHasherHashesByCity');
 
 # Mappings for kennel hashes by (year/month/state/etc)
-$controllers->post('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',                      'ObscureStatisticsController:getKennelHashesByCity');
-$controllers->post('/{kennel_abbreviation}/statistics/kennel/hashes/by/county',                      'ObscureStatisticsController:getKennelHashesByCounty');
-$controllers->post('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',                      'ObscureStatisticsController:getKennelHashesByPostalcode');
+post('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',                      'ObscureStatisticsController:getKennelHashesByCity');
+post('/{kennel_abbreviation}/statistics/kennel/hashes/by/county',                      'ObscureStatisticsController:getKennelHashesByCounty');
+post('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',                      'ObscureStatisticsController:getKennelHashesByPostalcode');
 
 # Mappings for hasher harings by (year/month/state/etc)
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/year',                      'ObscureStatisticsController:getHasherAllHaringsByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',                   'ObscureStatisticsController:getHasherAllHaringsByQuarter');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/month',                     'ObscureStatisticsController:getHasherAllHaringsByMonth');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/dayname',                   'ObscureStatisticsController:getHasherAllHaringsByDayName');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/state',                     'ObscureStatisticsController:getHasherAllHaringsByState');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'ObscureStatisticsController:getHasherAllHaringsByCity');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/year',                      'ObscureStatisticsController:getHasherAllHaringsByYear');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',                   'ObscureStatisticsController:getHasherAllHaringsByQuarter');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/month',                     'ObscureStatisticsController:getHasherAllHaringsByMonth');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/dayname',                   'ObscureStatisticsController:getHasherAllHaringsByDayName');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/state',                     'ObscureStatisticsController:getHasherAllHaringsByState');
+post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'ObscureStatisticsController:getHasherAllHaringsByCity');
 
 # Mappings for hasher harings by (year/month/state/etc) by hare type
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',                      'ObscureStatisticsController:getHasherHaringsByYear');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'ObscureStatisticsController:getHasherHaringsByQuarter');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'ObscureStatisticsController:getHasherHaringsByMonth');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/dayname',                   'ObscureStatisticsController:getHasherHaringsByDayName');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',                     'ObscureStatisticsController:getHasherHaringsByState');
-$controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',                      'ObscureStatisticsController:getHasherHaringsByCity');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',                      'ObscureStatisticsController:getHasherHaringsByYear');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'ObscureStatisticsController:getHasherHaringsByQuarter');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'ObscureStatisticsController:getHasherHaringsByMonth');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/dayname',                   'ObscureStatisticsController:getHasherHaringsByDayName');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',                     'ObscureStatisticsController:getHasherHaringsByState');
+post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',                      'ObscureStatisticsController:getHasherHaringsByCity');
 
 # Per person stats (more of them)
-$controllers->post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController:getCohareCountByHareAllHashes');
-$controllers->post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController:getCohareCountByHare');
+post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController:getCohareCountByHareAllHashes');
+post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController:getCohareCountByHare');
 
-$controllers->get('/{kennel_abbreviation}/basic/stats',         'HashController:basicStatsAction');
-$controllers->get('/{kennel_abbreviation}/cautionary/stats',    'HashController:cautionaryStatsAction');
-$controllers->get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController:miscellaneousStatsAction');
+get('/{kennel_abbreviation}/basic/stats',         'HashController:basicStatsAction');
+get('/{kennel_abbreviation}/cautionary/stats',    'HashController:cautionaryStatsAction');
+get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController:miscellaneousStatsAction');
 
 #Revised top level pages
-$controllers->get('/{kennel_abbreviation}/people/stats', 'HashController:peopleStatsAction');
-$controllers->get('/{kennel_abbreviation}/analversaries/stats', 'HashController:analversariesStatsAction');
-$controllers->get('/{kennel_abbreviation}/year_by_year/stats', 'HashController:yearByYearStatsAction');
-$controllers->get('/{kennel_abbreviation}/kennel/records', 'HashController:kennelRecordsStatsAction');
-$controllers->get('/{kennel_abbreviation}/kennel/general_info', 'HashController:kennelGeneralInfoStatsAction');
+get('/{kennel_abbreviation}/people/stats', 'HashController:peopleStatsAction');
+get('/{kennel_abbreviation}/analversaries/stats', 'HashController:analversariesStatsAction');
+get('/{kennel_abbreviation}/year_by_year/stats', 'HashController:yearByYearStatsAction');
+get('/{kennel_abbreviation}/kennel/records', 'HashController:kennelRecordsStatsAction');
+get('/{kennel_abbreviation}/kennel/general_info', 'HashController:kennelGeneralInfoStatsAction');
 
 #URLs for fastest/slowest to reach analversaries
-$controllers->get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/bydays', 'ObscureStatisticsController:quickestToReachAnalversaryByDaysAction');
-$controllers->get('/{kennel_abbreviation}/{analversary_number}/slowest/to/reach/bydays',  'ObscureStatisticsController:slowestToReachAnalversaryByDaysAction');
-$controllers->get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/date', 'ObscureStatisticsController:quickestToReachAnalversaryByDate');
+get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/bydays', 'ObscureStatisticsController:quickestToReachAnalversaryByDaysAction');
+get('/{kennel_abbreviation}/{analversary_number}/slowest/to/reach/bydays',  'ObscureStatisticsController:slowestToReachAnalversaryByDaysAction');
+get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/date', 'ObscureStatisticsController:quickestToReachAnalversaryByDate');
 
-$controllers->get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController:longestCareerAction');
-$controllers->get('/{kennel_abbreviation}/highest/averageDaysBetweenHashes','ObscureStatisticsController:highestAverageDaysBetweenHashesAction');
-$controllers->get('/{kennel_abbreviation}/lowest/averageDaysBetweenHashes','ObscureStatisticsController:lowestAverageDaysBetweenHashesAction');
-$controllers->get('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}','ObscureStatisticsController:everyonesLatestHashesAction');
-$controllers->get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','ObscureStatisticsController:everyonesFirstHashesAction');
+get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController:longestCareerAction');
+get('/{kennel_abbreviation}/highest/averageDaysBetweenHashes','ObscureStatisticsController:highestAverageDaysBetweenHashesAction');
+get('/{kennel_abbreviation}/lowest/averageDaysBetweenHashes','ObscureStatisticsController:lowestAverageDaysBetweenHashesAction');
+get('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}','ObscureStatisticsController:everyonesLatestHashesAction');
+get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','ObscureStatisticsController:everyonesFirstHashesAction');
 
-$controllers->get('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings','ObscureStatisticsController:highestAverageDaysBetweenAllHaringsAction');
-$controllers->get('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings','ObscureStatisticsController:lowestAverageDaysBetweenAllHaringsAction');
-$controllers->get('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController:highestAverageDaysBetweenHaringsAction');
-$controllers->get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController:lowestAverageDaysBetweenHaringsAction');
+get('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings','ObscureStatisticsController:highestAverageDaysBetweenAllHaringsAction');
+get('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings','ObscureStatisticsController:lowestAverageDaysBetweenAllHaringsAction');
+get('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController:highestAverageDaysBetweenHaringsAction');
+get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController:lowestAverageDaysBetweenHaringsAction');
 
-$controllers->get('/{kennel_abbreviation}/highest/attendedHashes','HashController:highestAttendedHashesAction');
-$controllers->get('/{kennel_abbreviation}/lowest/attendedHashes','HashController:lowestAttendedHashesAction');
+get('/{kennel_abbreviation}/highest/attendedHashes','HashController:highestAttendedHashesAction');
+get('/{kennel_abbreviation}/lowest/attendedHashes','HashController:lowestAttendedHashesAction');
 
-$controllers->get('/{kennel_abbreviation}/hashers/of/the/years','HashController:hashersOfTheYearsAction');
-$controllers->get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController:HaresOfTheYearsAction');
+get('/{kennel_abbreviation}/hashers/of/the/years','HashController:hashersOfTheYearsAction');
+get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController:HaresOfTheYearsAction');
 
 #Establish the mortal kombat head to head matchup functionality
-$controllers->get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HashController:twoPersonComparisonPreAction');
-$controllers->get('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',     'HashController:twoPersonComparisonAction');
-$controllers->post('/{kennel_abbreviation}/hashers/retrieve',                         'HashPersonController:retrieveHasherAction');
+get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HashController:twoPersonComparisonPreAction');
+get('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',     'HashController:twoPersonComparisonAction');
+post('/{kennel_abbreviation}/hashers/retrieve',                         'HashPersonController:retrieveHasherAction');
 
 # kennel home page
-$controllers->get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
+get('/{kennel_abbreviation}',                               'HashController:slashKennelAction2');
 
 $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
-$fakeRoutesCollection = new \ControllerCollection();
 foreach ($fakeRoutes as $route) {
   list($method, $pattern, $name) = $route;
-  $fakeRoutesCollection->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);
+  $routeCollection->add($name, $method($pattern)->setDefault('_controller', null));
 }
-$controllers->mount($fakeRoutesCollection);
 
 $request = Request::createFromGlobals();
 $contentType = $request->headers->get('Content-Type');
