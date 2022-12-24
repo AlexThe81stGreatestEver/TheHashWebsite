@@ -12,7 +12,6 @@ require_once 'HASH/Controller/SuperAdminController.php';
 require_once 'HASH/Controller/ObscureStatisticsController.php';
 require_once 'HASH/UserProvider.php';
 require_once 'Subscriber/KernelEventSubscriber.php';
-require_once 'Application.php';
 require_once 'ControllerCollection.php';
 
 use Doctrine\DBAL\Schema\Table;
@@ -24,6 +23,7 @@ use Monolog\ErrorHandler as MonologErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler;
 use Monolog\Logger;
+use Pimple\Container as PimpleContainer;
 use Pimple\Psr11\Container as Psr11Container;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
@@ -151,7 +151,7 @@ class HttpKernelImpl implements HttpKernelInterface
 
 $fakeRoutes = [];
 
-$app = new Application();
+$app = new PimpleContainer();
 $httpKernelImpl = new HttpKernelImpl($app);
 $app['request.http_port'] = 80;
 $app['request.https_port'] = 443;

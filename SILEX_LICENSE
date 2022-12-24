@@ -2,7 +2,6 @@ The following files were adapted from the abandoned Silex framework.
 The files were originally distributed with the Silex project and contained
 the copyright notice that appears below.
 
-Application.php
 Controller.php
 ControllerCollection.php
 Exception/ControllerFrozenException.php
