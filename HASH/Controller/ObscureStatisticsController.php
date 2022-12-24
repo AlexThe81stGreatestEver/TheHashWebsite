@@ -1929,10 +1929,14 @@ class ObscureStatisticsController extends BaseController {
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
       #Define the SQL to execute
-      $SQL = "SELECT HASHER_NAME, HASHER_KY
-        FROM HASHERS
-        WHERE
-          HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %'";
+      $SQL = "
+        SELECT HASHER_NAME, HASHER_KY
+          FROM HASHERS
+         WHERE HASHER_KY IN (
+               SELECT HASHER_KY
+                 FROM HASHINGS
+       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
 
       #Obtain the hare list
       $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
@@ -2195,7 +2199,14 @@ class ObscureStatisticsController extends BaseController {
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
       #Define the SQL to execute
-      $SQL = "SELECT HASHER_NAME, HASHER_KY FROM HASHERS WHERE HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %'";
+      $SQL = "
+        SELECT HASHER_NAME, HASHER_KY
+          FROM HASHERS
+         WHERE HASHER_KY IN (
+               SELECT HASHER_KY
+                 FROM HASHINGS
+       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
 
       #Obtain the hare list
       $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
@@ -2292,7 +2303,14 @@ class ObscureStatisticsController extends BaseController {
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
       #Define the SQL to execute
-      $SQL = "SELECT HASHER_NAME, HASHER_KY FROM HASHERS WHERE HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %'";
+      $SQL = "
+        SELECT HASHER_NAME, HASHER_KY
+          FROM HASHERS
+         WHERE HASHER_KY IN (
+               SELECT HASHER_KY
+                 FROM HASHINGS
+       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
 
       #Obtain the hare list
       $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
