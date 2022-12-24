@@ -23,7 +23,6 @@ use Symfony\Component\Routing\Route;
 class Controller
 {
     private $route;
-    private $routeName;
 
     /**
      * Constructor.
@@ -52,7 +51,7 @@ class Controller
      */
     public function getRouteName()
     {
-        return $this->routeName;
+        return $this->route->getOption("routeName");
     }
 
     /**
@@ -64,11 +63,11 @@ class Controller
      */
     public function bind($routeName)
     {
-        if ($this->routeName != null) {
+        if ($this->getRouteName() != null) {
             throw new \RuntimeException(sprintf('Calling %s on frozen %s instance.', __METHOD__, __CLASS__));
         }
 
-        $this->routeName = $routeName;
+        $this->route->setOption("routeName", $routeName);
         return $this;
     }
 
