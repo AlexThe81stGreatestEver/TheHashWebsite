@@ -1467,7 +1467,7 @@ foreach ($fakeRoutes as $route) {
   list($method, $pattern, $name) = $route;
   $fakeRoutesCollection->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);
 }
-$controllers->mount('/', $fakeRoutesCollection);
+$controllers->mount($fakeRoutesCollection);
 
 $request = Request::createFromGlobals();
 $contentType = $request->headers->get('Content-Type');

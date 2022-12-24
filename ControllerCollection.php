@@ -31,7 +31,6 @@ class ControllerCollection
 {
     protected $controllers = [];
     static $defaultRoute;
-    protected $prefix;
 
     public function __construct()
     {
@@ -43,14 +42,12 @@ class ControllerCollection
     /**
      * Mounts controllers under the given route prefix.
      *
-     * @param string                        $prefix      The route prefix
      * @param ControllerCollection|callable $controllers A ControllerCollection instance or a callable for defining routes
      *
      * @throws \LogicException
      */
-    public function mount($prefix, ControllerCollection $controllers)
+    public function mount(ControllerCollection $controllers)
     {
-        $controllers->prefix = $prefix;
         $this->controllers[] = $controllers;
     }
 
@@ -134,7 +131,7 @@ class ControllerCollection
         return $routeName;
     }
 
-    private function doFlush($prefix, RouteCollection $routes)
+    private function doFlush(string $prefix, RouteCollection $routes)
     {
         if ('' !== $prefix) {
             $prefix = '/'.trim(trim($prefix), '/');
@@ -153,7 +150,7 @@ class ControllerCollection
                 }
                 $routes->add($name, $controller);
             } else {
-                $controller->doFlush($prefix.$controller->prefix, $routes);
+                $controller->doFlush($prefix.'/', $routes);
             }
         }
 
