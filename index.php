@@ -129,25 +129,28 @@ use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 class HttpKernelImpl implements HttpKernelInterface 
 {
-  private PimpleContainer $container;
+  private \ControllerCollection $controllers;
   private RouteCollection $routeCollection;
+  private PimpleContainer $container;
 
-  public function __construct(PimpleContainer $container, RouteCollection $routeCollection) {
+  public function __construct(PimpleContainer $container, \ControllerCollection $controllers, RouteCollection $routeCollection) {
     $this->container = $container;
+    $this->controllers = $controllers;
     $this->routeCollection = $routeCollection;
   }
 
   public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
-    $this->routeCollection->addCollection($this->container['controllers']->flush());
+    $this->routeCollection->addCollection($this->controllers->flush());
     return $this->container['kernel']->handle($request, $type, $catch);
   }
 }
 
+$controllers = new \ControllerCollection(new Route('/'));
 $routeCollection = new RouteCollection();
 $fakeRoutes = [];
-
 $app = new PimpleContainer();
-$httpKernelImpl = new HttpKernelImpl($app, $routeCollection);
+$httpKernelImpl = new HttpKernelImpl($app, $controllers, $routeCollection);
+
 $app['request.http_port'] = 80;
 $app['request.https_port'] = 443;
 $app['charset'] = 'UTF-8';
@@ -241,14 +244,6 @@ $app['url_generator'] = function ($app) use($routeCollection) {
 $app['request_matcher'] = function ($app) use($routeCollection) {
   return new UrlMatcher($routeCollection, $app['request_context']);
 };
-
-$app['controllers'] = function ($app) {
-  return $app['controllers_factory'];
-};
-
-$app['controllers_factory'] = $app->factory(function () use ($app, &$controllers_factory) {
-  return new \ControllerCollection(new Route('/'));
-});
 
 $app['routing.listener'] = function ($app) {
   return new RouterListener($app['request_matcher'], $app['request_stack'], $app['request_context'], $app['logger'], null, $app['debug']);
@@ -923,7 +918,7 @@ $app['dispatcher']->addSubscriber($app['security.firewall']);
 #-------------------------------------------------------------------------------
 
 #Set your global assertions and stuff ------------------------------------------
-$app['controllers']
+$controllers
   ->setRequirement("hash_id", "\d+")
   ->setRequirement("hasher_id", "\d+")
   ->setRequirement("hasher_id2", "\d+")
@@ -1125,8 +1120,6 @@ if (!$schema->tablesExist('USERS')) {
 }
 
 # Register the URls
-$controllers = $app['controllers'];
-
 $controllers->get('/',                                                    'HashController:slashAction')->setOption('routeName', 'homepage');
 $controllers->get('/{kennel_abbreviation}/rss',                           'HashController:rssAction');
 $controllers->get('/{kennel_abbreviation}/events/rss',                    'HashController:eventsRssAction');
@@ -1469,12 +1462,12 @@ $controllers->get('/{kennel_abbreviation}',                               'HashC
 
 $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
-$controllersFactory = $app['controllers_factory'];
+$fakeRoutesCollection = new \ControllerCollection(new Route('/'));
 foreach ($fakeRoutes as $route) {
   list($method, $pattern, $name) = $route;
-  $controllersFactory->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);
+  $fakeRoutesCollection->$method($pattern)->setDefault('_controller', null)->setOption("routeName", $name);
 }
-$controllers->mount('/', $controllersFactory);
+$controllers->mount('/', $fakeRoutesCollection);
 
 $request = Request::createFromGlobals();
 $contentType = $request->headers->get('Content-Type');
