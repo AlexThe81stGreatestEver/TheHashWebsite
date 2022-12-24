@@ -18,8 +18,6 @@ require_once 'Psr11ServiceProvider.php';
 
 use Doctrine\DBAL\Schema\Table;
 
-use Pimple\ServiceProviderInterface;
-
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
@@ -66,6 +64,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHa
 use Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\UrlHelper;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Controller\ContainerControllerResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory;
@@ -130,9 +129,33 @@ use Twig\Loader\FilesystemLoader;
 use Twig\RuntimeLoader\ContainerRuntimeLoader;
 use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
+class HttpKernelImpl implements HttpKernelInterface 
+{
+  private $container;
+
+  public function __construct($container) {
+    $this->container = $container;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * If you call this method directly instead of run(), you must call the
+   * terminate() method yourself if you want the finish filters to be run.
+   */
+  public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
+    $this->container['routes']->addCollection($this->container['controllers']->flush());
+    return $this->container['kernel']->handle($request, $type, $catch);
+  }
+}
+
 $fakeRoutes = [];
 
 $app = new Application();
+$httpKernelImpl = new HttpKernelImpl($app);
+$app['request.http_port'] = 80;
+$app['request.https_port'] = 443;
+$app['charset'] = 'UTF-8';
 $app['locale'] = 'en';
 $app['debug'] = defined('DEBUG') && DEBUG;
 
@@ -145,38 +168,38 @@ if($app['debug']) {
   $app['monolog.bubble'] = true;
 
   $app['logger'] = function () use ($app) {
-      return $app['monolog'];
+    return $app['monolog'];
   };
 
   $app['monolog.logger.class'] = 'Symfony\Bridge\Monolog\Logger';
 
   $app['monolog'] = function ($app) {
-      $log = new $app['monolog.logger.class']($app['monolog.name']);
+    $log = new $app['monolog.logger.class']($app['monolog.name']);
 
-      $handler = new Handler\GroupHandler($app['monolog.handlers']);
-      $log->pushHandler($handler);
-      $log->pushProcessor(new DebugProcessor());
+    $handler = new Handler\GroupHandler($app['monolog.handlers']);
+    $log->pushHandler($handler);
+    $log->pushProcessor(new DebugProcessor());
 
-      return $log;
+    return $log;
   };
 
   $app['monolog.formatter'] = function () {
-      return new LineFormatter();
+    return new LineFormatter();
   };
 
   $app['monolog.handler'] = $defaultHandler = function () use ($app) {
-      $level = Logger::toMonologLevel($app['monolog.level']);
+    $level = Logger::toMonologLevel($app['monolog.level']);
 
-      $handler = new Handler\StreamHandler($app['monolog.logfile'], $level, $app['monolog.bubble'], $app['monolog.permission']);
-      $handler->setFormatter($app['monolog.formatter']);
+    $handler = new Handler\StreamHandler($app['monolog.logfile'], $level, $app['monolog.bubble'], $app['monolog.permission']);
+    $handler->setFormatter($app['monolog.formatter']);
 
-      return $handler;
+    return $handler;
   };
 
   $app['monolog.handlers'] = function () use ($app, $defaultHandler) {
-      $handlers = [];
-      $handlers[] = $app['monolog.handler'];
-      return $handlers;
+    $handlers = [];
+    $handlers[] = $app['monolog.handler'];
+    return $handlers;
   };
 
   $app['monolog.name'] = 'app';
@@ -210,45 +233,45 @@ $app['dispatcher'] = function () {
 $app['route_class'] = 'Symfony\Component\Routing\Route';
 
 $app['request_context'] = function ($app) {
-    $context = new RequestContext();
+  $context = new RequestContext();
 
-    $context->setHttpPort(isset($app['request.http_port']) ? $app['request.http_port'] : 80);
-    $context->setHttpsPort(isset($app['request.https_port']) ? $app['request.https_port'] : 443);
+  $context->setHttpPort(isset($app['request.http_port']) ? $app['request.http_port'] : 80);
+  $context->setHttpsPort(isset($app['request.https_port']) ? $app['request.https_port'] : 443);
 
-    return $context;
+  return $context;
 };
 
 $app['route_factory'] = $app->factory(function ($app) {
-    return new $app['route_class']('/');
+  return new $app['route_class']('/');
 });
 
 $app['routes_factory'] = $app->factory(function () {
-    return new RouteCollection();
+  return new RouteCollection();
 });
 
 $app['routes'] = function ($app) {
-    return $app['routes_factory'];
+  return $app['routes_factory'];
 };
 
 $app['url_generator'] = function ($app) {
-    return new UrlGenerator($app['routes'], $app['request_context']);
+  return new UrlGenerator($app['routes'], $app['request_context']);
 };
 
 $app['request_matcher'] = function ($app) {
-    return new UrlMatcher($app['routes'], $app['request_context']);
+  return new UrlMatcher($app['routes'], $app['request_context']);
 };
 
 $app['controllers'] = function ($app) {
-    return $app['controllers_factory'];
+  return $app['controllers_factory'];
 };
 
 $controllers_factory = function () use ($app, &$controllers_factory) {
-    return new \ControllerCollection($app['route_factory'], $app['routes_factory'], $controllers_factory);
+  return new \ControllerCollection($app['route_factory'], $app['routes_factory'], $controllers_factory);
 };
 $app['controllers_factory'] = $app->factory($controllers_factory);
 
 $app['routing.listener'] = function ($app) {
-    return new RouterListener($app['request_matcher'], $app['request_stack'], $app['request_context'], $app['logger'], null, $app['debug']);
+  return new RouterListener($app['request_matcher'], $app['request_stack'], $app['request_context'], $app['logger'], null, $app['debug']);
 };
 
 $app['dispatcher']->addSubscriber($app['routing.listener']);
@@ -256,23 +279,23 @@ $app['dispatcher']->addSubscriber($app['routing.listener']);
 $app->register(new Psr11ServiceProvider());
 
 $app->extend('resolver', function ($resolver, $app) {
-    return new ContainerControllerResolver($app['service_container'], $app['logger']);
+  return new ContainerControllerResolver($app['service_container'], $app['logger']);
 });
 
 $app['csrf.token_manager'] = function ($app) {
-    return new CsrfTokenManager($app['csrf.token_generator'], $app['csrf.token_storage']);
+  return new CsrfTokenManager($app['csrf.token_generator'], $app['csrf.token_storage']);
 };
 
 $app['csrf.token_storage'] = function ($app) {
-    if (isset($app['session'])) {
-        return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
-    }
+  if (isset($app['session'])) {
+    return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
+  }
 
-    return new NativeSessionTokenStorage($app['csrf.session_namespace']);
+  return new NativeSessionTokenStorage($app['csrf.session_namespace']);
 };
 
 $app['csrf.token_generator'] = function ($app) {
-    return new UriSafeTokenGenerator();
+  return new UriSafeTokenGenerator();
 };
 
 $app['csrf.session_namespace'] = '_csrf';
@@ -280,139 +303,139 @@ $app['csrf.session_namespace'] = '_csrf';
 $app['dispatcher']->addSubscriber(new \Subscriber\KernelEventSubscriber());
 
 $app['form.extension.csrf'] = function ($app) {
-    if (isset($app['translator'])) {
-        $translationDomain = isset($app['validator.translation_domain']) ? $app['validator.translation_domain'] : null;
-        return new CsrfExtension($app['csrf.token_manager'], $app['translator'], $translationDomain);
-    }
+  if (isset($app['translator'])) {
+    $translationDomain = isset($app['validator.translation_domain']) ? $app['validator.translation_domain'] : null;
+    return new CsrfExtension($app['csrf.token_manager'], $app['translator'], $translationDomain);
+  }
 
-    return new CsrfExtension($app['csrf.token_manager']);
+  return new CsrfExtension($app['csrf.token_manager']);
 };
 
 $app['form.extensions'] = function ($app) {
-    $extensions = [ new HttpFoundationExtension() ];
+  $extensions = [ new HttpFoundationExtension() ];
 
-    if (isset($app['csrf.token_manager'])) {
-        $extensions[] = $app['form.extension.csrf'];
-    }
+  if (isset($app['csrf.token_manager'])) {
+    $extensions[] = $app['form.extension.csrf'];
+  }
 
-    if (isset($app['validator'])) {
-        $extensions[] = new FormValidatorExtension($app['validator']);
-    }
+  if (isset($app['validator'])) {
+    $extensions[] = new FormValidatorExtension($app['validator']);
+  }
 
-    return $extensions;
+  return $extensions;
 };
 
 $app['form.factory'] = function ($app) {
-    return new FormFactory($app['form.registry'], $app['form.resolved_type_factory']);
+  return new FormFactory($app['form.registry'], $app['form.resolved_type_factory']);
 };
 
 $app['form.registry'] = function ($app) {
-    return new FormRegistry($app['form.extensions'], $app['form.resolved_type_factory']);
+  return new FormRegistry($app['form.extensions'], $app['form.resolved_type_factory']);
 };
 
 $app['form.resolved_type_factory'] = function ($app) {
-    return new ResolvedFormTypeFactory();
+  return new ResolvedFormTypeFactory();
 };
 
 $app['translator'] = function ($app) {
-    $translator = new Translator($app['locale'], $app['translator.message_selector'], null, $app['debug']);
-    $translator->addLoader('array', new ArrayLoader());
+  $translator = new Translator($app['locale'], $app['translator.message_selector'], null, $app['debug']);
+  $translator->addLoader('array', new ArrayLoader());
 };
 
 $app['translator.message_selector'] = function () {
-    return new MessageFormatter();
+  return new MessageFormatter();
 };
 
 $app['dbs.options'] = array(
-    'mysql_read' => array(
-      'driver'   => DB_DRIVER,
-      'dbname'   => DB_NAME,
-      'host'     => DB_HOST,
-      'port'     => DB_PORT,
-      'user'     => DB_READ_ONLY_USER,
-      'password' => DB_READ_ONLY_PASSWORD,
-      'charset'  => "utf8"),
-    'mysql_write' => array(
-      'driver'    => DB_DRIVER,
-      'dbname'    => DB_NAME,
-      'host'      => DB_HOST,
-      'port'      => DB_PORT,
-      'user'      => DB_USER,
-      'password'  => DB_PASSWORD,
-      'charset'   => "utf8"));
+  'mysql_read' => array(
+    'driver'   => DB_DRIVER,
+    'dbname'   => DB_NAME,
+    'host'     => DB_HOST,
+    'port'     => DB_PORT,
+    'user'     => DB_READ_ONLY_USER,
+    'password' => DB_READ_ONLY_PASSWORD,
+    'charset'  => "utf8"),
+  'mysql_write' => array(
+    'driver'    => DB_DRIVER,
+    'dbname'    => DB_NAME,
+    'host'      => DB_HOST,
+    'port'      => DB_PORT,
+    'user'      => DB_USER,
+    'password'  => DB_PASSWORD,
+    'charset'   => "utf8"));
 
 $app['dbs.default'] = "mysql_read";
 
 $app['dbs'] = function() use ($app) {
-    $dbs = new Container();
-    foreach ($app['dbs.options'] as $name => $options) {
-        $config = $app['dbs.config']->getParameter($name);
-        $manager = $app['dbs.event_manager']->getParameter($name);
-        $dbs->setParameter($name, function () use ($options, $config, $manager) {
-            return DriverManager::getConnection($options, $config, $manager);
-        });
-    }
+  $dbs = new Container();
+  foreach ($app['dbs.options'] as $name => $options) {
+    $config = $app['dbs.config']->getParameter($name);
+    $manager = $app['dbs.event_manager']->getParameter($name);
+    $dbs->setParameter($name, function () use ($options, $config, $manager) {
+      return DriverManager::getConnection($options, $config, $manager);
+    });
+  }
 
-    return $dbs;
+  return $dbs;
 };
 
 $app['dbs.config'] = function() use ($app) {
-    $configs = new Container();
-    $addLogger = isset($app['logger']) && null !== $app['logger'] && class_exists('Symfony\Bridge\Doctrine\Logger\DbalLogger');
-    foreach ($app['dbs.options'] as $name => $options) {
-        $config = new Configuration();
-        if ($addLogger) {
-            $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
-        }
-        $configs->setParameter($name, $config);
+  $configs = new Container();
+  $addLogger = isset($app['logger']) && null !== $app['logger'] && class_exists('Symfony\Bridge\Doctrine\Logger\DbalLogger');
+  foreach ($app['dbs.options'] as $name => $options) {
+    $config = new Configuration();
+    if ($addLogger) {
+      $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
     }
-    return $configs;
+    $configs->setParameter($name, $config);
+  }
+  return $configs;
 };
 
 $app['dbs.event_manager'] = function() use ($app) {
-    $managers = new Container();
-    foreach ($app['dbs.options'] as $name => $options) {
-        $managers->setParameter($name, new EventManager());
-    }
+  $managers = new Container();
+  foreach ($app['dbs.options'] as $name => $options) {
+    $managers->setParameter($name, new EventManager());
+  }
 
-    return $managers;
+  return $managers;
 };
 
 // shortcuts for the "first" DB
 $app['db'] = function() use ($app) {
-    $dbs = $app['dbs'];
-    return $dbs->getParameter($app['dbs.default']);
+  $dbs = $app['dbs'];
+  return $dbs->getParameter($app['dbs.default']);
 };
 
 $app['db.config'] = function() use ($app) {
-    $dbs = $app['dbs.config'];
-    return $dbs->getParameter($app['dbs.default']);
+  $dbs = $app['dbs.config'];
+  return $dbs->getParameter($app['dbs.default']);
 };
 
 $app['db.event_manager'] = function() use ($app) {
-    $dbs = $app['dbs.event_manager'];
-    return $dbs->getParameter($app['dbs.default']);
+  $dbs = $app['dbs.event_manager'];
+  return $dbs->getParameter($app['dbs.default']);
 };
 
 
 $app['session'] = function ($app) {
-    return new Session($app['session.storage'], $app['session.attribute_bag'], $app['session.flash_bag']);
+  return new Session($app['session.storage'], $app['session.attribute_bag'], $app['session.flash_bag']);
 };
 
 $app['session.storage'] = function ($app) {
-    return $app['session.storage.native'];
+  return $app['session.storage.native'];
 };
 
 $app['session.storage.handler'] = function ($app) {
-    return new NativeFileSessionHandler($app['session.storage.save_path']);
+  return new NativeFileSessionHandler($app['session.storage.save_path']);
 };
 
 $app['session.storage.native'] = function ($app) {
-    return new NativeSessionStorage($app['session.storage.options'], $app['session.storage.handler']);
+  return new NativeSessionStorage($app['session.storage.options'], $app['session.storage.handler']);
 };
 
 $app['session.listener'] = function ($app) {
-    return new SessionListener($app['service_container']);
+  return new SessionListener($app['service_container']);
 };
 
 $app['session.storage.options'] = [];
@@ -435,490 +458,489 @@ $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Co
 $app['UserProvider'] = function() use($app) { return new UserProvider($app['db']()); };
 
 $app['security.firewalls'] = array(
-    'login' => array(
-        'pattern' => '^/logonscreen$',
-    ),
-    'supersecured' => array(
-        'pattern' => '^/superadmin',
-        'form' => array('login_path' => '/logonscreen/sa', 'check_path' => '/superadmin/login_check'),
-        'logout' => array('logout_path' => '/superadmin/logoutaction'),
-        'users' => function () use ($app) {return $app['UserProvider'];},
-        'logout' => array('logout_path' => '/superadmin/logoutaction', 'invalidate_session' => true),
-      ),
-    'secured' => array(
-        'pattern' => '^/admin',
-        'form' => array('login_path' => '/logonscreen', 'check_path' => '/admin/login_check'),
-        'logout' => array('logout_path' => '/logoutaction'),
-        'users' => function () use ($app) {return $app['UserProvider'];},
-        'logout' => array('logout_path' => '/admin/logoutaction', 'invalidate_session' => true),
-    ),
-    'unsecured' => array(
-      'pattern' => '^.*$',
-    )
+  'login' => array(
+    'pattern' => '^/logonscreen$',
+  ),
+  'supersecured' => array(
+    'pattern' => '^/superadmin',
+    'form' => array('login_path' => '/logonscreen/sa', 'check_path' => '/superadmin/login_check'),
+    'logout' => array('logout_path' => '/superadmin/logoutaction'),
+    'users' => function () use ($app) {return $app['UserProvider'];},
+    'logout' => array('logout_path' => '/superadmin/logoutaction', 'invalidate_session' => true),
+  ),
+  'secured' => array(
+    'pattern' => '^/admin',
+    'form' => array('login_path' => '/logonscreen', 'check_path' => '/admin/login_check'),
+    'logout' => array('logout_path' => '/logoutaction'),
+    'users' => function () use ($app) {return $app['UserProvider'];},
+    'logout' => array('logout_path' => '/admin/logoutaction', 'invalidate_session' => true),
+  ),
+  'unsecured' => array(
+    'pattern' => '^.*$',
+  )
 );
 
 $app['security.access_rules'] = array(
-    array('^/superadmin',   'ROLE_SUPERADMIN',),
-    array('^/admin',        'ROLE_ADMIN',),
+  array('^/superadmin',   'ROLE_SUPERADMIN',),
+  array('^/admin',        'ROLE_ADMIN',),
 );
 
-        $app['security.role_hierarchy'] = [];
-        $app['security.hide_user_not_found'] = true;
+$app['security.role_hierarchy'] = [];
+$app['security.hide_user_not_found'] = true;
 
-        $app['security.authorization_checker'] = function ($app) {
-            return new AuthorizationChecker($app['security.token_storage'], $app['security.authentication_manager'], $app['security.access_manager']);
-        };
+$app['security.authorization_checker'] = function ($app) {
+  return new AuthorizationChecker($app['security.token_storage'], $app['security.authentication_manager'], $app['security.access_manager']);
+};
 
-        $app['security.token_storage'] = function ($app) {
-            return new TokenStorage();
-        };
+$app['security.token_storage'] = function ($app) {
+  return new TokenStorage();
+};
 
-        $app['user'] = $app->factory(function ($app) {
-            if (null === $token = $app['security.token_storage']->getToken()) {
-                return;
-            }
+$app['user'] = $app->factory(function ($app) {
+  if (null === $token = $app['security.token_storage']->getToken()) {
+    return;
+  }
 
-            if (!is_object($user = $token->getUser())) {
-                return;
-            }
+  if (!is_object($user = $token->getUser())) {
+    return;
+  }
 
-            return $user;
-        });
+  return $user;
+});
 
-        $app['security.authentication_manager'] = function ($app) {
-            $manager = new AuthenticationProviderManager($app['security.authentication_providers']);
-            $manager->setEventDispatcher($app['dispatcher']);
+$app['security.authentication_manager'] = function ($app) {
+  $manager = new AuthenticationProviderManager($app['security.authentication_providers']);
+  $manager->setEventDispatcher($app['dispatcher']);
+  return $manager;
+};
 
-            return $manager;
-        };
+// by default, all users use the digest encoder
+$app['security.encoder_factory'] = function ($app) {
+  return new EncoderFactory([
+    'Symfony\Component\Security\Core\User\UserInterface' => new MessageDigestPasswordEncoder(),
+  ]);
+};
 
-        // by default, all users use the digest encoder
-        $app['security.encoder_factory'] = function ($app) {
-            return new EncoderFactory([
-                'Symfony\Component\Security\Core\User\UserInterface' => new MessageDigestPasswordEncoder(),
-            ]);
-        };
+$app['security.user_checker'] = function ($app) {
+  return new UserChecker();
+};
 
-        $app['security.user_checker'] = function ($app) {
-            return new UserChecker();
-        };
+$app['security.access_manager'] = function ($app) {
+  return new AccessDecisionManager($app['security.voters']);
+};
 
-        $app['security.access_manager'] = function ($app) {
-            return new AccessDecisionManager($app['security.voters']);
-        };
+$app['security.voters'] = function ($app) {
+  return [
+    new RoleHierarchyVoter(new RoleHierarchy($app['security.role_hierarchy'])),
+  ];
+};
 
-        $app['security.voters'] = function ($app) {
-            return [
-                new RoleHierarchyVoter(new RoleHierarchy($app['security.role_hierarchy'])),
-            ];
-        };
+$app['security.firewall'] = function ($app) {
+  if (isset($app['validator'])) {
+    $app['security.validator.user_password_validator'] = function ($app) {
+      return new UserPasswordValidator($app['security.token_storage'], $app['security.encoder_factory']);
+    };
+  }
 
-        $app['security.firewall'] = function ($app) {
-            if (isset($app['validator'])) {
-                $app['security.validator.user_password_validator'] = function ($app) {
-                    return new UserPasswordValidator($app['security.token_storage'], $app['security.encoder_factory']);
-                };
-            }
+  return new Firewall($app['security.firewall_map'], $app['dispatcher']);
+};
 
-            return new Firewall($app['security.firewall_map'], $app['dispatcher']);
-        };
+$app['security.channel_listener'] = function ($app) {
+  return new ChannelListener(
+    $app['security.access_map'],
+    new RetryAuthenticationEntryPoint(
+      isset($app['request.http_port']) ? $app['request.http_port'] : 80,
+      isset($app['request.https_port']) ? $app['request.https_port'] : 443
+    ),
+    $app['logger']
+  );
+};
 
-        $app['security.channel_listener'] = function ($app) {
-            return new ChannelListener(
-                $app['security.access_map'],
-                new RetryAuthenticationEntryPoint(
-                    isset($app['request.http_port']) ? $app['request.http_port'] : 80,
-                    isset($app['request.https_port']) ? $app['request.https_port'] : 443
-                ),
-                $app['logger']
-            );
-        };
+// generate the build-in authentication factories
+foreach (['logout', 'form' ] as $type) {
+  $entryPoint = null;
+  if ('form' === $type) {
+    $entryPoint = 'form';
+  }
 
-        // generate the build-in authentication factories
-        foreach (['logout', 'form' ] as $type) {
-            $entryPoint = null;
-            if ('form' === $type) {
-                $entryPoint = 'form';
-            }
+  $app['security.authentication_listener.factory.'.$type] = $app->protect(function ($name, $options) use ($type, $app, $entryPoint) {
+    if ($entryPoint && !isset($app['security.entry_point.'.$name.'.'.$entryPoint])) {
+      $app['security.entry_point.'.$name.'.'.$entryPoint] = $app['security.entry_point.'.$entryPoint.'._proto']($name, $options);
+    }
 
-            $app['security.authentication_listener.factory.'.$type] = $app->protect(function ($name, $options) use ($type, $app, $entryPoint) {
-                if ($entryPoint && !isset($app['security.entry_point.'.$name.'.'.$entryPoint])) {
-                    $app['security.entry_point.'.$name.'.'.$entryPoint] = $app['security.entry_point.'.$entryPoint.'._proto']($name, $options);
-                }
+    if (!isset($app['security.authentication_listener.'.$name.'.'.$type])) {
+      $app['security.authentication_listener.'.$name.'.'.$type] = $app['security.authentication_listener.'.$type.'._proto']($name, $options);
+    }
 
-                if (!isset($app['security.authentication_listener.'.$name.'.'.$type])) {
-                    $app['security.authentication_listener.'.$name.'.'.$type] = $app['security.authentication_listener.'.$type.'._proto']($name, $options);
-                }
+    $provider = 'dao';
+    if (!isset($app['security.authentication_provider.'.$name.'.'.$provider])) {
+      $app['security.authentication_provider.'.$name.'.'.$provider] = $app['security.authentication_provider.'.$provider.'._proto']($name, $options);
+    }
 
-                $provider = 'dao';
-                if (!isset($app['security.authentication_provider.'.$name.'.'.$provider])) {
-                    $app['security.authentication_provider.'.$name.'.'.$provider] = $app['security.authentication_provider.'.$provider.'._proto']($name, $options);
-                }
+    return [
+      'security.authentication_provider.'.$name.'.'.$provider,
+      'security.authentication_listener.'.$name.'.'.$type,
+      $entryPoint ? 'security.entry_point.'.$name.'.'.$entryPoint : null,
+      $type,
+    ];
+  });
+}
 
-                return [
-                    'security.authentication_provider.'.$name.'.'.$provider,
-                    'security.authentication_listener.'.$name.'.'.$type,
-                    $entryPoint ? 'security.entry_point.'.$name.'.'.$entryPoint : null,
-                    $type,
-                ];
-            });
+$app['security.firewall_map'] = function ($app) {
+  $positions = ['logout', 'form' ];
+  $providers = [];
+  $configs = [];
+  foreach ($app['security.firewalls'] as $name => $firewall) {
+    $entryPoint = null;
+    $pattern = isset($firewall['pattern']) ? $firewall['pattern'] : null;
+    $users = isset($firewall['users']) ? $firewall['users'] : [];
+    $security = isset($firewall['security']) ? (bool) $firewall['security'] : true;
+    $stateless = isset($firewall['stateless']) ? (bool) $firewall['stateless'] : false;
+    $context = isset($firewall['context']) ? $firewall['context'] : $name;
+    $hosts = isset($firewall['hosts']) ? $firewall['hosts'] : null;
+    $methods = isset($firewall['methods']) ? $firewall['methods'] : null;
+    unset($firewall['pattern'], $firewall['users'], $firewall['security'], $firewall['stateless'], $firewall['context'], $firewall['methods'], $firewall['hosts']);
+    $protected = false === $security ? false : count($firewall);
+    $listeners = ['security.channel_listener'];
+
+    if (is_string($users)) {
+      $users = function () use ($app, $users) {
+        return $app[$users];
+      };
+    }
+
+    if ($protected) {
+      if (!isset($app['security.user_provider.'.$name])) {
+        $app['security.user_provider.'.$name] = is_array($users) ? $app['security.user_provider.inmemory._proto']($users) : $users;
+      }
+      if (!isset($app['security.context_listener.'.$context])) {
+        $app['security.context_listener.'.$context] = $app['security.context_listener._proto']($name, [$app['security.user_provider.'.$name]]);
+      }
+
+      if (false === $stateless) {
+        $listeners[] = 'security.context_listener.'.$context;
+      }
+
+      $factories = [];
+      foreach ($positions as $position) {
+        $factories[$position] = [];
+      }
+
+      foreach ($firewall as $type => $options) {
+
+        // normalize options
+        if (!is_array($options)) {
+          if (!$options) {
+            continue;
+          }
+
+          $options = [];
         }
 
-        $app['security.firewall_map'] = function ($app) {
-            $positions = ['logout', 'form' ];
-            $providers = [];
-            $configs = [];
-            foreach ($app['security.firewalls'] as $name => $firewall) {
-                $entryPoint = null;
-                $pattern = isset($firewall['pattern']) ? $firewall['pattern'] : null;
-                $users = isset($firewall['users']) ? $firewall['users'] : [];
-                $security = isset($firewall['security']) ? (bool) $firewall['security'] : true;
-                $stateless = isset($firewall['stateless']) ? (bool) $firewall['stateless'] : false;
-                $context = isset($firewall['context']) ? $firewall['context'] : $name;
-                $hosts = isset($firewall['hosts']) ? $firewall['hosts'] : null;
-                $methods = isset($firewall['methods']) ? $firewall['methods'] : null;
-                unset($firewall['pattern'], $firewall['users'], $firewall['security'], $firewall['stateless'], $firewall['context'], $firewall['methods'], $firewall['hosts']);
-                $protected = false === $security ? false : count($firewall);
-                $listeners = ['security.channel_listener'];
+        if (!isset($app['security.authentication_listener.factory.'.$type])) {
+          throw new \LogicException(sprintf('The "%s" authentication entry is not registered.', $type));
+        }
 
-                if (is_string($users)) {
-                    $users = function () use ($app, $users) {
-                        return $app[$users];
-                    };
-                }
+        $options['stateless'] = $stateless;
 
-                if ($protected) {
-                    if (!isset($app['security.user_provider.'.$name])) {
-                        $app['security.user_provider.'.$name] = is_array($users) ? $app['security.user_provider.inmemory._proto']($users) : $users;
-                    }
-                    if (!isset($app['security.context_listener.'.$context])) {
-                        $app['security.context_listener.'.$context] = $app['security.context_listener._proto']($name, [$app['security.user_provider.'.$name]]);
-                    }
+        list($providerId, $listenerId, $entryPointId, $position) = $app['security.authentication_listener.factory.'.$type]($name, $options);
 
-                    if (false === $stateless) {
-                        $listeners[] = 'security.context_listener.'.$context;
-                    }
+        if (null !== $entryPointId) {
+          $entryPoint = $entryPointId;
+        }
 
-                    $factories = [];
-                    foreach ($positions as $position) {
-                        $factories[$position] = [];
-                    }
+        $factories[$position][] = $listenerId;
+        $providers[] = $providerId;
+      }
 
-                    foreach ($firewall as $type => $options) {
+      foreach ($positions as $position) {
+        foreach ($factories[$position] as $listener) {
+          $listeners[] = $listener;
+        }
+      }
 
-                        // normalize options
-                        if (!is_array($options)) {
-                            if (!$options) {
-                                continue;
-                            }
+      $listeners[] = 'security.access_listener';
 
-                            $options = [];
-                        }
+      if (!isset($app['security.exception_listener.'.$name])) {
+        if (null === $entryPoint) {
+          $app[$entryPoint = 'security.entry_point.'.$name.'.form'] = $app['security.entry_point.form._proto']($name, []);
+        }
+        $accessDeniedHandler = null;
+        if (isset($app['security.access_denied_handler.'.$name])) {
+          $accessDeniedHandler = $app['security.access_denied_handler.'.$name];
+        }
+        $app['security.exception_listener.'.$name] = $app['security.exception_listener._proto']($entryPoint, $name, $accessDeniedHandler);
+      }
+    }
 
-                        if (!isset($app['security.authentication_listener.factory.'.$type])) {
-                            throw new \LogicException(sprintf('The "%s" authentication entry is not registered.', $type));
-                        }
+    $configs[$name] = [
+      'pattern' => $pattern,
+      'listeners' => $listeners,
+      'protected' => $protected,
+      'methods' => $methods,
+      'hosts' => $hosts,
+    ];
+  }
 
-                        $options['stateless'] = $stateless;
+  $app['security.authentication_providers'] = array_map(function ($provider) use ($app) {
+    return $app[$provider];
+  }, array_unique($providers));
 
-                        list($providerId, $listenerId, $entryPointId, $position) = $app['security.authentication_listener.factory.'.$type]($name, $options);
+  $map = new FirewallMap();
+  foreach ($configs as $name => $config) {
+    if (is_string($config['pattern'])) {
+      $requestMatcher = new RequestMatcher($config['pattern'], $config['hosts'], $config['methods']);
+    } else {
+      $requestMatcher = $config['pattern'];
+    }
 
-                        if (null !== $entryPointId) {
-                            $entryPoint = $entryPointId;
-                        }
+    $map->add(
+      $requestMatcher,
+      array_map(function ($listenerId) use ($app, $name) {
+        $listener = $app[$listenerId];
+          return $listener;
+        }, $config['listeners']),
+        $config['protected'] ? $app['security.exception_listener.'.$name] : null
+    );
+  }
 
-                        $factories[$position][] = $listenerId;
-                        $providers[] = $providerId;
-                    }
+  return $map;
+};
 
-                    foreach ($positions as $position) {
-                        foreach ($factories[$position] as $listener) {
-                            $listeners[] = $listener;
-                        }
-                    }
+$app['security.access_listener'] = function ($app) {
+  return new AccessListener(
+    $app['security.token_storage'],
+    $app['security.access_manager'],
+    $app['security.access_map'],
+    $app['security.authentication_manager'],
+    $app['logger']
+  );
+};
 
-                    $listeners[] = 'security.access_listener';
+$app['security.access_map'] = function ($app) {
+  $map = new AccessMap();
 
-                    if (!isset($app['security.exception_listener.'.$name])) {
-                        if (null === $entryPoint) {
-                            $app[$entryPoint = 'security.entry_point.'.$name.'.form'] = $app['security.entry_point.form._proto']($name, []);
-                        }
-                        $accessDeniedHandler = null;
-                        if (isset($app['security.access_denied_handler.'.$name])) {
-                            $accessDeniedHandler = $app['security.access_denied_handler.'.$name];
-                        }
-                        $app['security.exception_listener.'.$name] = $app['security.exception_listener._proto']($entryPoint, $name, $accessDeniedHandler);
-                    }
-                }
+  foreach ($app['security.access_rules'] as $rule) {
+    if (is_string($rule[0])) {
+      $rule[0] = new RequestMatcher($rule[0]);
+    } elseif (is_array($rule[0])) {
+      $rule[0] += [
+        'path' => null,
+        'host' => null,
+        'methods' => null,
+        'ips' => null,
+        'attributes' => [],
+        'schemes' => null,
+      ];
+      $rule[0] = new RequestMatcher($rule[0]['path'], $rule[0]['host'], $rule[0]['methods'], $rule[0]['ips'], $rule[0]['attributes'], $rule[0]['schemes']);
+    }
+    $map->add($rule[0], (array) $rule[1], isset($rule[2]) ? $rule[2] : null);
+  }
 
-                $configs[$name] = [
-                    'pattern' => $pattern,
-                    'listeners' => $listeners,
-                    'protected' => $protected,
-                    'methods' => $methods,
-                    'hosts' => $hosts,
-                ];
-            }
+  return $map;
+};
 
-            $app['security.authentication_providers'] = array_map(function ($provider) use ($app) {
-                return $app[$provider];
-            }, array_unique($providers));
+$app['security.trust_resolver'] = function ($app) {
+  return new AuthenticationTrustResolver('Symfony\Component\Security\Core\Authentication\Token\AnonymousToken');
+};
 
-            $map = new FirewallMap();
-            foreach ($configs as $name => $config) {
-                if (is_string($config['pattern'])) {
-                    $requestMatcher = new RequestMatcher($config['pattern'], $config['hosts'], $config['methods']);
-                } else {
-                    $requestMatcher = $config['pattern'];
-                }
+$app['security.session_strategy'] = function ($app) {
+  return new SessionAuthenticationStrategy(SessionAuthenticationStrategy::MIGRATE);
+};
 
-                $map->add(
-                    $requestMatcher,
-                    array_map(function ($listenerId) use ($app, $name) {
-                        $listener = $app[$listenerId];
-                        return $listener;
-                    }, $config['listeners']),
-                    $config['protected'] ? $app['security.exception_listener.'.$name] : null
-                );
-            }
+$app['security.http_utils'] = function ($app) {
+  return new HttpUtils();
+};
 
-            return $map;
-        };
+$app['security.last_error'] = $app->protect(function (Request $request) {
+  if ($request->attributes->has(Security::AUTHENTICATION_ERROR)) {
+    return $request->attributes->get(Security::AUTHENTICATION_ERROR)->getMessage();
+  }
 
-        $app['security.access_listener'] = function ($app) {
-            return new AccessListener(
-                $app['security.token_storage'],
-                $app['security.access_manager'],
-                $app['security.access_map'],
-                $app['security.authentication_manager'],
-                $app['logger']
-            );
-        };
+  $session = $request->getSession();
+  if ($session && $session->has(Security::AUTHENTICATION_ERROR)) {
+    $message = $session->get(Security::AUTHENTICATION_ERROR)->getMessage();
+    $session->remove(Security::AUTHENTICATION_ERROR);
 
-        $app['security.access_map'] = function ($app) {
-            $map = new AccessMap();
+    return $message;
+  }
+});
 
-            foreach ($app['security.access_rules'] as $rule) {
-                if (is_string($rule[0])) {
-                    $rule[0] = new RequestMatcher($rule[0]);
-                } elseif (is_array($rule[0])) {
-                    $rule[0] += [
-                        'path' => null,
-                        'host' => null,
-                        'methods' => null,
-                        'ips' => null,
-                        'attributes' => [],
-                        'schemes' => null,
-                    ];
-                    $rule[0] = new RequestMatcher($rule[0]['path'], $rule[0]['host'], $rule[0]['methods'], $rule[0]['ips'], $rule[0]['attributes'], $rule[0]['schemes']);
-                }
-                $map->add($rule[0], (array) $rule[1], isset($rule[2]) ? $rule[2] : null);
-            }
+// prototypes (used by the Firewall Map)
 
-            return $map;
-        };
+$app['security.context_listener._proto'] = $app->protect(function ($providerKey, $userProviders) use ($app) {
+  return function () use ($app, $userProviders, $providerKey) {
+    return new ContextListener(
+      $app['security.token_storage'],
+      $userProviders,
+      $providerKey,
+      $app['logger'],
+      $app['dispatcher']
+    );
+  };
+});
 
-        $app['security.trust_resolver'] = function ($app) {
-            return new AuthenticationTrustResolver('Symfony\Component\Security\Core\Authentication\Token\AnonymousToken');
-        };
+$app['security.user_provider.inmemory._proto'] = $app->protect(function ($params) use ($app) {
+  return function () use ($app, $params) {
+    $users = [];
+    foreach ($params as $name => $user) {
+      $users[$name] = ['roles' => (array) $user[0], 'password' => $user[1]];
+    }
 
-        $app['security.session_strategy'] = function ($app) {
-            return new SessionAuthenticationStrategy(SessionAuthenticationStrategy::MIGRATE);
-        };
+    return new InMemoryUserProvider($users);
+  };
+});
 
-        $app['security.http_utils'] = function ($app) {
-            return new HttpUtils();
-        };
+$app['security.exception_listener._proto'] = $app->protect(function ($entryPoint, $name, $accessDeniedHandler = null) use ($app) {
+  return function () use ($app, $entryPoint, $name, $accessDeniedHandler) {
+    return new ExceptionListener(
+      $app['security.token_storage'],
+      $app['security.trust_resolver'],
+      $app['security.http_utils'],
+      $name,
+      $app[$entryPoint],
+      null, // errorPage
+      $accessDeniedHandler,
+      $app['logger']
+    );
+  };
+});
 
-        $app['security.last_error'] = $app->protect(function (Request $request) {
-            if ($request->attributes->has(Security::AUTHENTICATION_ERROR)) {
-                return $request->attributes->get(Security::AUTHENTICATION_ERROR)->getMessage();
-            }
+$app['security.authentication.success_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
+  return function () use ($name, $options, $app) {
+    $handler = new DefaultAuthenticationSuccessHandler(
+      $app['security.http_utils'],
+      $options
+    );
+    $handler->setProviderKey($name);
 
-            $session = $request->getSession();
-            if ($session && $session->has(Security::AUTHENTICATION_ERROR)) {
-                $message = $session->get(Security::AUTHENTICATION_ERROR)->getMessage();
-                $session->remove(Security::AUTHENTICATION_ERROR);
+    return $handler;
+  };
+});
 
-                return $message;
-            }
-        });
+$app['security.authentication.failure_handler._proto'] = $app->protect(function ($name, $options) use ($app, $httpKernelImpl) {
+  return function () use ($name, $options, $app, $httpKernelImpl) {
+    return new DefaultAuthenticationFailureHandler(
+      $httpKernelImpl,
+      $app['security.http_utils'],
+      $options,
+      $app['logger']
+    );
+  };
+});
 
-        // prototypes (used by the Firewall Map)
+$app['security.authentication_listener.form._proto'] = $app->protect(function ($name, $options) use ($app, &$fakeRoutes) {
+  return function () use ($app, $name, $options, &$fakeRoutes) {
+    $fakeRoutes[] = [
+      'match',
+      $tmp = isset($options['check_path']) ? $options['check_path'] : '/login_check',
+      str_replace('/', '_', ltrim($tmp, '/'))
+    ];
 
-        $app['security.context_listener._proto'] = $app->protect(function ($providerKey, $userProviders) use ($app) {
-            return function () use ($app, $userProviders, $providerKey) {
-                return new ContextListener(
-                    $app['security.token_storage'],
-                    $userProviders,
-                    $providerKey,
-                    $app['logger'],
-                    $app['dispatcher']
-                );
-            };
-        });
+    $class = isset($options['listener_class']) ? $options['listener_class'] : 'Symfony\\Component\\Security\\Http\\Firewall\\UsernamePasswordFormAuthenticationListener';
 
-        $app['security.user_provider.inmemory._proto'] = $app->protect(function ($params) use ($app) {
-            return function () use ($app, $params) {
-                $users = [];
-                foreach ($params as $name => $user) {
-                    $users[$name] = ['roles' => (array) $user[0], 'password' => $user[1]];
-                }
+    if (!isset($app['security.authentication.success_handler.'.$name])) {
+      $app['security.authentication.success_handler.'.$name] = $app['security.authentication.success_handler._proto']($name, $options);
+    }
 
-                return new InMemoryUserProvider($users);
-            };
-        });
+    if (!isset($app['security.authentication.failure_handler.'.$name])) {
+      $app['security.authentication.failure_handler.'.$name] = $app['security.authentication.failure_handler._proto']($name, $options);
+    }
 
-        $app['security.exception_listener._proto'] = $app->protect(function ($entryPoint, $name, $accessDeniedHandler = null) use ($app) {
-            return function () use ($app, $entryPoint, $name, $accessDeniedHandler) {
-                return new ExceptionListener(
-                    $app['security.token_storage'],
-                    $app['security.trust_resolver'],
-                    $app['security.http_utils'],
-                    $name,
-                    $app[$entryPoint],
-                    null, // errorPage
-                    $accessDeniedHandler,
-                    $app['logger']
-                );
-            };
-        });
+    return new $class(
+      $app['security.token_storage'],
+      $app['security.authentication_manager'],
+      isset($app['security.session_strategy.'.$name]) ? $app['security.session_strategy.'.$name] : $app['security.session_strategy'],
+      $app['security.http_utils'],
+      $name,
+      $app['security.authentication.success_handler.'.$name],
+      $app['security.authentication.failure_handler.'.$name],
+      $options,
+      $app['logger'],
+      $app['dispatcher'],
+      isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
+    );
+  };
+});
 
-        $app['security.authentication.success_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
-            return function () use ($name, $options, $app) {
-                $handler = new DefaultAuthenticationSuccessHandler(
-                    $app['security.http_utils'],
-                    $options
-                );
-                $handler->setProviderKey($name);
+$app['security.authentication_listener.http._proto'] = $app->protect(function ($providerKey, $options) use ($app) {
+  return function () use ($app, $providerKey, $options) {
+    return new BasicAuthenticationListener(
+      $app['security.token_storage'],
+      $app['security.authentication_manager'],
+      $providerKey,
+      $app['security.entry_point.'.$providerKey.'.http'],
+      $app['logger']
+    );
+  };
+});
 
-                return $handler;
-            };
-        });
+$app['security.authentication.logout_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
+  return function () use ($name, $options, $app) {
+    return new DefaultLogoutSuccessHandler(
+      $app['security.http_utils'],
+      isset($options['target_url']) ? $options['target_url'] : '/'
+    );
+  };
+});
 
-        $app['security.authentication.failure_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
-            return function () use ($name, $options, $app) {
-                return new DefaultAuthenticationFailureHandler(
-                    $app,
-                    $app['security.http_utils'],
-                    $options,
-                    $app['logger']
-                );
-            };
-        });
+$app['security.authentication_listener.logout._proto'] = $app->protect(function ($name, $options) use ($app, &$fakeRoutes) {
+  return function () use ($app, $name, $options, &$fakeRoutes) {
+    $fakeRoutes[] = [
+      'get',
+      $tmp = isset($options['logout_path']) ? $options['logout_path'] : '/logout',
+      str_replace('/', '_', ltrim($tmp, '/'))
+    ];
 
-        $app['security.authentication_listener.form._proto'] = $app->protect(function ($name, $options) use ($app, &$fakeRoutes) {
-            return function () use ($app, $name, $options, &$fakeRoutes) {
-                $fakeRoutes[] = [
-                    'match',
-                    $tmp = isset($options['check_path']) ? $options['check_path'] : '/login_check',
-                    str_replace('/', '_', ltrim($tmp, '/'))
-                ];
+    if (!isset($app['security.authentication.logout_handler.'.$name])) {
+      $app['security.authentication.logout_handler.'.$name] = $app['security.authentication.logout_handler._proto']($name, $options);
+    }
 
-                $class = isset($options['listener_class']) ? $options['listener_class'] : 'Symfony\\Component\\Security\\Http\\Firewall\\UsernamePasswordFormAuthenticationListener';
+    $listener = new LogoutListener(
+      $app['security.token_storage'],
+      $app['security.http_utils'],
+      $app['security.authentication.logout_handler.'.$name],
+      $options,
+      isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
+    );
 
-                if (!isset($app['security.authentication.success_handler.'.$name])) {
-                    $app['security.authentication.success_handler.'.$name] = $app['security.authentication.success_handler._proto']($name, $options);
-                }
+    $invalidateSession = isset($options['invalidate_session']) ? $options['invalidate_session'] : true;
+    if (true === $invalidateSession && false === $options['stateless']) {
+      $listener->addHandler(new SessionLogoutHandler());
+    }
 
-                if (!isset($app['security.authentication.failure_handler.'.$name])) {
-                    $app['security.authentication.failure_handler.'.$name] = $app['security.authentication.failure_handler._proto']($name, $options);
-                }
+    return $listener;
+  };
+});
 
-                return new $class(
-                    $app['security.token_storage'],
-                    $app['security.authentication_manager'],
-                    isset($app['security.session_strategy.'.$name]) ? $app['security.session_strategy.'.$name] : $app['security.session_strategy'],
-                    $app['security.http_utils'],
-                    $name,
-                    $app['security.authentication.success_handler.'.$name],
-                    $app['security.authentication.failure_handler.'.$name],
-                    $options,
-                    $app['logger'],
-                    $app['dispatcher'],
-                    isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
-                );
-            };
-        });
+$app['security.entry_point.form._proto'] = $app->protect(function ($name, array $options) use ($app, $httpKernelImpl) {
+  return function () use ($app, $options, $httpKernelImpl) {
+    $loginPath = isset($options['login_path']) ? $options['login_path'] : '/login';
+    $useForward = isset($options['use_forward']) ? $options['use_forward'] : false;
 
-        $app['security.authentication_listener.http._proto'] = $app->protect(function ($providerKey, $options) use ($app) {
-            return function () use ($app, $providerKey, $options) {
-                return new BasicAuthenticationListener(
-                    $app['security.token_storage'],
-                    $app['security.authentication_manager'],
-                    $providerKey,
-                    $app['security.entry_point.'.$providerKey.'.http'],
-                    $app['logger']
-                );
-            };
-        });
+    return new FormAuthenticationEntryPoint($httpKernelImpl, $app['security.http_utils'], $loginPath, $useForward);
+  };
+});
 
-        $app['security.authentication.logout_handler._proto'] = $app->protect(function ($name, $options) use ($app) {
-            return function () use ($name, $options, $app) {
-                return new DefaultLogoutSuccessHandler(
-                    $app['security.http_utils'],
-                    isset($options['target_url']) ? $options['target_url'] : '/'
-                );
-            };
-        });
+$app['security.entry_point.http._proto'] = $app->protect(function ($name, array $options) use ($app) {
+  return function () use ($app, $name, $options) {
+    return new BasicAuthenticationEntryPoint(isset($options['real_name']) ? $options['real_name'] : 'Secured');
+  };
+});
 
-        $app['security.authentication_listener.logout._proto'] = $app->protect(function ($name, $options) use ($app, &$fakeRoutes) {
-            return function () use ($app, $name, $options, &$fakeRoutes) {
-                $fakeRoutes[] = [
-                    'get',
-                    $tmp = isset($options['logout_path']) ? $options['logout_path'] : '/logout',
-                    str_replace('/', '_', ltrim($tmp, '/'))
-                ];
+$app['security.authentication_provider.dao._proto'] = $app->protect(function ($name, $options) use ($app) {
+  return function () use ($app, $name) {
+    return new DaoAuthenticationProvider(
+      $app['security.user_provider.'.$name],
+      $app['security.user_checker'],
+      $name,
+      $app['security.encoder_factory'],
+      $app['security.hide_user_not_found']
+    );
+  };
+});
 
-                if (!isset($app['security.authentication.logout_handler.'.$name])) {
-                    $app['security.authentication.logout_handler.'.$name] = $app['security.authentication.logout_handler._proto']($name, $options);
-                }
-
-                $listener = new LogoutListener(
-                    $app['security.token_storage'],
-                    $app['security.http_utils'],
-                    $app['security.authentication.logout_handler.'.$name],
-                    $options,
-                    isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
-                );
-
-                $invalidateSession = isset($options['invalidate_session']) ? $options['invalidate_session'] : true;
-                if (true === $invalidateSession && false === $options['stateless']) {
-                    $listener->addHandler(new SessionLogoutHandler());
-                }
-
-                return $listener;
-            };
-        });
-
-        $app['security.entry_point.form._proto'] = $app->protect(function ($name, array $options) use ($app) {
-            return function () use ($app, $options) {
-                $loginPath = isset($options['login_path']) ? $options['login_path'] : '/login';
-                $useForward = isset($options['use_forward']) ? $options['use_forward'] : false;
-
-                return new FormAuthenticationEntryPoint($app, $app['security.http_utils'], $loginPath, $useForward);
-            };
-        });
-
-        $app['security.entry_point.http._proto'] = $app->protect(function ($name, array $options) use ($app) {
-            return function () use ($app, $name, $options) {
-                return new BasicAuthenticationEntryPoint(isset($options['real_name']) ? $options['real_name'] : 'Secured');
-            };
-        });
-
-        $app['security.authentication_provider.dao._proto'] = $app->protect(function ($name, $options) use ($app) {
-            return function () use ($app, $name) {
-                return new DaoAuthenticationProvider(
-                    $app['security.user_provider.'.$name],
-                    $app['security.user_checker'],
-                    $name,
-                    $app['security.encoder_factory'],
-                    $app['security.hide_user_not_found']
-                );
-            };
-        });
-
-        $app['dispatcher']->addSubscriber($app['security.firewall']);
+$app['dispatcher']->addSubscriber($app['security.firewall']);
 
 #-------------------------------------------------------------------------------
 
@@ -953,8 +975,8 @@ $twigTemplateCompiledDirectory = __DIR__.'/Twig_Templates/compiled';
 $app['twig.path'] = $twigTemplateSourceDirectory;
 $app['twig.class_path'] = $twigClassPath;
 $app['twig.options'] = array(
-    'cache' => $twigTemplateCompiledDirectory,
-    'auto_reload' => true);
+  'cache' => $twigTemplateCompiledDirectory,
+  'auto_reload' => true);
 
 $app['twig.form.templates'] = ['form_div_layout.html.twig'];
 
@@ -967,125 +989,125 @@ $app['twig.number_format.decimal_point'] = '.';
 $app['twig.number_format.thousands_separator'] = ',';
 
 $app['twig'] = function ($app) {
-    $twig = $app['twig.environment_factory']($app);
+  $twig = $app['twig.environment_factory']($app);
 
-    $coreExtension = $twig->getExtension('Twig\Extension\CoreExtension');
+  $coreExtension = $twig->getExtension('Twig\Extension\CoreExtension');
 
-    $coreExtension->setDateFormat($app['twig.date.format'], $app['twig.date.interval_format']);
+  $coreExtension->setDateFormat($app['twig.date.format'], $app['twig.date.interval_format']);
 
-    if (null !== $app['twig.date.timezone']) {
-        $coreExtension->setTimezone($app['twig.date.timezone']);
+  if (null !== $app['twig.date.timezone']) {
+    $coreExtension->setTimezone($app['twig.date.timezone']);
+  }
+
+  $coreExtension->setNumberFormat($app['twig.number_format.decimals'], $app['twig.number_format.decimal_point'], $app['twig.number_format.thousands_separator']);
+
+  if ($app['debug']) {
+    $twig->addExtension(new DebugExtension());
+  }
+
+  if (class_exists('Symfony\Bridge\Twig\Extension\RoutingExtension')) {
+    $app['twig.app_variable'] = function ($app) {
+      $var = new AppVariable();
+      if (isset($app['security.token_storage'])) {
+        $var->setTokenStorage($app['security.token_storage']);
+      }
+      if (isset($app['request_stack'])) {
+        $var->setRequestStack($app['request_stack']);
+      }
+      $var->setDebug($app['debug']);
+
+      return $var;
+    };
+
+    $twig->addGlobal('global', $app['twig.app_variable']);
+
+    if (isset($app['request_stack'])) {
+      $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
+      $twig->addExtension(new RoutingExtension($app['url_generator']));
+      $twig->addExtension(new WebLinkExtension($app['request_stack']));
     }
 
-    $coreExtension->setNumberFormat($app['twig.number_format.decimals'], $app['twig.number_format.decimal_point'], $app['twig.number_format.thousands_separator']);
-
-    if ($app['debug']) {
-        $twig->addExtension(new DebugExtension());
+    if (isset($app['translator'])) {
+      $twig->addExtension(new TranslationExtension($app['translator']));
     }
 
-    if (class_exists('Symfony\Bridge\Twig\Extension\RoutingExtension')) {
-        $app['twig.app_variable'] = function ($app) {
-            $var = new AppVariable();
-            if (isset($app['security.token_storage'])) {
-                $var->setTokenStorage($app['security.token_storage']);
-            }
-            if (isset($app['request_stack'])) {
-                $var->setRequestStack($app['request_stack']);
-            }
-            $var->setDebug($app['debug']);
-
-            return $var;
-        };
-
-        $twig->addGlobal('global', $app['twig.app_variable']);
-
-        if (isset($app['request_stack'])) {
-            $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
-            $twig->addExtension(new RoutingExtension($app['url_generator']));
-            $twig->addExtension(new WebLinkExtension($app['request_stack']));
-        }
-
-        if (isset($app['translator'])) {
-            $twig->addExtension(new TranslationExtension($app['translator']));
-        }
-
-        if (isset($app['security.authorization_checker'])) {
-            $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
-        }
-
-        if (isset($app['fragment.handler'])) {
-            $app['fragment.renderer.hinclude']->setTemplating($twig);
-
-            $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
-        }
-
-        if (isset($app['assets.packages'])) {
-            $twig->addExtension(new AssetExtension($app['assets.packages']));
-        }
-
-        if (isset($app['form.factory'])) {
-            $app['twig.form.engine'] = function ($app) use ($twig) {
-                return new TwigRendererEngine($app['twig.form.templates'], $twig);
-            };
-
-            $app['twig.form.renderer'] = function ($app) {
-                $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
-
-                return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
-            };
-
-            $twig->addExtension(new FormExtension());
-
-            // add loader for Symfony built-in form templates
-            $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
-            $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
-            $app['twig.loader']->addLoader(new FilesystemLoader($path));
-
-            $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
-                FormRenderer::class => function() use ($app) {
-                    return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
-            })));
-        }
-
-        $twig->addRuntimeLoader($app['twig.runtime_loader']);
+    if (isset($app['security.authorization_checker'])) {
+      $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
     }
 
-    return $twig;
+    if (isset($app['fragment.handler'])) {
+      $app['fragment.renderer.hinclude']->setTemplating($twig);
+
+      $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
+    }
+
+    if (isset($app['assets.packages'])) {
+      $twig->addExtension(new AssetExtension($app['assets.packages']));
+    }
+
+    if (isset($app['form.factory'])) {
+      $app['twig.form.engine'] = function ($app) use ($twig) {
+        return new TwigRendererEngine($app['twig.form.templates'], $twig);
+      };
+
+      $app['twig.form.renderer'] = function ($app) {
+        $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
+
+        return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
+      };
+
+      $twig->addExtension(new FormExtension());
+
+      // add loader for Symfony built-in form templates
+      $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
+      $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
+      $app['twig.loader']->addLoader(new FilesystemLoader($path));
+
+      $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
+        FormRenderer::class => function() use ($app) {
+          return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+      })));
+    }
+
+    $twig->addRuntimeLoader($app['twig.runtime_loader']);
+  }
+
+  return $twig;
 };
 
 $app['twig.loader.filesystem'] = function ($app) {
-    $loader = new FilesystemLoader();
-    $loader->addPath($app['twig.path']);
-    return $loader;
+  $loader = new FilesystemLoader();
+  $loader->addPath($app['twig.path']);
+  return $loader;
 };
 
 $app['twig.loader'] = function ($app) {
-    return new ChainLoader([
-        $app['twig.loader.filesystem'],
-    ]);
+  return new ChainLoader([
+    $app['twig.loader.filesystem'],
+  ]);
 };
 
 $app['twig.environment_factory'] = $app->protect(function ($app) {
-    return new Environment($app['twig.loader'], array_replace([
-        'charset' => $app['charset'],
-        'debug' => $app['debug'],
-        'strict_variables' => $app['debug'],
-    ], $app['twig.options']));
+  return new Environment($app['twig.loader'], array_replace([
+    'charset' => $app['charset'],
+    'debug' => $app['debug'],
+    'strict_variables' => $app['debug'],
+  ], $app['twig.options']));
 });
 
 $app['twig.runtime.httpkernel'] = function ($app) {
-    return new HttpKernelRuntime($app['fragment.handler']);
+  return new HttpKernelRuntime($app['fragment.handler']);
 };
 
 $app['twig.runtimes'] = function ($app) {
-    return [
-        HttpKernelRuntime::class => 'twig.runtime.httpkernel',
-        FormRenderer::class => 'twig.form.renderer',
-    ];
+  return [
+    HttpKernelRuntime::class => 'twig.runtime.httpkernel',
+    FormRenderer::class => 'twig.form.renderer',
+  ];
 };
 
 $app['twig.runtime_loader'] = function ($app) {
-    return new ContainerRuntimeLoader($app['service_container']);
+  return new ContainerRuntimeLoader($app['service_container']);
 };
 
 #Check users table in database-------------------------------------------------
@@ -1094,37 +1116,35 @@ $schema = $app['dbs']->getParameter('mysql_write')()->getSchemaManager();
 
 if (!$schema->tablesExist('USERS')) {
 
-    // Create Users Table
-    $users = new Table('USERS');
-    $users->addColumn('id', 'integer', array('unsigned' => true, 'autoincrement' => true));
-    $users->setPrimaryKey(array('id'));
-    $users->addColumn('username', 'string', array('length' => 32));
-    $users->addUniqueIndex(array('username'));
-    $users->addColumn('password', 'string', array('length' => 255));
-    $users->addColumn('roles', 'string', array('length' => 255));
-    $schema->createTable($users);
+  // Create Users Table
+  $users = new Table('USERS');
+  $users->addColumn('id', 'integer', array('unsigned' => true, 'autoincrement' => true));
+  $users->setPrimaryKey(array('id'));
+  $users->addColumn('username', 'string', array('length' => 32));
+  $users->addUniqueIndex(array('username'));
+  $users->addColumn('password', 'string', array('length' => 255));
+  $users->addColumn('roles', 'string', array('length' => 255));
+  $schema->createTable($users);
 
-    // Array of new users to create
-    // admin user will have admin and superadmin privs
-    $users = array(new User('admin', null, array('ROLE_ADMIN', 'ROLE_SUPERADMIN'), true, true, true, true));
+  // Array of new users to create
+  // admin user will have admin and superadmin privs
+  $users = array(new User('admin', null, array('ROLE_ADMIN', 'ROLE_SUPERADMIN'), true, true, true, true));
 
-    foreach ($users as &$user) {
+  foreach ($users as &$user) {
 
-        // find the encoder for a UserInterface instance
-        $encoder = $app['security.encoder_factory']->getEncoder($user);
+    // find the encoder for a UserInterface instance
+    $encoder = $app['security.encoder_factory']->getEncoder($user);
 
-        // compute the encoded password for the new password
-        $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
+    // compute the encoded password for the new password
+    $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
 
-        // insert the new user record
-        $app['dbs']->getParameter('mysql_write')()->insert('USERS', array(
-            'username' => $user->getUsername(),
-            'password' => $encodedNewPassword,
-            'roles' => implode(',',$user->getRoles())));
-    }
+    // insert the new user record
+    $app['dbs']->getParameter('mysql_write')()->insert('USERS', array(
+      'username' => $user->getUsername(),
+      'password' => $encodedNewPassword,
+      'roles' => implode(',',$user->getRoles())));
+  }
 }
-
-
 
 # Register the URls
 $controllers = $app['controllers'];
@@ -1137,7 +1157,6 @@ $controllers->get('/{kennel_abbreviation}/events/rss',                    'HashC
 $controllers->get('/logonscreen',                                         'HashController:logonScreenAction');
 $controllers->get('/admin/logoutaction',                                  'AdminController:logoutAction');
 $controllers->get('/admin/hello',                                         'AdminController:helloAction');
-
 
 #Superadmin section logon
 $controllers->get('/logonscreen/sa',                                        'SuperAdminController:logonScreenAction');
@@ -1293,9 +1312,7 @@ $controllers->get('/{kennel_abbreviation}/hashedWith/{hasher_id}',              
 $controllers->get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController:viewOverallHareChartsAction');
 $controllers->get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController:viewHareChartsAction');
 
-
 $controllers->get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController:viewKennelChartsAction');
-
 
 $controllers->get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController:viewAttendanceChartsAction');
 
@@ -1359,7 +1376,6 @@ $controllers->get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',
 $controllers->get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController:getHareAnalversariesByHareTypeAction');
 $controllers->get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController:getProjectedHasherAnalversariesAction');
 
-
 $controllers->get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController:getLongestStreaksAction');
 $controllers->get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController:aboutContactAction');
 
@@ -1367,8 +1383,6 @@ $controllers->get('/{kennel_abbreviation}/aboutContact',                        
 $controllers->get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController:hasherNameAnalysisAction');
 $controllers->get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsController:hasherNameAnalysisAction2');
 $controllers->get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController:hasherNameAnalysisWordCloudAction');
-
-
 
 # View the jumbo counts table
 $controllers->get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController:jumboCountsTablePreActionJson');
@@ -1378,11 +1392,9 @@ $controllers->post('/{kennel_abbreviation}/jumboCountsTable',                'Ha
 $controllers->get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HashController:jumboPercentagesTablePreActionJson');
 $controllers->post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController:jumboPercentagesTablePostActionJson');
 
-
 #Show events by event tag
 $controllers->get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController:listHashesByEventTagAction');
 $controllers->get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController:chartsGraphsByEventTagAction');
-
 
 # Functions for the "by year" statistics
 $controllers->get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController:getYearInReviewAction');
@@ -1392,8 +1404,6 @@ $controllers->post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_
 $controllers->post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'ObscureStatisticsController:getNewbieHasherListByYear');
 $controllers->post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'ObscureStatisticsController:getNewbieHareListByYear');
 $controllers->post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'ObscureStatisticsController:getNewbieOverallHareListByYear');
-
-
 
 # Mappings for hasher specific statistics
 $controllers->post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController:getHashersVirginHash');
@@ -1438,7 +1448,6 @@ $controllers->post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings
 $controllers->post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController:getCohareCountByHareAllHashes');
 $controllers->post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController:getCohareCountByHare');
 
-
 $controllers->get('/{kennel_abbreviation}/basic/stats',         'HashController:basicStatsAction');
 $controllers->get('/{kennel_abbreviation}/cautionary/stats',    'HashController:cautionaryStatsAction');
 $controllers->get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController:miscellaneousStatsAction');
@@ -1482,11 +1491,14 @@ $controllers->get('/{kennel_abbreviation}',                               'HashC
 
 $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
-	$controllersFactory = $app['controllers_factory'];
-        foreach ($fakeRoutes as $route) {
-            list($method, $pattern, $name) = $route;
-            $controllersFactory->$method($pattern)->setDefault('_controller', null)->bind($name);
-        }
-        $controllers->mount('/', $controllersFactory);
+$controllersFactory = $app['controllers_factory'];
+foreach ($fakeRoutes as $route) {
+  list($method, $pattern, $name) = $route;
+  $controllersFactory->$method($pattern)->setDefault('_controller', null)->bind($name);
+}
+$controllers->mount('/', $controllersFactory);
 
-$app->run();
+$request = Request::createFromGlobals();
+$response = $httpKernelImpl->handle($request);
+$response->send();
+$app['kernel']->terminate($request, $response);
