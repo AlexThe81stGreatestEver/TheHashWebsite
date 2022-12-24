@@ -135,12 +135,6 @@ class HttpKernelImpl implements HttpKernelInterface
     $this->container = $container;
   }
 
-  /**
-   * {@inheritdoc}
-   *
-   * If you call this method directly instead of run(), you must call the
-   * terminate() method yourself if you want the finish filters to be run.
-   */
   public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
     $this->container['routes']->addCollection($this->container['controllers']->flush());
     return $this->container['kernel']->handle($request, $type, $catch);
