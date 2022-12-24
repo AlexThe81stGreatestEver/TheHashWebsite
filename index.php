@@ -120,7 +120,6 @@ use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator;
-use Symfony\Component\Validator\Constraints as Assert;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\ChainLoader;
@@ -229,8 +228,6 @@ $app['dispatcher'] = function () {
   return new EventDispatcher();
 };
 
-$app['route_class'] = 'Symfony\Component\Routing\Route';
-
 $app['request_context'] = function ($app) {
   $context = new RequestContext();
 
@@ -241,7 +238,7 @@ $app['request_context'] = function ($app) {
 };
 
 $app['route_factory'] = $app->factory(function ($app) {
-  return new $app['route_class']('/');
+  return new Route('/');
 });
 
 $app['routes_factory'] = $app->factory(function () {
@@ -264,10 +261,9 @@ $app['controllers'] = function ($app) {
   return $app['controllers_factory'];
 };
 
-$controllers_factory = function () use ($app, &$controllers_factory) {
+$app['controllers_factory'] = $app->factory(function () use ($app, &$controllers_factory) {
   return new \ControllerCollection($app['route_factory'], $app['routes_factory'], $controllers_factory);
-};
-$app['controllers_factory'] = $app->factory($controllers_factory);
+});
 
 $app['routing.listener'] = function ($app) {
   return new RouterListener($app['request_matcher'], $app['request_stack'], $app['request_context'], $app['logger'], null, $app['debug']);

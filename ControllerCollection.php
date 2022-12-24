@@ -55,19 +55,9 @@ class ControllerCollection
      *
      * @throws \LogicException
      */
-    public function mount($prefix, $controllers)
+    public function mount($prefix, ControllerCollection $controllers)
     {
-        if (is_callable($controllers)) {
-            $collection = $this->controllersFactory ? call_user_func($this->controllersFactory) : new static(new Route(), new RouteCollection());
-            $collection->defaultRoute = clone $this->defaultRoute;
-            call_user_func($controllers, $collection);
-            $controllers = $collection;
-        } elseif (!$controllers instanceof self) {
-            throw new \LogicException('The "mount" method takes either a "ControllerCollection" instance or callable.');
-        }
-
         $controllers->prefix = $prefix;
-
         $this->controllers[] = $controllers;
     }
 
