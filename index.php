@@ -132,7 +132,7 @@ class HttpKernelImpl implements HttpKernelInterface {
     $this->container = $container;
   }
 
-  public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
+  public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response {
     return $this->container['kernel']->handle($request, $type, $catch);
   }
 }
@@ -379,9 +379,9 @@ $app['dbs.default'] = "mysql_read";
 $app['dbs'] = function() use ($app) {
   $dbs = new Container();
   foreach ($app['dbs.options'] as $name => $options) {
-    $config = $app['dbs.config']->getParameter($name);
-    $manager = $app['dbs.event_manager']->getParameter($name);
-    $dbs->setParameter($name, function () use ($options, $config, $manager) {
+    $config = $app['dbs.config']->get($name);
+    $manager = $app['dbs.event_manager']->get($name);
+    $dbs->set($name, function () use ($options, $config, $manager) {
       return DriverManager::getConnection($options, $config, $manager);
     });
   }
@@ -397,7 +397,7 @@ $app['dbs.config'] = function() use ($app) {
     if ($addLogger) {
       $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
     }
-    $configs->setParameter($name, $config);
+    $configs->set($name, $config);
   }
   return $configs;
 };
@@ -405,7 +405,7 @@ $app['dbs.config'] = function() use ($app) {
 $app['dbs.event_manager'] = function() use ($app) {
   $managers = new Container();
   foreach ($app['dbs.options'] as $name => $options) {
-    $managers->setParameter($name, new EventManager());
+    $managers->set($name, new EventManager());
   }
 
   return $managers;
@@ -414,7 +414,7 @@ $app['dbs.event_manager'] = function() use ($app) {
 // shortcuts for the "first" DB
 $app['db'] = function() use ($app) {
   $dbs = $app['dbs'];
-  return $dbs->getParameter($app['dbs.default']);
+  return $dbs->get($app['dbs.default']);
 };
 
 $app['db.config'] = function() use ($app) {
@@ -1121,7 +1121,7 @@ $app['twig.runtime_loader'] = function ($app) {
 
 #Check users table in database-------------------------------------------------
 
-$schema = $app['dbs']->getParameter('mysql_write')()->getSchemaManager();
+$schema = $app['dbs']->get('mysql_write')()->getSchemaManager();
 
 if (!$schema->tablesExist('USERS')) {
 
@@ -1148,7 +1148,7 @@ if (!$schema->tablesExist('USERS')) {
     $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
 
     // insert the new user record
-    $app['dbs']->getParameter('mysql_write')()->insert('USERS', array(
+    $app['dbs']->get('mysql_write')()->insert('USERS', array(
       'username' => $user->getUsername(),
       'password' => $encodedNewPassword,
       'roles' => implode(',',$user->getRoles())));
