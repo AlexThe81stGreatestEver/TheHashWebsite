@@ -4,6 +4,7 @@ namespace HASH\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Csrf\CsrfToken;
 use Psr\Container\ContainerInterface;
 require_once "config/ProdConfig.php";
 require_once 'HASH/Controller/DatabaseUpdater.php';
@@ -639,17 +640,12 @@ class BaseController {
       at $theMostRecentHashValue[EVENT_LOCATION]";
   }
 
-  private function getCsrfKeyForUser(string $key) {
-    return $key."-".$this->container->get('user').'username';
-  }
-
   protected function getCsrfToken(string $key) {
-    return $this->container->get('csrf.token_manager')->getToken(
-      $this->getCsrfKeyForUser($key));
+    return $this->container->get('csrf.token_manager')->getToken($key);
   }
 
-  protected function validateCsrfToken(string $key, string $token) {
-    if($token != $this->getCsrfToken($key)) {
+  protected function validateCsrfToken(string $key, string $value) {
+    if(!$this->container->get('csrf.token_manager')->isTokenValid(new CsrfToken($key, $value))) {
       throw new \Exception("Bad request");
     }
   }

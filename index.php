@@ -93,7 +93,6 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Validator\Constraints\UserPasswordValidator;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
-use Symfony\Component\Security\Csrf\TokenStorage\NativeSessionTokenStorage;
 use Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage;
 use Symfony\Component\Security\Http\AccessMap;
 use Symfony\Component\Security\Http\Authentication\DefaultAuthenticationFailureHandler;
@@ -299,11 +298,7 @@ $app['csrf.token_manager'] = function ($app) {
 };
 
 $app['csrf.token_storage'] = function ($app) {
-  if (isset($app['session'])) {
-    return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
-  }
-
-  return new NativeSessionTokenStorage($app['csrf.session_namespace']);
+  return new SessionTokenStorage($app['session'], $app['csrf.session_namespace']);
 };
 
 $app['csrf.token_generator'] = function ($app) {
