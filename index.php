@@ -717,8 +717,7 @@ $app['security.access_listener'] = function ($app) {
     $app['security.token_storage'],
     $app['security.access_manager'],
     $app['security.access_map'],
-    $app['security.authentication_manager'],
-    $app['logger']
+    false
   );
 };
 
