@@ -817,7 +817,7 @@ $app['security.authentication.success_handler._proto'] = $app->protect(function 
       $app['security.http_utils'],
       $options
     );
-    $handler->setProviderKey($name);
+    $handler->setFirewallName($name);
 
     return $handler;
   };
