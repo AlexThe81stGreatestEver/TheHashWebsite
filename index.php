@@ -20,8 +20,6 @@ use Monolog\ErrorHandler as MonologErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler;
 use Monolog\Logger;
-use Pimple\Container as PimpleContainer;
-use Pimple\Psr11\Container as Psr11Container;
 use Symfony\Bridge\Doctrine\Logger\DbalLogger;
 use Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy;
 use Symfony\Bridge\Monolog\Logger as BridgeLogger;
@@ -125,9 +123,9 @@ use Twig\RuntimeLoader\ContainerRuntimeLoader;
 use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 class HttpKernelImpl implements HttpKernelInterface {
-  private PimpleContainer $container;
+  private Container $container;
 
-  public function __construct(PimpleContainer $container) {
+  public function __construct(Container $container) {
     $this->container = $container;
   }
 
@@ -136,10 +134,87 @@ class HttpKernelImpl implements HttpKernelInterface {
   }
 }
 
+class LazyContainer extends Container implements \ArrayAccess {
+
+  private $values = [];
+  private $_factories;
+  private $_protected;
+
+  public function __construct() {
+    $this->_factories = new \SplObjectStorage();
+    $this->_protected = new \SplObjectStorage();
+  }
+
+  public function offsetSet($id, $value) {
+    $this->values[$id] = $value;
+  }
+
+  public function offsetGet($id) {
+    if ($this->values[$id] instanceof \Closure) {
+      if(isset($this->_factories[$this->values[$id]])) {
+        return $this->values[$id]($this);
+      }
+      if(isset($this->_protected[$this->values[$id]])) {
+        return $this->values[$id];
+      }
+      $rval = $this->values[$id]($this);
+      $this->values[$id] = $rval;
+      return $rval;
+    }
+    return $this->values[$id];
+  }
+
+  public function offsetExists($id) {
+    return isset($this->values[$id]);
+  }
+  
+  public function offsetUnset($id) {
+    unset($this->values[$id]);
+  }
+
+  public function factory($callable) {
+    if (!\is_object($callable) || !\method_exists($callable, '__invoke')) {
+      throw new ExpectedInvokableException('Service definition is not a Closure or invokable object.');
+    }
+    $this->_factories->attach($callable);
+    return $callable;
+  }
+
+  public function protect($callable) {
+    if (!\is_object($callable) || !\method_exists($callable, '__invoke')) {
+      throw new ExpectedInvokableException('Callable is not a Closure or invokable object.');
+    }
+    $this->_protected->attach($callable);
+    return $callable;
+  }
+
+  public function extend($id, $callable) {
+    $factory = $this->values[$id];
+
+    $extended = function ($c) use ($callable, $factory) {
+      return $callable($factory($c), $c);
+    };
+
+    return $this[$id] = $extended;
+  }
+
+  public function set($id, $value) {
+    return $this->offsetSet($id, $value);
+  }
+  
+  public function has($id) {
+    return $this->offsetExists($id);
+  }
+  
+  public function get($id, int $invalidBehavior = 1) {
+    return $this->offsetGet($id);
+  }
+}
+
 $routeCollection = new RouteCollection();
 $defaultRoute = new Route('/');
 $fakeRoutes = [];
-$app = new PimpleContainer();
+$app = new LazyContainer();
 
 $httpKernelImpl = new HttpKernelImpl($app);
 
@@ -248,6 +323,10 @@ $app['resolver'] = function ($app) {
   return new ControllerResolver($app['logger']);
 };
 
+$app->extend('resolver', function ($resolver, $app) {
+  return new ContainerControllerResolver($app['service_container'], $app['logger']);
+});
+
 $app['argument_metadata_factory'] = function ($app) {
   return new ArgumentMetadataFactory();
 };
@@ -287,11 +366,7 @@ $app['routing.listener'] = function ($app) {
 
 $app['dispatcher']->addSubscriber($app['routing.listener']);
 
-$app['service_container'] = new Psr11Container($app);
-
-$app->extend('resolver', function ($resolver, $app) {
-  return new ContainerControllerResolver($app['service_container'], $app['logger']);
-});
+$app['service_container'] = $app;
 
 $app['csrf.token_manager'] = function ($app) {
   return new CsrfTokenManager($app['csrf.token_generator'], $app['csrf.token_storage']);
@@ -345,6 +420,7 @@ $app['form.resolved_type_factory'] = function ($app) {
 $app['translator'] = function ($app) {
   $translator = new Translator($app['locale'], $app['translator.message_selector'], null, $app['debug']);
   $translator->addLoader('array', new ArrayLoader());
+  return $translator;
 };
 
 $app['translator.message_selector'] = function () {

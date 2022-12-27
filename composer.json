@@ -5,7 +5,6 @@
         "doctrine/dbal": "~3.5",
         "ifightcrime/bootstrap-growl": "1.1.0",
         "ifsnop/mysqldump-php": "~2.9",
-        "pimple/pimple": "^3.5",
         "symfony/config": "^5.4",
         "symfony/dependency-injection": "^5.4",
         "symfony/doctrine-bridge": "^5.4",
