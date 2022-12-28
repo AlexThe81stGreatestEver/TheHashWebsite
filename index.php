@@ -286,7 +286,7 @@ if($app['debug']) {
   $app['monolog.handler'] = $defaultHandler = function () use ($app) {
     $level = Logger::toMonologLevel($app['monolog.level']);
 
-    $handler = new Handler\StreamHandler($app['monolog.logfile'], $level, $app['monolog.bubble'], $app['monolog.permission']);
+    $handler = new Handler\StreamHandler($app['monolog.logfile'], $level, $app['monolog.bubble'], null);
     $handler->setFormatter($app['monolog.formatter']);
 
     return $handler;
@@ -299,7 +299,6 @@ if($app['debug']) {
   };
 
   $app['monolog.name'] = 'app';
-  $app['monolog.permission'] = null;
 } else {
   $app['logger'] = null;
   // TODO: how do we log errors in production mode?
@@ -487,7 +486,7 @@ $app['db.event_manager'] = function() use ($app) {
 
 
 $app['session'] = function ($app) {
-  return new Session($app['session.storage'], $app['session.attribute_bag'], $app['session.flash_bag']);
+  return new Session($app['session.storage'], null, null);
 };
 
 $app['session.storage'] = function ($app) {
@@ -495,21 +494,16 @@ $app['session.storage'] = function ($app) {
 };
 
 $app['session.storage.handler'] = function ($app) {
-  return new NativeFileSessionHandler($app['session.storage.save_path']);
+  return new NativeFileSessionHandler(null);
 };
 
 $app['session.storage.native'] = function ($app) {
-  return new NativeSessionStorage($app['session.storage.options'], $app['session.storage.handler']);
+  return new NativeSessionStorage([], $app['session.storage.handler']);
 };
 
 $app['session.listener'] = function ($app) {
   return new SessionListener($app['service_container']);
 };
-
-$app['session.storage.options'] = [];
-$app['session.storage.save_path'] = null;
-$app['session.attribute_bag'] = null;
-$app['session.flash_bag'] = null;
 
 $app['dispatcher']->addSubscriber($app['session.listener']);
 
@@ -1036,7 +1030,6 @@ $app['twig.form.templates'] = ['form_div_layout.html.twig'];
 
 $app['twig.date.format'] = 'F j, Y H:i';
 $app['twig.date.interval_format'] = '%d days';
-$app['twig.date.timezone'] = null;
 
 $app['twig.number_format.decimals'] = 0;
 $app['twig.number_format.decimal_point'] = '.';
@@ -1048,10 +1041,6 @@ $app['twig'] = function ($app) {
   $coreExtension = $twig->getExtension('Twig\Extension\CoreExtension');
 
   $coreExtension->setDateFormat($app['twig.date.format'], $app['twig.date.interval_format']);
-
-  if (null !== $app['twig.date.timezone']) {
-    $coreExtension->setTimezone($app['twig.date.timezone']);
-  }
 
   $coreExtension->setNumberFormat($app['twig.number_format.decimals'], $app['twig.number_format.decimal_point'], $app['twig.number_format.thousands_separator']);
 
