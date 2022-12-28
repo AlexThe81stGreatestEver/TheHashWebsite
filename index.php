@@ -294,7 +294,7 @@ if($app['debug']) {
 }
 
 $app['resolver'] = function ($app) {
-  return new ContainerControllerResolver($app['service_container'], $app['logger']);
+  return new ContainerControllerResolver($app, $app['logger']);
 };
 
 $app['argument_metadata_factory'] = function ($app) {
@@ -335,8 +335,6 @@ $app['routing.listener'] = function ($app) {
 };
 
 $app['dispatcher']->addSubscriber($app['routing.listener']);
-
-$app['service_container'] = $app;
 
 $app['csrf.token_manager'] = function ($app) {
   return new CsrfTokenManager($app['csrf.token_generator'], $app['csrf.token_storage']);
@@ -471,18 +469,18 @@ $app['session.storage.native'] = function ($app) {
 };
 
 $app['session.listener'] = function ($app) {
-  return new SessionListener($app['service_container']);
+  return new SessionListener($app);
 };
 
 $app['dispatcher']->addSubscriber($app['session.listener']);
 
-$app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app['service_container']); };
-$app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app['service_container']); };
-$app['HashEventController'] = function() use($app) { return new \HASH\Controller\HashEventController($app['service_container']); };
-$app['AdminController'] = function() use($app) { return new \HASH\Controller\AdminController($app['service_container']); };
-$app['SuperAdminController'] = function() use($app) { return new \HASH\Controller\SuperAdminController($app['service_container']); };
-$app['TagController'] = function() use($app) { return new \HASH\Controller\TagController($app['service_container']); };
-$app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app['service_container']); };
+$app['HashController'] = function() use($app) { return new \HASH\Controller\HashController($app); };
+$app['HashPersonController'] = function() use($app) { return new \HASH\Controller\HashPersonController($app); };
+$app['HashEventController'] = function() use($app) { return new \HASH\Controller\HashEventController($app); };
+$app['AdminController'] = function() use($app) { return new \HASH\Controller\AdminController($app); };
+$app['SuperAdminController'] = function() use($app) { return new \HASH\Controller\SuperAdminController($app); };
+$app['TagController'] = function() use($app) { return new \HASH\Controller\TagController($app); };
+$app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Controller\ObscureStatisticsController($app); };
 
 # Begin: Set the security firewalls --------------------------------------------
 
@@ -1079,7 +1077,7 @@ $app['twig.runtimes'] = function ($app) {
 };
 
 $app['twig.runtime_loader'] = function ($app) {
-  return new ContainerRuntimeLoader($app['service_container']);
+  return new ContainerRuntimeLoader($app);
 };
 
 #Check users table in database-------------------------------------------------
