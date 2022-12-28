@@ -18,7 +18,7 @@ class BaseController {
   protected function __construct(ContainerInterface $container) {
     $this->container = $container;
     $this->db = $this->container->get('db');
-    $this->dbw = $this->container->get('dbs')->get('mysql_write')();
+    $this->dbw = $this->container->get('dbs')->get('mysql_write');
     new \DatabaseUpdater($this->dbw, DB_NAME);
   }
 

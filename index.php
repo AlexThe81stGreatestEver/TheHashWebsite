@@ -402,7 +402,7 @@ $app['dbs.options'] = array(
 $app['dbs.default'] = "mysql_read";
 
 $app['dbs'] = function() use ($app) {
-  $dbs = new Container();
+  $dbs = new LazyContainer();
   foreach ($app['dbs.options'] as $name => $options) {
     $config = $app['dbs.config']->get($name);
     $manager = $app['dbs.event_manager']->get($name);
@@ -415,7 +415,7 @@ $app['dbs'] = function() use ($app) {
 };
 
 $app['dbs.config'] = function() use ($app) {
-  $configs = new Container();
+  $configs = new LazyContainer();
   $addLogger = isset($app['logger']) && (null !== $app['logger']);
   foreach ($app['dbs.options'] as $name => $options) {
     $config = new Configuration();
@@ -428,7 +428,7 @@ $app['dbs.config'] = function() use ($app) {
 };
 
 $app['dbs.event_manager'] = function() use ($app) {
-  $managers = new Container();
+  $managers = new LazyContainer();
   foreach ($app['dbs.options'] as $name => $options) {
     $managers->set($name, new EventManager());
   }
@@ -485,7 +485,7 @@ $app['ObscureStatisticsController'] = function() use($app) { return new \HASH\Co
 
 # Begin: Set the security firewalls --------------------------------------------
 
-$app['UserProvider'] = function() use($app) { return new UserProvider($app['db']()); };
+$app['UserProvider'] = function() use($app) { return new UserProvider($app['db']); };
 
 $app['security.firewalls'] = array(
   'login' => array(
@@ -1083,7 +1083,7 @@ $app['twig.runtime_loader'] = function ($app) {
 
 #Check users table in database-------------------------------------------------
 
-$schema = $app['dbs']->get('mysql_write')()->getSchemaManager();
+$schema = $app['dbs']->get('mysql_write')->getSchemaManager();
 
 if (!$schema->tablesExist('USERS')) {
 
@@ -1110,7 +1110,7 @@ if (!$schema->tablesExist('USERS')) {
     $encodedNewPassword = $encoder->encodePassword(DEFAULT_USER_PASSWORD, $user->getSalt());
 
     // insert the new user record
-    $app['dbs']->get('mysql_write')()->insert('USERS', array(
+    $app['dbs']->get('mysql_write')->insert('USERS', array(
       'username' => $user->getUsername(),
       'password' => $encodedNewPassword,
       'roles' => implode(',',$user->getRoles())));
