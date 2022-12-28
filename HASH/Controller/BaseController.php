@@ -587,6 +587,16 @@ class BaseController {
         ORDER BY PREDICTED_MILESTONE_DATE";
   }
 
+  protected function getUser(){
+    $token = $this->container->get('security.token_storage')->getToken();
+    return $token !== null ? $token->getUser() : null;
+  }
+  
+  protected function getUsername(){
+    $user = $this->getUser();
+    return $user !== null ? $user->getUsername() : "UNKNOWN";
+  }
+
   protected function auditTheThings(Request $request, string $actionType, string $actionDescription) {
 
     #Define the client ip address
@@ -595,15 +605,6 @@ class BaseController {
     #Establish the datetime representation of "now"
     date_default_timezone_set('US/Eastern');
     $nowDateTime = date("Y-m-d H:i:s");
-
-    #Define the username (default to UNKNOWN)
-    $user = "UNKNOWN";
-
-    #Determine the username
-    $token = $this->container->get('security.token_storage')->getToken();
-    if (null !== $token) {
-      $user = $token->getUser();
-    }
 
     #Define the sql insert statement
     $sql = "
@@ -617,7 +618,7 @@ class BaseController {
 
     #Execute the insert statement
     $this->dbw->executeUpdate($sql,array(
-      $user,
+      $this->getUsername(),
       $nowDateTime,
       $actionType,
       $actionDescription,

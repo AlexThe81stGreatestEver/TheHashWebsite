@@ -13,7 +13,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Psr\Container\ContainerInterface;
@@ -123,9 +122,9 @@ class AdminController extends BaseController
   public function newPasswordAction(Request $request){
 
     $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class)
-      ->add('Current_Password', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 3)))))
-      ->add('New_Password_Initial', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))))
-      ->add('New_Password_Confirmation', TextType::class, array('constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 8)))));
+      ->add('Current_Password', TextType::class)
+      ->add('New_Password_Initial', TextType::class)
+      ->add('New_Password_Confirmation', TextType::class);
 
     $formFactoryThing->add('save', SubmitType::class, array('label' => 'Change your password!'));
     $formFactoryThing->setAction('#');
@@ -133,6 +132,9 @@ class AdminController extends BaseController
     $form=$formFactoryThing->getForm();
 
     $form->handleRequest($request);
+
+    #Establish the user value
+    $user = $this->getUser();
 
     if($request->getMethod() == 'POST'){
 
@@ -145,27 +147,21 @@ class AdminController extends BaseController
           $tempNewPasswordInitial = $data['New_Password_Initial'];
           $tempNewPasswordConfirmation = $data['New_Password_Confirmation'];
 
-          #Establish the userid value
-          $token = $this->container->get('security.token_storage')->getToken();
-          if (null !== $token) {
-            $userid = $token->getUser();
-          }
-
           // find the encoder for a UserInterface instance
-          $encoder = $this->container->get('security.encoder_factory')->getEncoder($userid);
+          $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
 
           // compute the encoded password for the new password
-          $encodedNewPassword = $encoder->encodePassword($tempNewPasswordInitial, $userid->getSalt());
+          $encodedNewPassword = $encoder->encodePassword($tempNewPasswordInitial, $user->getSalt());
 
           // compute the encoded password for the current password
-          $encodedCurrentPassword = $encoder->encodePassword($tempCurrentPassword, $userid->getSalt());
+          $encodedCurrentPassword = $encoder->encodePassword($tempCurrentPassword, $user->getSalt());
 
           #Check if the current password is valid
           # Declare the SQL used to retrieve this information
           $sql = "SELECT * FROM USERS WHERE USERNAME = ? AND PASSWORD = ?";
 
           # Make a database call to obtain the hasher information
-          $retrievedUserValue = $this->fetchAssoc($sql, array((string) $userid, (string) $encodedCurrentPassword));
+          $retrievedUserValue = $this->fetchAssoc($sql, array($user->getUsername(), $encodedCurrentPassword));
           $sizeOfRetrievedUserValueArray = sizeof($retrievedUserValue);
 
           # If there are more than one columns, then it is valid
@@ -201,7 +197,7 @@ class AdminController extends BaseController
             $updateSql = "UPDATE USERS SET PASSWORD = ? WHERE USERNAME = ?";
 
             #Run the update SQL
-            $this->dbw->executeUpdate($updateSql,array($encodedNewPassword,$userid));
+            $this->dbw->executeUpdate($updateSql,array($encodedNewPassword,$user->getUsername()));
 
             #Audit this activity
             $actionType = "Password Change";
@@ -217,17 +213,11 @@ class AdminController extends BaseController
       }
     }
 
-    #Establish the userid value
-    $token = $this->container->get('security.token_storage')->getToken();
-    if (null !== $token) {
-      $userid = $token->getUser();
-    }
-
     $returnValue = $this->render('admin_change_password_form.twig', array (
       'pageTitle' => 'Password change',
       'pageHeader' => 'Your new password must contain letters, numbers, an odd number of prime numbers.',
       'form' => $form->createView(),
-      'userid' => $userid,
+      'userid' => $user->getUsername(),
     ));
 
     #Return the return value

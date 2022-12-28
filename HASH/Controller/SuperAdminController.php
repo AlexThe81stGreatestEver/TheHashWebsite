@@ -1057,10 +1057,12 @@ class SuperAdminController extends BaseController {
 
     $user_id = $request->request->get('id');
 
-    if($user_id != $this->container->get('user').'username') {
+    $sql = "SELECT username FROM USERS WHERE ID = ?";
+    $username = $this->fetchOne($sql, array($user_id));
 
-      $sql = "SELECT username FROM USERS WHERE ID = ?";
-      $username = $this->fetchOne($sql, array($user_id));
+    $currentUsername = $this->getUsername();
+
+    if(($currentUsername !== 'UNKNOWN') && ($username != $currentUsername)) {
 
       $sql = "DELETE FROM USERS WHERE id = ?";
       $this->dbw->executeUpdate($sql,array($user_id));

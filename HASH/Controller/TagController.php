@@ -12,7 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Psr\Container\ContainerInterface;
@@ -108,14 +107,8 @@ private function addNewEventTagAfterDbChecking(Request $request, string $theTagT
         #Define the sql insert statement
         $sql = "INSERT INTO HASHES_TAGS (TAG_TEXT, CREATED_BY) VALUES (?, ?);";
 
-        #Determine the username
-        $token = $this->container->get('security.token_storage')->getToken();
-        if (null !== $token) {
-          $user = $token->getUser();
-        }
-
         #Execute the sql insert statement
-        $this->dbw->executeUpdate($sql,array($theTagText,$user));
+        $this->dbw->executeUpdate($sql,array($theTagText,$this->getUsername()));
 
         #Audit the action
         $tempActionType = "Created Event Tag";
@@ -248,10 +241,10 @@ public function addNewEventTag(Request $request){
         $junctionInsertSql = "INSERT INTO HASHES_TAG_JUNCTION (HASHES_KY, HASHES_TAGS_KY, CREATED_BY) VALUES (?, ?, ?);";
 
         #Get the user name
-        $user = $this->getUserName();
+        $username = $this->getUserName();
 
         #Execute the sql insert statement
-        $this->dbw->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,(string)$user));
+        $this->dbw->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,$username));
 
         # Declare the SQL used to retrieve this information
         $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
@@ -307,9 +300,6 @@ public function addNewEventTag(Request $request){
 
               #Execute the sql insert statement
               $this->dbw->executeUpdate($sql,array($theEventKey,$tagKey));
-
-              #Get the user name
-              #$user = $this->getUserName();
 
               # Declare the SQL used to retrieve this information
               $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
@@ -380,20 +370,6 @@ public function addNewEventTag(Request $request){
         $returnValue = $matchingTagValue['HASHES_TAGS_KY'];
       }
 
-
-      #Return the return value
-      return $returnValue;
-    }
-
-    private function getUserName(){
-      #Set the return value
-      $returnValue = null;
-
-      #Establish the return value
-      $token = $this->container->get('security.token_storage')->getToken();
-      if (null !== $token) {
-        $returnValue = $token->getUser();
-      }
 
       #Return the return value
       return $returnValue;

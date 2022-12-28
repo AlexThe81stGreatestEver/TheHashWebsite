@@ -137,11 +137,9 @@ class HttpKernelImpl implements HttpKernelInterface {
 class LazyContainer extends Container implements \ArrayAccess {
 
   private $values = [];
-  private $_factories;
   private $_protected;
 
   public function __construct() {
-    $this->_factories = new \SplObjectStorage();
     $this->_protected = new \SplObjectStorage();
   }
 
@@ -151,9 +149,6 @@ class LazyContainer extends Container implements \ArrayAccess {
 
   public function offsetGet($id) {
     if ($this->values[$id] instanceof \Closure) {
-      if(isset($this->_factories[$this->values[$id]])) {
-        return $this->values[$id]($this);
-      }
       if(isset($this->_protected[$this->values[$id]])) {
         return $this->values[$id];
       }
@@ -170,14 +165,6 @@ class LazyContainer extends Container implements \ArrayAccess {
   
   public function offsetUnset($id) {
     unset($this->values[$id]);
-  }
-
-  public function factory($callable) {
-    if (!\is_object($callable) || !\method_exists($callable, '__invoke')) {
-      throw new ExpectedInvokableException('Service definition is not a Closure or invokable object.');
-    }
-    $this->_factories->attach($callable);
-    return $callable;
   }
 
   public function protect($callable) {
@@ -576,18 +563,6 @@ $app['security.authorization_checker'] = function ($app) {
 $app['security.token_storage'] = function ($app) {
   return new TokenStorage();
 };
-
-$app['user'] = $app->factory(function ($app) {
-  if (null === $token = $app['security.token_storage']->getToken()) {
-    return;
-  }
-
-  if (!is_object($user = $token->getUser())) {
-    return;
-  }
-
-  return $user;
-});
 
 $app['security.authentication_manager'] = function ($app) {
   $manager = new AuthenticationProviderManager($app['security.authentication_providers']);
