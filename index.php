@@ -44,7 +44,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Csrf\CsrfExtension;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
-use Symfony\Component\Form\Extension\Validator\ValidatorExtension as FormValidatorExtension;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Form\FormRegistry;
 use Symfony\Component\Form\FormRenderer;
@@ -88,7 +87,6 @@ use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\User\UserChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\Validator\Constraints\UserPasswordValidator;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 use Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage;
@@ -332,8 +330,8 @@ $app['dispatcher'] = function () {
 $app['request_context'] = function ($app) {
   $context = new RequestContext();
 
-  $context->setHttpPort(isset($app['request.http_port']) ? $app['request.http_port'] : 80);
-  $context->setHttpsPort(isset($app['request.https_port']) ? $app['request.https_port'] : 443);
+  $context->setHttpPort($app['request.http_port']);
+  $context->setHttpsPort($app['request.https_port']);
 
   return $context;
 };
@@ -369,26 +367,11 @@ $app['csrf.token_generator'] = function ($app) {
 $app['csrf.session_namespace'] = '_csrf';
 
 $app['form.extension.csrf'] = function ($app) {
-  if (isset($app['translator'])) {
-    $translationDomain = isset($app['validator.translation_domain']) ? $app['validator.translation_domain'] : null;
-    return new CsrfExtension($app['csrf.token_manager'], $app['translator'], $translationDomain);
-  }
-
-  return new CsrfExtension($app['csrf.token_manager']);
+  return new CsrfExtension($app['csrf.token_manager'], $app['translator'], null);
 };
 
 $app['form.extensions'] = function ($app) {
-  $extensions = [ new HttpFoundationExtension() ];
-
-  if (isset($app['csrf.token_manager'])) {
-    $extensions[] = $app['form.extension.csrf'];
-  }
-
-  if (isset($app['validator'])) {
-    $extensions[] = new FormValidatorExtension($app['validator']);
-  }
-
-  return $extensions;
+  return [ new HttpFoundationExtension(), $app['form.extension.csrf'] ];
 };
 
 $app['form.factory'] = function ($app) {
@@ -452,7 +435,7 @@ $app['dbs.config'] = function() use ($app) {
   foreach ($app['dbs.options'] as $name => $options) {
     $config = new Configuration();
     if ($addLogger) {
-      $config->setSQLLogger(new DbalLogger($app['logger'], isset($app['stopwatch']) ? $app['stopwatch'] : null));
+      $config->setSQLLogger(new DbalLogger($app['logger'], null));
     }
     $configs->set($name, $config);
   }
@@ -586,22 +569,13 @@ $app['security.voters'] = function ($app) {
 };
 
 $app['security.firewall'] = function ($app) {
-  if (isset($app['validator'])) {
-    $app['security.validator.user_password_validator'] = function ($app) {
-      return new UserPasswordValidator($app['security.token_storage'], $app['security.encoder_factory']);
-    };
-  }
-
   return new Firewall($app['security.firewall_map'], $app['dispatcher']);
 };
 
 $app['security.channel_listener'] = function ($app) {
   return new ChannelListener(
     $app['security.access_map'],
-    new RetryAuthenticationEntryPoint(
-      isset($app['request.http_port']) ? $app['request.http_port'] : 80,
-      isset($app['request.https_port']) ? $app['request.https_port'] : 443
-    ),
+    new RetryAuthenticationEntryPoint($app['request.http_port'], $app['request.https_port']),
     $app['logger']
   );
 };
@@ -907,7 +881,7 @@ $app['security.authentication_listener.form._proto'] = $app->protect(function ($
       $options,
       $app['logger'],
       $app['dispatcher'],
-      isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
+      isset($options['with_csrf']) && $options['with_csrf'] ? $app['csrf.token_manager'] : null
     );
   };
 });
@@ -950,7 +924,7 @@ $app['security.authentication_listener.logout._proto'] = $app->protect(function 
       $app['security.http_utils'],
       $app['security.authentication.logout_handler.'.$name],
       $options,
-      isset($options['with_csrf']) && $options['with_csrf'] && isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null
+      isset($options['with_csrf']) && $options['with_csrf'] ? $app['csrf.token_manager'] : null
     );
 
     $invalidateSession = isset($options['invalidate_session']) ? $options['invalidate_session'] : true;
@@ -1050,66 +1024,38 @@ $app['twig'] = function ($app) {
 
   $app['twig.app_variable'] = function ($app) {
     $var = new AppVariable();
-    if (isset($app['security.token_storage'])) {
-      $var->setTokenStorage($app['security.token_storage']);
-    }
-    if (isset($app['request_stack'])) {
-      $var->setRequestStack($app['request_stack']);
-    }
+    $var->setTokenStorage($app['security.token_storage']);
+    $var->setRequestStack($app['request_stack']);
     $var->setDebug($app['debug']);
-
     return $var;
   };
 
   $twig->addGlobal('global', $app['twig.app_variable']);
+  $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
+  $twig->addExtension(new RoutingExtension($app['url_generator']));
+  $twig->addExtension(new WebLinkExtension($app['request_stack']));
+  $twig->addExtension(new TranslationExtension($app['translator']));
+  $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
 
-  if (isset($app['request_stack'])) {
-    $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
-    $twig->addExtension(new RoutingExtension($app['url_generator']));
-    $twig->addExtension(new WebLinkExtension($app['request_stack']));
-  }
+  $app['twig.form.engine'] = function ($app) use ($twig) {
+    return new TwigRendererEngine($app['twig.form.templates'], $twig);
+  };
 
-  if (isset($app['translator'])) {
-    $twig->addExtension(new TranslationExtension($app['translator']));
-  }
+  $app['twig.form.renderer'] = function ($app) {
+    return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+  };
 
-  if (isset($app['security.authorization_checker'])) {
-    $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
-  }
+  $twig->addExtension(new FormExtension());
 
-  if (isset($app['fragment.handler'])) {
-    $app['fragment.renderer.hinclude']->setTemplating($twig);
+  // add loader for Symfony built-in form templates
+  $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
+  $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
+  $app['twig.loader']->addLoader(new FilesystemLoader($path));
 
-    $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
-  }
-
-  if (isset($app['assets.packages'])) {
-    $twig->addExtension(new AssetExtension($app['assets.packages']));
-  }
-
-  if (isset($app['form.factory'])) {
-    $app['twig.form.engine'] = function ($app) use ($twig) {
-      return new TwigRendererEngine($app['twig.form.templates'], $twig);
-    };
-
-    $app['twig.form.renderer'] = function ($app) {
-      $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
-
-      return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
-    };
-
-    $twig->addExtension(new FormExtension());
-
-    // add loader for Symfony built-in form templates
-    $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
-    $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
-    $app['twig.loader']->addLoader(new FilesystemLoader($path));
-
-    $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
-      FormRenderer::class => function() use ($app) {
-        return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
-    })));
-  }
+  $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
+    FormRenderer::class => function() use ($app) {
+      return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+  })));
 
   $twig->addRuntimeLoader($app['twig.runtime_loader']);
   return $twig;
@@ -1136,7 +1082,7 @@ $app['twig.environment_factory'] = $app->protect(function ($app) {
 });
 
 $app['twig.runtime.httpkernel'] = function ($app) {
-  return new HttpKernelRuntime($app['fragment.handler']);
+  return new HttpKernelRuntime(null);
 };
 
 $app['twig.runtimes'] = function ($app) {
