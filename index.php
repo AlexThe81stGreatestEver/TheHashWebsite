@@ -449,7 +449,7 @@ $app['dbs'] = function() use ($app) {
 
 $app['dbs.config'] = function() use ($app) {
   $configs = new Container();
-  $addLogger = isset($app['logger']) && null !== $app['logger'] && class_exists('Symfony\Bridge\Doctrine\Logger\DbalLogger');
+  $addLogger = isset($app['logger']) && (null !== $app['logger']);
   foreach ($app['dbs.options'] as $name => $options) {
     $config = new Configuration();
     if ($addLogger) {
@@ -1059,73 +1059,70 @@ $app['twig'] = function ($app) {
     $twig->addExtension(new DebugExtension());
   }
 
-  if (class_exists('Symfony\Bridge\Twig\Extension\RoutingExtension')) {
-    $app['twig.app_variable'] = function ($app) {
-      $var = new AppVariable();
-      if (isset($app['security.token_storage'])) {
-        $var->setTokenStorage($app['security.token_storage']);
-      }
-      if (isset($app['request_stack'])) {
-        $var->setRequestStack($app['request_stack']);
-      }
-      $var->setDebug($app['debug']);
-
-      return $var;
-    };
-
-    $twig->addGlobal('global', $app['twig.app_variable']);
-
+  $app['twig.app_variable'] = function ($app) {
+    $var = new AppVariable();
+    if (isset($app['security.token_storage'])) {
+      $var->setTokenStorage($app['security.token_storage']);
+    }
     if (isset($app['request_stack'])) {
-      $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
-      $twig->addExtension(new RoutingExtension($app['url_generator']));
-      $twig->addExtension(new WebLinkExtension($app['request_stack']));
+      $var->setRequestStack($app['request_stack']);
     }
+    $var->setDebug($app['debug']);
 
-    if (isset($app['translator'])) {
-      $twig->addExtension(new TranslationExtension($app['translator']));
-    }
+    return $var;
+  };
 
-    if (isset($app['security.authorization_checker'])) {
-      $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
-    }
+  $twig->addGlobal('global', $app['twig.app_variable']);
 
-    if (isset($app['fragment.handler'])) {
-      $app['fragment.renderer.hinclude']->setTemplating($twig);
-
-      $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
-    }
-
-    if (isset($app['assets.packages'])) {
-      $twig->addExtension(new AssetExtension($app['assets.packages']));
-    }
-
-    if (isset($app['form.factory'])) {
-      $app['twig.form.engine'] = function ($app) use ($twig) {
-        return new TwigRendererEngine($app['twig.form.templates'], $twig);
-      };
-
-      $app['twig.form.renderer'] = function ($app) {
-        $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
-
-        return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
-      };
-
-      $twig->addExtension(new FormExtension());
-
-      // add loader for Symfony built-in form templates
-      $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
-      $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
-      $app['twig.loader']->addLoader(new FilesystemLoader($path));
-
-      $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
-        FormRenderer::class => function() use ($app) {
-          return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
-      })));
-    }
-
-    $twig->addRuntimeLoader($app['twig.runtime_loader']);
+  if (isset($app['request_stack'])) {
+    $twig->addExtension(new TwigHttpFoundationExtension(new UrlHelper($app['request_stack'], $app['request_context'])));
+    $twig->addExtension(new RoutingExtension($app['url_generator']));
+    $twig->addExtension(new WebLinkExtension($app['request_stack']));
   }
 
+  if (isset($app['translator'])) {
+    $twig->addExtension(new TranslationExtension($app['translator']));
+  }
+
+  if (isset($app['security.authorization_checker'])) {
+    $twig->addExtension(new SecurityExtension($app['security.authorization_checker']));
+  }
+
+  if (isset($app['fragment.handler'])) {
+    $app['fragment.renderer.hinclude']->setTemplating($twig);
+
+    $twig->addExtension(new HttpKernelExtension($app['fragment.handler']));
+  }
+
+  if (isset($app['assets.packages'])) {
+    $twig->addExtension(new AssetExtension($app['assets.packages']));
+  }
+
+  if (isset($app['form.factory'])) {
+    $app['twig.form.engine'] = function ($app) use ($twig) {
+      return new TwigRendererEngine($app['twig.form.templates'], $twig);
+    };
+
+    $app['twig.form.renderer'] = function ($app) {
+      $csrfTokenManager = isset($app['csrf.token_manager']) ? $app['csrf.token_manager'] : null;
+
+      return new FormRenderer($app['twig.form.engine'], $csrfTokenManager);
+    };
+
+    $twig->addExtension(new FormExtension());
+
+    // add loader for Symfony built-in form templates
+    $reflected = new \ReflectionClass('Symfony\Bridge\Twig\Extension\FormExtension');
+    $path = dirname($reflected->getFileName()).'/../Resources/views/Form';
+    $app['twig.loader']->addLoader(new FilesystemLoader($path));
+
+    $twig->addRuntimeLoader(new FactoryRuntimeLoader(array(
+      FormRenderer::class => function() use ($app) {
+        return new FormRenderer($app['twig.form.engine'], $app['csrf.token_manager']);
+    })));
+  }
+
+  $twig->addRuntimeLoader($app['twig.runtime_loader']);
   return $twig;
 };
 
