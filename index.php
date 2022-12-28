@@ -173,16 +173,6 @@ class LazyContainer extends Container implements \ArrayAccess {
     return $callable;
   }
 
-  public function extend($id, $callable) {
-    $factory = $this->values[$id];
-
-    $extended = function ($c) use ($callable, $factory) {
-      return $callable($factory($c), $c);
-    };
-
-    return $this[$id] = $extended;
-  }
-
   public function set($id, $value) {
     return $this->offsetSet($id, $value);
   }
@@ -304,12 +294,8 @@ if($app['debug']) {
 }
 
 $app['resolver'] = function ($app) {
-  return new ControllerResolver($app['logger']);
-};
-
-$app->extend('resolver', function ($resolver, $app) {
   return new ContainerControllerResolver($app['service_container'], $app['logger']);
-});
+};
 
 $app['argument_metadata_factory'] = function ($app) {
   return new ArgumentMetadataFactory();
