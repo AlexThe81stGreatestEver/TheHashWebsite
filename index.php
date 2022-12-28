@@ -36,6 +36,7 @@ use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use Symfony\Bridge\Twig\Extension\WebLinkExtension;
 use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -132,7 +133,7 @@ class HttpKernelImpl implements HttpKernelInterface {
   }
 }
 
-class LazyContainer extends Container implements \ArrayAccess {
+class LazyContainer extends ContainerBuilder implements \ArrayAccess {
 
   private $values = [];
   private $_protected;
