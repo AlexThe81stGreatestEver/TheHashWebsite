@@ -1,25 +1,40 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Psr\Container\ContainerInterface;
-require_once "config/ProdConfig.php";
-require_once 'HASH/Controller/DatabaseUpdater.php';
+//require_once 'HASH/Controller/DatabaseUpdater.php';
 
-class BaseController {
+class BaseController extends AbstractController {
 
-  protected ContainerInterface $container;
-  protected $db;
-  protected $dbw;
+  private ManagerRegistry $doctrine;
+  private $readConnection = null;
+  private $writeConnection = null;
 
-  protected function __construct(ContainerInterface $container) {
-    $this->container = $container;
-    $this->db = $this->container->get('db');
-    $this->dbw = $this->container->get('dbs')->get('mysql_write');
-    new \DatabaseUpdater($this->dbw, DB_NAME);
+  protected function __construct(ManagerRegistry $doctrine) {
+    $this->doctrine = $doctrine;
+    //check database version before calling database updater???
+    //prevents unnecessary creation of write connection
+    //new \DatabaseUpdater($this->getWriteConnection(), DB_NAME);
+  }
+
+  private function getConnection(string $connectionName) {
+    return $this->doctrine->getConnection($connectionName);
+  }
+
+  protected function getReadConnection() {
+    if($this->readConnection != null) return $this->readConnection;
+    return $this->readConnection = $this->getConnection('STATS_READ');
+  }
+
+  protected function getWriteConnection() {
+    if($this->writeConnection != null) return $this->writeConnection;
+    return $this->writeConnection = $this->getConnection('STATS_WRITE');
   }
 
   protected function isNullOrEmpty($str) {
@@ -41,9 +56,9 @@ class BaseController {
 
   protected function fetchAll(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->db->fetchAllAssociative($sql);
+      $result = $this->getReadConnection()->fetchAllAssociative($sql);
     } else {
-      $result = $this->db->fetchAllAssociative($sql, $args);
+      $result = $this->getReadConnection()->fetchAllAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -53,9 +68,9 @@ class BaseController {
 
   protected function fetchOne(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->db->fetchOne($sql);
+      $result = $this->getReadConnection()->fetchOne($sql);
     } else {
-      $result = $this->db->fetchOne($sql, $args);
+      $result = $this->getReadConnection()->fetchOne($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -65,9 +80,9 @@ class BaseController {
 
   protected function fetchAssoc(string $sql, array $args = null) {
     if($args == null) {
-      $result = $this->db->fetchAssociative($sql);
+      $result = $this->getReadConnection()->fetchAssociative($sql);
     } else {
-      $result = $this->db->fetchAssociative($sql, $args);
+      $result = $this->getReadConnection()->fetchAssociative($sql, $args);
     }
     if(defined('SHOW_WARNINGS')) {
       $this->show_warnings($sql);
@@ -77,7 +92,7 @@ class BaseController {
 
   private function show_warnings(string $sql) {
     if(SHOW_WARNINGS) {
-      $warnings = $this->db->fetchAllAssociative("SHOW WARNINGS");
+      $warnings = $this->getReadConnection()->fetchAllAssociative("SHOW WARNINGS");
       foreach($warnings as $warning) {
         print("WARNING:");
         foreach($warning as $message) {
@@ -89,7 +104,7 @@ class BaseController {
   }
 
   // Add common page arguments, then dispatch to twig to render page
-  protected function render(string $template, array $args) {
+  protected function render(string $template, array $args = [], Response $response = null) : Response {
 
     $args['google_analytics_id'] = $this->getGoogleAnalyticsId();
     $args['site_banner'] = $this->getSiteBanner();
@@ -587,7 +602,7 @@ class BaseController {
         ORDER BY PREDICTED_MILESTONE_DATE";
   }
 
-  protected function getUser(){
+  protected function getUser() : UserInterface {
     $token = $this->container->get('security.token_storage')->getToken();
     return $token !== null ? $token->getUser() : null;
   }
@@ -617,7 +632,7 @@ class BaseController {
       ) VALUES (?, ?, ?, ?, ?)";
 
     #Execute the insert statement
-    $this->dbw->executeUpdate($sql,array(
+    $this->getWriteConnection()->executeUpdate($sql,array(
       $this->getUsername(),
       $nowDateTime,
       $actionType,

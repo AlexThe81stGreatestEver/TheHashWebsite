@@ -1,21 +1,25 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
-require_once "BaseController.php";
-require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
+use App\Controller\BaseController;
+use App\SqlQueries;
+use App\Helper;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Datetime;
-use Psr\Container\ContainerInterface;
 
 class HashController extends BaseController
 {
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  private SqlQueries $sqlQueries;
+
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+    parent::__construct($doctrine);
+    $this->sqlQueries = $sqlQueries;
   }
 
   #Define the action
@@ -88,48 +92,31 @@ class HashController extends BaseController
     return $response;
   }
 
+  #[Route('/')]
   public function slashAction(Request $request) {
-    return $this->slashKennelAction2($request,$this->getDefaultKennel($this->container));
+    return $this->slashKennelAction2($request, $this->getDefaultKennel($this->container));
   }
 
-  #Define the action
+  #[Route('/{kennel_abbreviation}')]
   public function slashKennelAction2(Request $request, string $kennel_abbreviation) {
-    return $this->render('slash2.twig',
-      $this->getSlashTwigArgs($kennel_abbreviation));
+    return $this->render('slash2.twig', $this->getSlashTwigArgs($kennel_abbreviation));
   }
 
   private function getSlashTwigArgs(string $kennel_abbreviation) {
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     $hareTypes = $this->getHareTypes($kennelKy);
 
-    #Establish the page title
     $pageTitle = "$kennel_abbreviation Stats";
 
-    #Get hound counts
-    $baseSql = $this->getHashingCountsQuery();
-    $sql = "$baseSql  LIMIT 10";
-
-    $baseSql = $this->getHaringCountsByTypeQuery(false);
-    $sql2 = "$baseSql  LIMIT 10";
-
-    #Get Top (Overall) Hare Counts
-    $baseSql4 = $this->getHaringCountsQuery(false);
-    $sql4 = "$baseSql4 LIMIT 10";
-
-    $baseSql5 = HASHING_COUNTS_THIS_YEAR;
-    $sql5 = "$baseSql5 LIMIT 10";
-
-    $baseSql6 = HASHING_COUNTS_LAST_YEAR;
-    $sql6 = "$baseSql6 LIMIT 10";
-
-    $baseSql7 = HARING_COUNTS_THIS_YEAR;
-    $sql7 = "$baseSql7 LIMIT 10";
-
-    $baseSql8 = HARING_COUNTS_LAST_YEAR;
-    $sql8 = "$baseSql8 LIMIT 10";
+    $sql = $this->getHashingCountsQuery()." LIMIT 10";
+    $sql2 = $this->getHaringCountsByTypeQuery(false)." LIMIT 10";
+    $sql4 = $this->getHaringCountsQuery(false)." LIMIT 10";
+    $sql5 = $this->sqlQueries->getHashingCountsThisYear()." LIMIT 10";
+    $sql6 = $this->sqlQueries->getHashingCountsLastYear()." LIMIT 10";
+    $sql7 = $this->sqlQueries->getHaringCountsThisYear()." LIMIT 10";
+    $sql8 = $this->sqlQueries->getHaringCountsLastYear()." LIMIT 10";
 
     $top_hares = array();
 
@@ -152,7 +139,7 @@ class HashController extends BaseController
 
     #Get the quickest to 5 hashes
     $theQuickestToXNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXNumber-1,FASTEST_HASHERS_TO_ANALVERSARIES2);
+    $theSql = str_replace("XLIMITX",$theQuickestToXNumber-1, $this->sqlQueries->getFastestHashersToAnalversaries2());
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
@@ -160,7 +147,7 @@ class HashController extends BaseController
 
     #Get the quickest to 100 hashes
     $theQuickestToYNumber = 100;
-    $theSql = str_replace("XLIMITX",$theQuickestToYNumber-1,FASTEST_HASHERS_TO_ANALVERSARIES2);
+    $theSql = str_replace("XLIMITX",$theQuickestToYNumber-1, $this->sqlQueries->getFastestHashersToAnalversaries2());
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
@@ -168,7 +155,7 @@ class HashController extends BaseController
 
     #Get the slowest to 5 hashes
     $theSlowestToXNumber = 5;
-    $theSql = str_replace("XLIMITX",$theSlowestToXNumber-1,FASTEST_HASHERS_TO_ANALVERSARIES2);
+    $theSql = str_replace("XLIMITX",$theSlowestToXNumber-1, $this->sqlQueries->getFastestHashersToAnalversaries2());
     $theSql = str_replace("XORDERX","DESC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
@@ -176,7 +163,7 @@ class HashController extends BaseController
 
     $quickest_hares = array();
     $theQuickestToXHaringsNumber = 5;
-    $theSql = str_replace("XLIMITX",$theQuickestToXHaringsNumber-1,FASTEST_HARES_TO_ANALVERSARIES2);
+    $theSql = str_replace("XLIMITX",$theQuickestToXHaringsNumber-1, $this->sqlQueries->getFastestHaresToAnalversaries2());
     $theSql = str_replace("XORDERX","ASC",$theSql);
     $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
     $theSql = "$theSql LIMIT 10";
@@ -200,11 +187,11 @@ class HashController extends BaseController
       ORDER BY THE_COUNT DESC";
     $eventTagSummaries = $this->fetchAll($eventTagSql, array($kennelKy));
 
-    $topStreakers = $this->fetchAll(THE_LONGEST_STREAKS." LIMIT 10", array($kennelKy));
+    $topStreakers = $this->fetchAll($this->sqlQueries->getTheLongestStreaks()." LIMIT 10", array($kennelKy));
 
     $lastEvent = $this->fetchOne("SELECT HASH_KY FROM HASHES WHERE KENNEL_KY=? ORDER BY EVENT_DATE DESC LIMIT 1", array($kennelKy));
 
-    $currentStreakers = $this->fetchAll(STREAKERS_LIST." LIMIT 10", array($lastEvent, $kennelKy));
+    $currentStreakers = $this->fetchAll($this->sqlQueries->getStreakersList()." LIMIT 10", array($lastEvent, $kennelKy));
 
     $tableColors = array( "#d1f2eb", "#d7bde2", "#eaeded", "#fad7a0", "#fdedec" );
 

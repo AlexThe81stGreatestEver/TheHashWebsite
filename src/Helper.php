@@ -1,12 +1,8 @@
 <?php
 
+namespace App;
 
-
-
-  function hello(){
-    return "howdy";
-  }
-
+class Helper {
 
   /*
   Source: https://kvz.io/blog/2007/10/03/convert-anything-to-tree-structures-in-php/
@@ -282,3 +278,4 @@
     #Return the return value
     return $formattedData;
   }
+}
