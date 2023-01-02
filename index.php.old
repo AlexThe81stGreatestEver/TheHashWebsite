@@ -1118,7 +1118,7 @@ if (!$schema->tablesExist('USERS')) {
 }
 
 # Register the URls
-get('/',                                                    'HashController::slashAction', 'homepage');
+#get('/',                                                    'HashController::slashAction', 'homepage');
 get('/{kennel_abbreviation}/rss',                           'HashController::rssAction');
 get('/{kennel_abbreviation}/events/rss',                    'HashController::eventsRssAction');
 
@@ -1326,7 +1326,7 @@ get('/{kennel_abbreviation}/predictedCenturions',                               
 get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HashController::pendingHareAnalversariesAction');
 get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HashController::haringPercentageAllHashesAction');
 get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HashController::haringPercentageAction');
-get('/{kennel_abbreviation}/hashingCounts',                                       'HashController::hashingCountsAction');
+#get('/{kennel_abbreviation}/hashingCounts',                                       'HashController::hashingCountsAction');
 get('/{kennel_abbreviation}/haringCounts',                                        'HashController::haringCountsAction');
 get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HashController::haringTypeCountsAction');
 get('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',             'HashController::coharelistByHareAllHashesAction');

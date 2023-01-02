@@ -2887,7 +2887,8 @@ function addHasherStatusToQuery(string $query) {
      ORDER BY VALUE DESC";
 }
 
-public function hashingCountsAction(Request $request, string $kennel_abbreviation) {
+#[Route('/{kennel_abbreviation}/hashingCounts')]
+public function hashingCountsAction(string $kennel_abbreviation) {
 
   $sql = $this->addHasherStatusToQuery($this->getHashingCountsQuery(true, true));
 
@@ -2898,10 +2899,10 @@ public function hashingCountsAction(Request $request, string $kennel_abbreviatio
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
+  $hasherList = $this->fetchAll($sql, [$kennelKy, $kennelKy]);
 
   # Establish and set the return value
-  $returnValue = $this->render('name_number_rank_list.twig',array(
+  $returnValue = $this->render('name_number_rank_list.twig', [
     'pageTitle' => 'Hasher Counts',
     'columnOneName' => 'Hasher Name',
     'columnTwoName' => 'Hash Count',
@@ -2909,7 +2910,7 @@ public function hashingCountsAction(Request $request, string $kennel_abbreviatio
     'theList' => $hasherList,
     'kennel_abbreviation' => $kennel_abbreviation,
     'pageTracking' => 'HashCounts'
-  ));
+  ]);
 
   #Return the return value
   return $returnValue;
