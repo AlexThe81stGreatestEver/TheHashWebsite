@@ -4,6 +4,26 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.pattern.hash_id: '\d+'
+    app.pattern.hasher_id: '\d+'
+    app.pattern.hasher_id2: '\d+'
+    app.pattern.hare_id: '\d+'
+    app.pattern.user_id: '\d+'
+    app.pattern.hare_type: '\d+'
+    app.pattern.hash_type: '\d+'
+    app.pattern.event_tag_ky: '\d+'
+    app.pattern.year_value: '\d+'
+    app.pattern.day_count: '\d+'
+    app.pattern.month_count: '\d+'
+    app.pattern.min_hash_count: '\d+'
+    app.pattern.max_percentage: '\d+'
+    app.pattern.analversary_number: '\d+'
+    app.pattern.row_limit: '\d+'
+    app.pattern.kennel_ky: '\d+'
+    app.pattern.horizon: '\d+'
+    app.pattern.kennel_abbreviation: '^[A-Za-z0-9]+$'
+    app.pattern.name: '^[a-z_]+$'
+    app.pattern.ridiculous: '^ridiculous\d+$'
 
 services:
     # default configuration for services in *this* file

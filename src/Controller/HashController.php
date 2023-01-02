@@ -92,12 +92,12 @@ class HashController extends BaseController
     return $response;
   }
 
-  #[Route('/')]
+  #[Route('/', methods: ['GET'])]
   public function slashAction(Request $request) {
     return $this->slashKennelAction2($request, $this->getDefaultKennel($this->container));
   }
 
-  #[Route('/{kennel_abbreviation}')]
+  #[Route('/{kennel_abbreviation}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
   public function slashKennelAction2(Request $request, string $kennel_abbreviation) {
     return $this->render('slash2.twig', $this->getSlashTwigArgs($kennel_abbreviation));
   }
@@ -2887,7 +2887,7 @@ function addHasherStatusToQuery(string $query) {
      ORDER BY VALUE DESC";
 }
 
-#[Route('/{kennel_abbreviation}/hashingCounts')]
+#[Route('/{kennel_abbreviation}/hashingCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
 public function hashingCountsAction(string $kennel_abbreviation) {
 
   $sql = $this->addHasherStatusToQuery($this->getHashingCountsQuery(true, true));
