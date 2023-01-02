@@ -35,18 +35,18 @@
           "data": "KENNEL_EVENT_NUMBER",
           "orderData": [5],
           "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-            $(nTd).html("<a href='/{{kennel_abbreviation}}/hashes/"+oData.HASY_KY+"'>"+oData.KENNEL_EVENT_NUMBER+"</a>");
+            $(nTd).html("<a href='/{{kennel_abbreviation}}/hashes/"+oData.HASH_KY+"'>"+oData.KENNEL_EVENT_NUMBER+"</a>");
           }
 
        },
        { "data": "HOUND_COUNT",
          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-           $(nTd).html("<a href='/{{kennel_abbreviation}}/listhashers/byhash/"+oData.HASY_KY+"'>"+oData.HOUND_COUNT+"</a>");
+           $(nTd).html("<a href='/{{kennel_abbreviation}}/listhashers/byhash/"+oData.HASH_KY+"'>"+oData.HOUND_COUNT+"</a>");
          }
        },
        { "data": "HARE_COUNT",
          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-           $(nTd).html("<a href='/{{kennel_abbreviation}}/listhares/byhash/"+oData.HASY_KY+"'>"+oData.HARE_COUNT+"</a>");
+           $(nTd).html("<a href='/{{kennel_abbreviation}}/listhares/byhash/"+oData.HASH_KY+"'>"+oData.HARE_COUNT+"</a>");
          }
        },
 

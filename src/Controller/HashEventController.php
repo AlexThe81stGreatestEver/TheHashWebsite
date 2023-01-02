@@ -1,26 +1,23 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-require_once "BaseController.php";
-
-use Symfony\Component\HttpFoundation\Request;
+use App\Controller\BaseController;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HashEventController extends BaseController {
 
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  public function __construct(ManagerRegistry $doctrine) {
+    parent::__construct($doctrine);
   }
 
   protected function getHareTypesForHashType(int $kennelKy, int $hashType) {
@@ -823,162 +820,114 @@ class HashEventController extends BaseController {
       return new JsonResponse($hareList);
     }
 
-    #Define the action
-    public function listHashesPreActionJson(Request $request, string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/listhashes2', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function listHashesPreActionJson(string $kennel_abbreviation) {
 
-      # Establish and set the return value
-      $returnValue = $this->render('hash_list_json.twig',array(
-        'pageTitle' => 'The List of Hashes',
-        'pageSubTitle' => '',
-        #'theList' => $hasherList,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'pageCaption' => "",
-        'tableCaption' => ""
-      ));
+    return $this->render('hash_list_json.twig', [
+      'pageTitle' => 'The List of Hashes',
+      'pageSubTitle' => '',
+      'kennel_abbreviation' => $kennel_abbreviation
+    ]);
+  }
 
-      #Return the return value
-      return $returnValue;
+  #[Route('/{kennel_abbreviation}/listhashes2', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function listHashesPostActionJson(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $inputStart = $_POST['start'] ;
+    $inputLength = $_POST['length'] ;
+    $inputColumns = $_POST['columns'];
+    $inputSearch = $_POST['search'];
+    $inputSearchValue = $inputSearch['value'];
+
+    #-------------- Begin: Validate the post parameters ------------------------
+    if(!is_numeric($inputStart)){
+      $inputStart = 0;
     }
 
-    public function listHashesPostActionJson(Request $request, string $kennel_abbreviation){
+    if(!is_numeric($inputLength)){
+      $inputStart = "0";
+      $inputLength = "50";
+    } else if($inputLength == "-1"){
+      $inputStart = "0";
+      $inputLength = "1000000000";
+    }
 
-      #$this->container->get('monolog')->addDebug("Entering the function------------------------");
+    #---------------- End: Validate the post parameters ------------------------
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #-------------- Begin: Modify the input parameters  ------------------------
+    $inputSearchValueModified = "%$inputSearchValue%";
 
+    $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
+    $inputOrderColumnExtracted = "13";
+    $inputOrderColumnIncremented = "13";
+    $inputOrderDirectionExtracted = "desc";
 
-      #Obtain the post parameters
-      #$inputDraw = $_POST['draw'] ;
-      $inputStart = $_POST['start'] ;
-      $inputLength = $_POST['length'] ;
-      $inputColumns = $_POST['columns'];
-      $inputSearch = $_POST['search'];
-      $inputSearchValue = $inputSearch['value'];
+    if(!is_null($inputOrderRaw)) {
+      $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
+      $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
+      $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
+    }
 
-      #-------------- Begin: Validate the post parameters ------------------------
-      #Validate input start
-      if(!is_numeric($inputStart)){
-        #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
-        $inputStart = 0;
-      }
+    #-------------- End: Modify the input parameters  --------------------------
 
-      #Validate input length
-      if(!is_numeric($inputLength)){
-        #$this->container->get('monolog')->addDebug("input length is not numeric");
-        $inputStart = "0";
-        $inputLength = "50";
-      } else if($inputLength == "-1"){
-        #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
-        $inputStart = "0";
-        $inputLength = "1000000000";
-      }
+    #-------------- Begin: Define the SQL used here   --------------------------
 
-      #Validate input search
-      #We are using database parameterized statements, so we are good already...
-
-      #---------------- End: Validate the post parameters ------------------------
-
-      #-------------- Begin: Modify the input parameters  ------------------------
-      #Modify the search string
-      $inputSearchValueModified = "%$inputSearchValue%";
-
-      #Obtain the column/order information
-      $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-      $inputOrderColumnExtracted = "13";
-      $inputOrderColumnIncremented = "13";
-      $inputOrderDirectionExtracted = "desc";
-      if(!is_null($inputOrderRaw)){
-        #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
-        $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
-        $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
-        $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-      }else{
-        #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
-      }
-
-      #-------------- End: Modify the input parameters  --------------------------
-
-
-      #-------------- Begin: Define the SQL used here   --------------------------
-
-      #Define the sql that performs the filtering
-      $sql = "SELECT
-          KENNEL_EVENT_NUMBER AS KENNEL_EVENT_NUMBER,
-          (SELECT COUNT(*) FROM HASHINGS WHERE HASHINGS.HASH_KY = HASHES.HASH_KY) AS HOUND_COUNT,
-          (SELECT COUNT(*) FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY) AS HARE_COUNT,
-          EVENT_LOCATION AS EVENT_LOCATION,
-          SPECIAL_EVENT_DESCRIPTION AS SPECIAL_EVENT_DESCRIPTION,
-          EVENT_DATE AS EVENT_DATE,
-          EVENT_CITY AS EVENT_CITY,
-          EVENT_STATE AS EVENT_STATE,
-          FORMATTED_ADDRESS,
-          HASH_KY AS HASY_KY,
-          KENNEL_KY AS KENNEL_KY,
-          DATE_FORMAT(event_date,'%Y/%m/%d') AS EVENT_DATE_FORMATTED,
-          DATE_FORMAT(event_date,'%Y/%m/%d %h:%i %p') AS EVENT_DATE_FORMATTED2,
-          HASH_TYPE_NAME AS HASH_TYPE_NAME
+    $sql = "
+      SELECT KENNEL_EVENT_NUMBER,
+             (SELECT COUNT(*) FROM HASHINGS WHERE HASHINGS.HASH_KY = HASHES.HASH_KY) AS HOUND_COUNT,
+             (SELECT COUNT(*) FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY) AS HARE_COUNT,
+             EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION, EVENT_DATE, EVENT_CITY, EVENT_STATE, FORMATTED_ADDRESS,
+             HASH_KY, KENNEL_KY,
+             DATE_FORMAT(event_date,'%Y/%m/%d') AS EVENT_DATE_FORMATTED,
+             DATE_FORMAT(event_date,'%Y/%m/%d %h:%i %p') AS EVENT_DATE_FORMATTED2,
+             HASH_TYPE_NAME
         FROM HASHES
         JOIN HASH_TYPES
           ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
-        WHERE
-          KENNEL_KY = ? AND
-          (
-            KENNEL_EVENT_NUMBER LIKE ? OR
-            EVENT_LOCATION LIKE ? OR
-            SPECIAL_EVENT_DESCRIPTION LIKE ? OR
-            EVENT_CITY LIKE ? OR
-            EVENT_STATE LIKE ?)
-        ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-        LIMIT $inputStart,$inputLength";
+       WHERE KENNEL_KY = ?
+         AND (KENNEL_EVENT_NUMBER LIKE ? OR
+              EVENT_LOCATION LIKE ? OR
+              SPECIAL_EVENT_DESCRIPTION LIKE ? OR
+              EVENT_CITY LIKE ? OR
+              EVENT_STATE LIKE ?)
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
 
-      #Define the SQL that gets the count for the filtered results
-      $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
+    #Define the SQL that gets the count for the filtered results
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
         FROM HASHES
-        WHERE
-        KENNEL_KY = ? AND
-        (
-          KENNEL_EVENT_NUMBER LIKE ? OR
-          EVENT_LOCATION LIKE ? OR
-          SPECIAL_EVENT_DESCRIPTION LIKE ? OR
-          EVENT_CITY LIKE ? OR
-          EVENT_STATE LIKE ?)";
+       WHERE KENNEL_KY = ?
+         AND (KENNEL_EVENT_NUMBER LIKE ? OR
+              EVENT_LOCATION LIKE ? OR
+              SPECIAL_EVENT_DESCRIPTION LIKE ? OR
+              EVENT_CITY LIKE ? OR
+              EVENT_STATE LIKE ?)";
 
-      #Define the sql that gets the overall counts
-      $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = ?";
+    #Define the sql that gets the overall counts
+    $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = ?";
 
-      #-------------- End: Define the SQL used here   ----------------------------
+    #-------------- End: Define the SQL used here   ----------------------------
 
-      #-------------- Begin: Query the database   --------------------------------
-      #Perform the filtered search
-      $theResults = $this->fetchAll($sql,array($kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified));
+    #-------------- Begin: Query the database   --------------------------------
+    #Perform the filtered search
+    $theResults = $this->fetchAll($sql,array($kennelKy, $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified));
 
-      #Perform the untiltered count
-      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    #Perform the unfiltered count
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [$kennelKy]))['THE_COUNT'];
 
-      #Perform the filtered count
-      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified)))['THE_COUNT'];
-      #-------------- End: Query the database   --------------------------------
+    #Perform the filtered count
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [$kennelKy, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified]))['THE_COUNT'];
+    #-------------- End: Query the database   --------------------------------
 
-      #Establish the output
-      $output = array(
-        "sEcho" => "foo",
-        "iTotalRecords" => $theUnfilteredCount,
-        "iTotalDisplayRecords" => $theFilteredCount,
-        "aaData" => $theResults
-      );
-
-      return new JsonResponse($output);
-    }
+    return new JsonResponse([
+      "iTotalRecords" => $theUnfilteredCount,
+      "iTotalDisplayRecords" => $theFilteredCount,
+      "aaData" => $theResults
+    ]);
+  }
 }
