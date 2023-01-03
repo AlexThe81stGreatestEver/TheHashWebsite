@@ -5,132 +5,132 @@ namespace App;
 class SqlQueries {
 
   public function getHashingCountsThisYear() : string {
-    return
-      "SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
-         FROM HASHERS
-         JOIN HASHINGS
-           ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-         JOIN HASHES
-           ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-          AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())
-        GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
-        ORDER BY VALUE DESC";
+    return "
+      SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
+        FROM HASHERS
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHES.KENNEL_KY = ?
+         AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())
+       GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+       ORDER BY VALUE DESC";
   }
   
   public function getHashingCountsLastYear() : string {
-    return
-      "SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
-         FROM HASHERS
-         JOIN HASHINGS
-           ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-         JOIN HASHES
-           ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-          AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())-1
-        GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
-        ORDER BY VALUE DESC";
+    return "
+      SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
+        FROM HASHERS
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHES.KENNEL_KY = ?
+         AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())-1
+       GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+       ORDER BY VALUE DESC";
   }
 
   public function getHaringCountsThisYear() : string {
-    return
-      "SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
-         FROM HASHERS
-         JOIN HARINGS
-           ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-         JOIN HARE_TYPES
-           ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-         JOIN HASHES
-           ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-          AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())
-        GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
-        ORDER BY VALUE DESC";
+    return "
+      SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
+        FROM HASHERS
+        JOIN HARINGS
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HASHES.KENNEL_KY = ?
+         AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())
+       GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+       ORDER BY VALUE DESC";
   }
 
   public function getHaringCountsLastYear() : string {
-    return
-      "SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
-         FROM HASHERS
-         JOIN HARINGS
-           ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-         JOIN HARE_TYPES
-           ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-         JOIN HASHES
-           ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-        WHERE HASHES.KENNEL_KY = ?
-          AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())-1
-        GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
-        ORDER BY VALUE DESC";
+    return "
+      SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(0) AS VALUE
+        FROM HASHERS
+        JOIN HARINGS
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HASHES.KENNEL_KY = ?
+         AND YEAR(HASHES.EVENT_DATE) = YEAR(CURDATE())-1
+       GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+       ORDER BY VALUE DESC";
   }
 
   public function getFastestHashersToAnalversaries2() : string {
-    return
-      "SELECT ANALVERSARYHASHES.HASHER_KY, ANALVERSARYHASHES.HASHER_NAME,
-              (SELECT HASH_KY FROM HASHES WHERE KENNEL_KY=? AND EVENT_DATE=FIRST_HASH_DATE) AS FIRST_HASH_KY,
-              INITIAL_HASHES.FIRST_HASH_DATE,
-              HASHES.HASH_KY AS ANALVERSARY_HASH_KY,
-              HASHES.EVENT_DATE AS ANALVERSARY_DATE,
-              DATEDIFF(HASHES.EVENT_DATE,FIRST_HASH_DATE) AS DAYS_TO_REACH_ANALVERSARY
-         FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, (
-                      SELECT HASHES.HASH_KY
-                        FROM HASHES
-                        JOIN HASHINGS
-                          ON HASHES.HASH_KY = HASHINGS.HASH_KY
-                       WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-                         AND HASHES.KENNEL_KY = ?
-                       ORDER BY HASHES.EVENT_DATE ASC LIMIT XLIMITX,1)
-                          AS ANALVERSARYHASH
-                 FROM HASHERS) ANALVERSARYHASHES
-         JOIN (SELECT HASHINGS.HASHER_KY AS HASHER_KY,
-                      MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
-                 FROM HASHINGS
-                 JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                WHERE HASHES.KENNEL_KY = ?
-                GROUP BY HASHINGS.HASHER_KY) INITIAL_HASHES
-           ON ANALVERSARYHASHES.HASHER_KY = INITIAL_HASHES.HASHER_KY
-         JOIN HASHES
-           ON ANALVERSARYHASHES.ANALVERSARYHASH = HASHES.HASH_KY
-        GROUP BY HASHER_KY
-        ORDER BY XORDERCOLUMNX XORDERX";
+    return "
+      SELECT ANALVERSARYHASHES.HASHER_KY, ANALVERSARYHASHES.HASHER_NAME,
+             (SELECT HASH_KY FROM HASHES WHERE KENNEL_KY=? AND EVENT_DATE=FIRST_HASH_DATE) AS FIRST_HASH_KY,
+             INITIAL_HASHES.FIRST_HASH_DATE,
+             HASHES.HASH_KY AS ANALVERSARY_HASH_KY,
+             HASHES.EVENT_DATE AS ANALVERSARY_DATE,
+             DATEDIFF(HASHES.EVENT_DATE,FIRST_HASH_DATE) AS DAYS_TO_REACH_ANALVERSARY
+        FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, (
+                     SELECT HASHES.HASH_KY
+                       FROM HASHES
+                       JOIN HASHINGS
+                         ON HASHES.HASH_KY = HASHINGS.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                      ORDER BY HASHES.EVENT_DATE ASC LIMIT XLIMITX,1)
+                         AS ANALVERSARYHASH
+                FROM HASHERS) ANALVERSARYHASHES
+        JOIN (SELECT HASHINGS.HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+                FROM HASHINGS
+                JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+               GROUP BY HASHINGS.HASHER_KY) INITIAL_HASHES
+          ON ANALVERSARYHASHES.HASHER_KY = INITIAL_HASHES.HASHER_KY
+        JOIN HASHES
+          ON ANALVERSARYHASHES.ANALVERSARYHASH = HASHES.HASH_KY
+       GROUP BY HASHER_KY
+       ORDER BY XORDERCOLUMNX XORDERX";
   }
 
   public function getFastestHaresToAnalversaries2() : string {
-    return
-      "SELECT ANALVERSARYHASHES.HASHER_KY,
-              ANALVERSARYHASHES.HASHER_NAME,
-              (SELECT HASH_KY
-                 FROM HASHES
-                WHERE KENNEL_KY=?
-                  AND EVENT_DATE=FIRST_HASH_DATE) AS FIRST_HASH_KY,
-              INITIAL_HASHES.FIRST_HASH_DATE,
-              HASHES.HASH_KY AS ANALVERSARY_HASH_KY,
-              HASHES.EVENT_DATE AS ANALVERSARY_DATE,
-              DATEDIFF(HASHES.EVENT_DATE,FIRST_HASH_DATE) AS DAYS_TO_REACH_ANALVERSARY
-         FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, (
-                      SELECT HASHES.HASH_KY
-                        FROM HASHES
-                        JOIN HARINGS
-                          ON HASHES.HASH_KY = HARINGS.HARINGS_HASH_KY
-                       WHERE HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                         AND HASHES.KENNEL_KY = ?
-                         AND HARINGS.HARE_TYPE & ? != 0
-                       ORDER BY HASHES.EVENT_DATE ASC LIMIT XLIMITX,1)
-                          AS ANALVERSARYHASH
-                 FROM HASHERS) ANALVERSARYHASHES
-         JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                      MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
-                 FROM HARINGS
-                 JOIN HASHES
-                   ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                WHERE HASHES.KENNEL_KY = ?
-                  AND HARINGS.HARE_TYPE & ? != 0
-                GROUP BY HARINGS.HARINGS_HASHER_KY) INITIAL_HASHES
-           ON ANALVERSARYHASHES.HASHER_KY = INITIAL_HASHES.HASHER_KY
-         JOIN HASHES
-           ON ANALVERSARYHASHES.ANALVERSARYHASH = HASHES.HASH_KY
-        GROUP BY HASHER_KY
-        ORDER BY XORDERCOLUMNX XORDERX";
+    return "
+      SELECT ANALVERSARYHASHES.HASHER_KY,
+             ANALVERSARYHASHES.HASHER_NAME,
+             (SELECT HASH_KY
+                FROM HASHES
+               WHERE KENNEL_KY=?
+                 AND EVENT_DATE=FIRST_HASH_DATE) AS FIRST_HASH_KY,
+             INITIAL_HASHES.FIRST_HASH_DATE,
+             HASHES.HASH_KY AS ANALVERSARY_HASH_KY,
+             HASHES.EVENT_DATE AS ANALVERSARY_DATE,
+             DATEDIFF(HASHES.EVENT_DATE,FIRST_HASH_DATE) AS DAYS_TO_REACH_ANALVERSARY
+        FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, (
+                     SELECT HASHES.HASH_KY
+                       FROM HASHES
+                       JOIN HARINGS
+                         ON HASHES.HASH_KY = HARINGS.HARINGS_HASH_KY
+                      WHERE HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                        AND HARINGS.HARE_TYPE & ? != 0
+                      ORDER BY HASHES.EVENT_DATE ASC LIMIT XLIMITX,1)
+                         AS ANALVERSARYHASH
+                FROM HASHERS) ANALVERSARYHASHES
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
+                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+                FROM HARINGS
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+                 AND HARINGS.HARE_TYPE & ? != 0
+               GROUP BY HARINGS.HARINGS_HASHER_KY) INITIAL_HASHES
+          ON ANALVERSARYHASHES.HASHER_KY = INITIAL_HASHES.HASHER_KY
+        JOIN HASHES
+          ON ANALVERSARYHASHES.ANALVERSARYHASH = HASHES.HASH_KY
+       GROUP BY HASHER_KY
+       ORDER BY XORDERCOLUMNX XORDERX";
   }
 
   public function getTheLongestStreaks() : string {
@@ -158,66 +158,182 @@ class SqlQueries {
   }
 
   public function getStreakersList() : string {
-    return 
-      "  WITH THIS_EVENT AS (
-       SELECT HASH_KY, EVENT_DATE
-         FROM HASHES
-        WHERE HASH_KY = ?),
-              ALL_EVENTS AS (
-       SELECT ROW_NUMBER() OVER () AS seq, HASH_KY
-         FROM HASHES
-        WHERE KENNEL_KY=?
-          AND EVENT_DATE <= (SELECT EVENT_DATE FROM THIS_EVENT)
-        ORDER BY EVENT_DATE, HASH_KY),
-              HASHER_GROUPS AS (
-       SELECT HASHER_KY, seq-(CAST(row_number() over(order by HASHER_KY, seq) AS SIGNED)) as grp
-         FROM (SELECT CAST(seq AS SIGNED) AS seq, HASHER_KY, HASHINGS.HASH_KY
-                 FROM HASHINGS
-                 JOIN ALL_EVENTS
-                   ON HASHINGS.HASH_KY = ALL_EVENTS.HASH_KY
-                WHERE HASHER_KY IN (
-                      SELECT HASHER_KY 
-                        FROM HASHINGS 
-                       WHERE HASH_KY=(SELECT HASH_KY FROM THIS_EVENT))) AS hg),
-              HASHER_MAX_GROUPS AS (
-       SELECT HASHER_KY, MAX(grp) AS max_grp
-         FROM HASHER_GROUPS
-        GROUP BY HASHER_KY),
-              HASHER_LAST_GROUPS AS (
-       SELECT HASHER_MAX_GROUPS.HASHER_KY, grp
-         FROM HASHER_GROUPS
-         JOIN HASHER_MAX_GROUPS
-           ON HASHER_GROUPS.HASHER_KY = HASHER_MAX_GROUPS.HASHER_KY
-          AND HASHER_GROUPS.grp = HASHER_MAX_GROUPS.max_grp)
-       SELECT HASHER_KY AS THE_HASHER_KY,
-              (SELECT HASHER_NAME FROM HASHERS WHERE HASHERS.HASHER_KY = grps.HASHER_KY) AS THE_HASHER_NAME,
-              grp_count AS THE_STREAK_IN_EVENTS,
-              (SELECT COALESCE((
-                      SELECT DATE_FORMAT(EVENT_DATE, '%Y/%m/%d') 
-                        FROM HASHES WHERE HASH_KY=(
-                             SELECT HASH_KY 
-                               FROM ALL_EVENTS 
-                              WHERE seq=(
-                                    SELECT seq 
-                                      FROM ALL_EVENTS
-                                      JOIN THIS_EVENT
-                                        ON THIS_EVENT.HASH_KY = ALL_EVENTS.HASH_KY) - grp_count)), 'NA')) AS LAST_MISSED_EVENT,
-              1+DATEDIFF(
-                    (SELECT EVENT_DATE FROM THIS_EVENT),
-                    (SELECT EVENT_DATE
-                       FROM HASHES
-                      WHERE HASH_KY=(
+    return "
+        WITH THIS_EVENT AS (
+      SELECT HASH_KY, EVENT_DATE
+        FROM HASHES
+       WHERE HASH_KY = ?),
+             ALL_EVENTS AS (
+      SELECT ROW_NUMBER() OVER () AS seq, HASH_KY
+        FROM HASHES
+       WHERE KENNEL_KY=?
+         AND EVENT_DATE <= (SELECT EVENT_DATE FROM THIS_EVENT)
+       ORDER BY EVENT_DATE, HASH_KY),
+             HASHER_GROUPS AS (
+      SELECT HASHER_KY, seq-(CAST(row_number() over(order by HASHER_KY, seq) AS SIGNED)) as grp
+        FROM (SELECT CAST(seq AS SIGNED) AS seq, HASHER_KY, HASHINGS.HASH_KY
+                FROM HASHINGS
+                JOIN ALL_EVENTS
+                  ON HASHINGS.HASH_KY = ALL_EVENTS.HASH_KY
+               WHERE HASHER_KY IN (
+                     SELECT HASHER_KY 
+                       FROM HASHINGS 
+                      WHERE HASH_KY=(SELECT HASH_KY FROM THIS_EVENT))) AS hg),
+             HASHER_MAX_GROUPS AS (
+      SELECT HASHER_KY, MAX(grp) AS max_grp
+        FROM HASHER_GROUPS
+       GROUP BY HASHER_KY),
+             HASHER_LAST_GROUPS AS (
+      SELECT HASHER_MAX_GROUPS.HASHER_KY, grp
+        FROM HASHER_GROUPS
+        JOIN HASHER_MAX_GROUPS
+          ON HASHER_GROUPS.HASHER_KY = HASHER_MAX_GROUPS.HASHER_KY
+         AND HASHER_GROUPS.grp = HASHER_MAX_GROUPS.max_grp)
+      SELECT HASHER_KY AS THE_HASHER_KY,
+             (SELECT HASHER_NAME FROM HASHERS WHERE HASHERS.HASHER_KY = grps.HASHER_KY) AS THE_HASHER_NAME,
+             grp_count AS THE_STREAK_IN_EVENTS,
+             (SELECT COALESCE((
+                     SELECT DATE_FORMAT(EVENT_DATE, '%Y/%m/%d') 
+                       FROM HASHES WHERE HASH_KY=(
                             SELECT HASH_KY 
                               FROM ALL_EVENTS 
-                             WHERE seq=(SELECT seq 
-                                          FROM ALL_EVENTS 
-                                          JOIN THIS_EVENT 
-                                            ON THIS_EVENT.HASH_KY = ALL_EVENTS.HASH_KY) - grp_count + 1))) AS THE_STREAK_IN_DAYS
-         FROM (SELECT HASHER_KY, COUNT(*) AS grp_count
-                 FROM HASHER_LAST_GROUPS
-                GROUP BY HASHER_KY, grp) 
-           AS grps
-        ORDER BY THE_STREAK_IN_EVENTS DESC, THE_HASHER_NAME";
+                             WHERE seq=(
+                                   SELECT seq 
+                                     FROM ALL_EVENTS
+                                     JOIN THIS_EVENT
+                                       ON THIS_EVENT.HASH_KY = ALL_EVENTS.HASH_KY) - grp_count)), 'NA')) AS LAST_MISSED_EVENT,
+             1+DATEDIFF(
+                   (SELECT EVENT_DATE FROM THIS_EVENT),
+                   (SELECT EVENT_DATE
+                      FROM HASHES
+                     WHERE HASH_KY=(
+                           SELECT HASH_KY 
+                             FROM ALL_EVENTS 
+                            WHERE seq=(SELECT seq 
+                                         FROM ALL_EVENTS 
+                                         JOIN THIS_EVENT 
+                                           ON THIS_EVENT.HASH_KY = ALL_EVENTS.HASH_KY) - grp_count + 1))) AS THE_STREAK_IN_DAYS
+        FROM (SELECT HASHER_KY, COUNT(*) AS grp_count
+                FROM HASHER_LAST_GROUPS
+               GROUP BY HASHER_KY, grp) 
+          AS grps
+       ORDER BY THE_STREAK_IN_EVENTS DESC, THE_HASHER_NAME";
+  }
+
+  public function getHoundCountByHashKey() : string {
+    return "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+       WHERE HASHINGS.HASH_KY = ?";
+  }
+
+  public function getHareCountByHashKey() : string {
+    return "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN HARINGS
+          ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+       WHERE HARINGS.HARINGS_HASH_KY = ?";
+  }
+
+  public function getBackslidersForSpecificHashEvent() : string {
+    return "
+      SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, LATEST_HASH_TABLE.HASH_KY AS CURRENT_HASH_KY, HASHES.EVENT_DATE AS CURRENT_EVENT_DATE,
+             LATEST_HASH_TABLE.LATEST_HASH_KEY AS PREVIOUS_HASH_KEY, LH.EVENT_DATE AS PREVIOUS_EVENT_DATE,
+             LH.KENNEL_EVENT_NUMBER AS PREVIOUS_EVENT_NUMBER, (
+                 SELECT COUNT(*)
+                   FROM HASHES
+                  WHERE HASHES.EVENT_DATE > PREVIOUS_EVENT_DATE
+                    AND HASHES.EVENT_DATE < CURRENT_EVENT_DATE
+                    AND HASHES.KENNEL_KY = ?) AS THE_NUMBER_OF_MISSED_HASHES,
+             DATEDIFF(HASHES.EVENT_DATE,LH.EVENT_DATE) AS DAYS_SINCE_LAST_EVENT
+        FROM (SELECT HASHERS.HASHER_KY, HASHES_OUTER.HASH_KY, (
+                     SELECT HASHES.HASH_KY
+                       FROM HASHES
+                       JOIN HASHINGS
+                         ON HASHES.HASH_KY = HASHINGS.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = HASHINGS_OUTER.HASHER_KY
+                        AND HASHES.EVENT_DATE < HASHES_OUTER.EVENT_DATE
+                        AND HASHES.KENNEL_KY = HASHES_OUTER.KENNEL_KY
+                      ORDER BY HASHES.EVENT_DATE DESC
+                      LIMIT 0,1) AS LATEST_HASH_KEY
+                FROM HASHES HASHES_OUTER
+                JOIN HASHINGS HASHINGS_OUTER
+                  ON HASHES_OUTER.HASH_KY = HASHINGS_OUTER.HASH_KY
+                JOIN HASHERS
+                  ON HASHINGS_OUTER.HASHER_KY = HASHERS.HASHER_KY
+               WHERE HASHES_OUTER.HASH_KY = ?
+                 AND KENNEL_KY = ?) LATEST_HASH_TABLE
+        JOIN HASHERS
+          ON LATEST_HASH_TABLE.HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+   LEFT JOIN HASHES LH
+          ON LATEST_HASH_TABLE.LATEST_HASH_KEY = LH.HASH_KY
+       WHERE HASHES.HASH_KY = ?
+       ORDER BY DAYS_SINCE_LAST_EVENT DESC";
+  }
+
+  public function getOverallHareAnalversariesForEvent() : string {
+    return "
+      SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+             COUNT(*) AS THE_COUNT,
+             MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
+       FROM HASHERS
+       JOIN HARINGS
+         ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+       JOIN HARE_TYPES
+         ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+       JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+      WHERE HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
+        AND HASHES.KENNEL_KY = ?
+      GROUP BY HASHERS.HASHER_NAME
+     HAVING ((((THE_COUNT % 5) = 0) OR ((THE_COUNT % 69) = 0) OR ((THE_COUNT % 666) = 0) OR (((THE_COUNT - 69) % 100) = 0)))
+        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
+      ORDER BY THE_COUNT DESC";
+  }
+
+  public function getConsolidatedHareAnalversariesForEvent() : string {
+    return "
+      SELECT *
+        FROM (SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+                     COUNT(*) AS THE_COUNT,
+                     MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
+                     HARE_TYPES.HARE_TYPE_NAME AS HARING_TYPE
+                FROM HASHERS
+                JOIN HARINGS
+                  ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+                JOIN HARE_TYPES
+                  ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
+                 AND HASHES.KENNEL_KY = ?
+               GROUP BY HASHERS.HASHER_NAME, HARE_TYPES.HARE_TYPE_NAME
+              HAVING ((((THE_COUNT % 5) = 0) OR ((THE_COUNT % 69) = 0) OR ((THE_COUNT % 666) = 0) OR (((THE_COUNT - 69) % 100) = 0)))
+                 AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
+               UNION
+              SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
+                     COUNT(*) AS THE_COUNT,
+                     MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
+                     'Overall' AS HARING_TYPE
+                FROM HASHERS
+                JOIN HARINGS
+                  ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
+                JOIN HARE_TYPES
+                  ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
+                 AND HASHES.KENNEL_KY = ?
+               GROUP BY HASHERS.HASHER_NAME
+              HAVING ((((THE_COUNT % 5) = 0) OR ((THE_COUNT % 69) = 0) OR ((THE_COUNT % 666) = 0) OR (((THE_COUNT - 69) % 100) = 0)))
+                 AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)) DERIVED_TABLE
+       ORDER BY THE_COUNT DESC";
   }
 }
 
@@ -1116,58 +1232,6 @@ ORDER BY THE_COUNT XUPORDOWNX
 LIMIT XLIMITX");
 
 
-DEFINE("BACKSLIDERS_FOR_SPECIFIC_HASH_EVENT","SELECT
-        HASHERS.HASHER_KY,
-        HASHERS.HASHER_NAME,
-        LATEST_HASH_TABLE.HASH_KY AS CURRENT_HASH_KY,
-  HASHES.EVENT_DATE AS CURRENT_EVENT_DATE,
-  LATEST_HASH_TABLE.LATEST_HASH_KEY AS PREVIOUS_HASH_KEY,
-  LH.EVENT_DATE AS PREVIOUS_EVENT_DATE,
-  LH.KENNEL_EVENT_NUMBER AS PREVIOUS_EVENT_NUMBER,
-        (
-                SELECT
-                        COUNT(*)
-                FROM
-                        HASHES
-                WHERE
-                        HASHES.EVENT_DATE > PREVIOUS_EVENT_DATE AND
-                                                HASHES.EVENT_DATE < CURRENT_EVENT_DATE AND
-                                                HASHES.KENNEL_KY = ?
-        ) AS THE_NUMBER_OF_MISSED_HASHES,
-  DATEDIFF(HASHES.EVENT_DATE,LH.EVENT_DATE) AS DAYS_SINCE_LAST_EVENT
-FROM
-        (
-                SELECT
-                        HASHERS.HASHER_KY,
-                        HASHES_OUTER.HASH_KY,
-                        (
-                                SELECT
-                                        HASHES.HASH_KY
-                                FROM
-                                        HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-                                WHERE
-                                        HASHINGS.HASHER_KY = HASHINGS_OUTER.HASHER_KY AND
-                                        HASHES.EVENT_DATE < HASHES_OUTER.EVENT_DATE AND
-                                        HASHES.KENNEL_KY = HASHES_OUTER.KENNEL_KY
-                                ORDER BY HASHES.EVENT_DATE DESC
-                                LIMIT 0,1
-                        ) AS LATEST_HASH_KEY
-                FROM
-                        HASHES HASHES_OUTER
-                        JOIN HASHINGS HASHINGS_OUTER ON HASHES_OUTER.HASH_KY = HASHINGS_OUTER.HASH_KY
-                        JOIN HASHERS ON HASHINGS_OUTER.HASHER_KY = HASHERS.HASHER_KY
-                WHERE
-                        HASHES_OUTER.HASH_KY = ?
-                        AND KENNEL_KY = ?
-        ) LATEST_HASH_TABLE
-    JOIN HASHERS ON LATEST_HASH_TABLE.HASHER_KY = HASHERS.HASHER_KY
-    JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-    JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-    LEFT JOIN HASHES LH ON LATEST_HASH_TABLE.LATEST_HASH_KEY = LH.HASH_KY
-WHERE
-        HASHES.HASH_KY = ?
-ORDER BY DAYS_SINCE_LAST_EVENT DESC
-");
 
 DEFINE("VIRGIN_HARINGS_BY_YEAR","SELECT DATE_FORMAT(FIRST_HARING_DATE,'%Y') AS THE_VALUE, COUNT(*) AS THE_COUNT FROM (
         SELECT
@@ -1868,9 +1932,6 @@ DEFINE("PERSONS_HARING_TYPE_COUNT","
      AND HARINGS.HARE_TYPE & ? != 0");
 
 
-DEFINE("HOUND_COUNT_BY_HASH_KEY","SELECT COUNT(*) AS THE_COUNT FROM HASHERS JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY WHERE HASHINGS.HASH_KY = ?");
-DEFINE("HARE_COUNT_BY_HASH_KEY","SELECT COUNT(*) AS THE_COUNT FROM HASHERS JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY WHERE HARINGS.HARINGS_HASH_KY = ?");
-
 
   DEFINE("THE_LONGEST_STREAKS_FOR_HASHER","
       WITH ALL_EVENTS AS (
@@ -1911,66 +1972,5 @@ WHERE
         HARINGS_HASHER_KY = ?
 ORDER BY KENNEL_ABBREVIATION, HASHES.EVENT_DATE DESC");
 
-DEFINE("OVERALL_HARE_ANALVERSARIES_FOR_EVENT","SELECT
-                HASHERS.HASHER_NAME AS HASHER_NAME,
-                (COUNT(*)) AS THE_COUNT,
-                MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE
-FROM
-                ((HASHERS
-                JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-                JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-                JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
-WHERE
-                HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
-                HASHES.KENNEL_KY = ?
-GROUP BY HASHERS.HASHER_NAME
-HAVING ((((THE_COUNT % 5) = 0)
-                OR ((THE_COUNT % 69) = 0)
-                OR ((THE_COUNT % 666) = 0)
-                OR (((THE_COUNT - 69) % 100) = 0)))
-                AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
-ORDER BY THE_COUNT DESC");
 
-DEFINE("CONSOLIDATED_HARE_ANALVERSARIES_FOR_EVENT","SELECT * FROM (
-        SELECT
-                        HASHERS.HASHER_NAME AS HASHER_NAME,
-                        (COUNT(*)) AS THE_COUNT,
-                        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
-                        HARE_TYPES.HARE_TYPE_NAME AS HARING_TYPE
-        FROM
-                        HASHERS
-                        JOIN HARINGS ON HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY
-                        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-                        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-        WHERE
-                        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
-                        HASHES.KENNEL_KY = ?
-        GROUP BY HASHERS.HASHER_NAME, HARE_TYPES.HARE_TYPE_NAME
-        HAVING ((((THE_COUNT % 5) = 0)
-                        OR ((THE_COUNT % 69) = 0)
-                        OR ((THE_COUNT % 666) = 0)
-                        OR (((THE_COUNT - 69) % 100) = 0)))
-                        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
-        UNION
-        SELECT
-                        HASHERS.HASHER_NAME AS HASHER_NAME,
-                        (COUNT(*)) AS THE_COUNT,
-                        MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
-                        'Overall' AS HARING_TYPE
-        FROM
-                        ((HASHERS
-                        JOIN HARINGS ON ((HASHERS.HASHER_KY = HARINGS.HARINGS_HASHER_KY)))
-                        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-                        JOIN HASHES ON ((HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY)))
-        WHERE
-                        HASHES.EVENT_DATE <= (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?) AND
-                        HASHES.KENNEL_KY = ?
-        GROUP BY HASHERS.HASHER_NAME
-        HAVING ((((THE_COUNT % 5) = 0)
-                        OR ((THE_COUNT % 69) = 0)
-                        OR ((THE_COUNT % 666) = 0)
-                        OR (((THE_COUNT - 69) % 100) = 0)))
-                        AND MAX_EVENT_DATE = (SELECT EVENT_DATE FROM HASHES WHERE HASH_KY = ?)
-) DERIVED_TABLE
-ORDER BY THE_COUNT DESC");
 */

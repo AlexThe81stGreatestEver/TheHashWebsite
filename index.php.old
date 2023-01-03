@@ -1267,7 +1267,7 @@ get('/{kennel_abbreviation}/eventsHeatMap',                                     
 get('/{kennel_abbreviation}/eventsClusterMap',                                        'ObscureStatisticsController::kennelEventsClusterMap');
 get('/{kennel_abbreviation}/eventsMarkerMap',                                        'ObscureStatisticsController::kennelEventsMarkerMap');
 
-get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController::listStreakersByHashAction');
+#get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController::listStreakersByHashAction');
 
 get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'HashController::attendanceRecordForHasherAction');
 
@@ -1297,21 +1297,21 @@ get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStat
 
 get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'ObscureStatisticsController::distinctHaresChartsAction');
 
-get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HashController::viewHashAction');
-get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HashController::hasherCountsForEventAction');
+#get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HashController::viewHashAction');
+#get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HashController::hasherCountsForEventAction');
 
-get('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}',               'HashController::omniAnalversariesForEventAction');
+#get('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}',               'HashController::omniAnalversariesForEventAction');
 
-get('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}',               'HashController::hasherCountsForEventCountyAction');
-get('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}',               'HashController::hasherCountsForEventPostalCodeAction');
+#get('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}',               'HashController::hasherCountsForEventCountyAction');
+#get('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}',               'HashController::hasherCountsForEventPostalCodeAction');
 
-get('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}',            'HashController::hasherCountsForEventStateAction');
-get('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}',             'HashController::hasherCountsForEventCityAction');
-get('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}',     'HashController::hasherCountsForEventNeighborhoodAction');
+#get('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}',            'HashController::hasherCountsForEventStateAction');
+#get('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}',             'HashController::hasherCountsForEventCityAction');
+#get('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}',     'HashController::hasherCountsForEventNeighborhoodAction');
 
-get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',                     'HashController::backSlidersForEventV2Action');
+#get('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',                     'HashController::backSlidersForEventV2Action');
 
-get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HashController::consolidatedEventAnalversariesAction');
+#get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HashController::consolidatedEventAnalversariesAction');
 
 get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'ObscureStatisticsController::trendingHashersAction');
 get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'ObscureStatisticsController::trendingHaresAction');
