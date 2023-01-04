@@ -504,47 +504,42 @@ class HashController extends BaseController
     return $returnValue;
   }
 
-  public function listHashersByHashAction(Request $request, int $hash_id, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/listhashers/byhash/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  public function listHashersByHashAction(int $hash_id, string $kennel_abbreviation) {
 
-    #Define the SQL to execute
-    $sql = "SELECT
-      HASHERS.HASHER_KY AS THE_KEY,
-      HASHERS.HASHER_NAME AS NAME,
-      HASHERS.HASHER_ABBREVIATION
-      FROM HASHERS JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY WHERE HASHINGS.HASH_KY = ?";
+    $sql = "
+      SELECT HASHERS.HASHER_KY AS THE_KEY,
+             HASHERS.HASHER_NAME AS NAME,
+             HASHERS.HASHER_ABBREVIATION
+        FROM HASHERS
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+       WHERE HASHINGS.HASH_KY = ?";
 
-    #Execute the SQL statement; create an array of rows
-    $hasherList = $this->fetchAll($sql,array((int) $hash_id));
+    $hasherList = $this->fetchAll($sql, [ $hash_id ]);
 
-    # Declare the SQL used to retrieve this information
     $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
 
-    # Make a database call to obtain the hasher information
-    $theHashValue = $this->fetchAssoc($sql_for_hash_event, array((int) $hash_id));
+    $theHashValue = $this->fetchAssoc($sql_for_hash_event, [ $hash_id ]);
 
-    # Obtain information for this particular hash
     $theHashEventNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
     $theHashEventLocation = $theHashValue['EVENT_LOCATION'];
+
     $theSubTitle = "Hashers at Hash Number $theHashEventNumber ($theHashEventLocation) ";
 
     # Establish and set the return value
-    $returnValue = $this->render('hasher_list.twig',array(
+    return $this->render('hasher_list.twig', [
       'pageTitle' => 'The List of Hashers',
       'pageSubTitle' => $theSubTitle,
       'theList' => $hasherList,
       'tableCaption' => $theSubTitle,
       'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+    ]);
   }
 
-  public function listHaresByHashAction(Request $request, int $hash_id, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/listhares/byhash/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  public function listHaresByHashAction(int $hash_id, string $kennel_abbreviation) {
 
-
-    #Define the SQL to execute
     $sql = "
       SELECT THE_KEY, NAME, HASHER_ABBREVIATION,
              GROUP_CONCAT(HARE_TYPE_NAME SEPARATOR ', ') AS HARE_TYPE_NAME
@@ -562,30 +557,23 @@ class HashController extends BaseController
        ORDER BY HASHERS.HASHER_NAME, HARE_TYPES.SEQ) THE_TABLE
        GROUP BY THE_KEY, NAME, HASHER_ABBREVIATION";
 
-    #Execute the SQL statement; create an array of rows
-    $hasherList = $this->fetchAll($sql,array((int) $hash_id));
+    $hasherList = $this->fetchAll($sql, [ $hash_id ]);
 
-    # Declare the SQL used to retrieve this information
     $sql_for_hash_event = "SELECT KENNEL_EVENT_NUMBER, EVENT_LOCATION FROM HASHES WHERE HASH_KY = ?";
 
-    # Make a database call to obtain the hasher information
-    $theHashValue = $this->fetchAssoc($sql_for_hash_event, array((int) $hash_id));
+    $theHashValue = $this->fetchAssoc($sql_for_hash_event, [ $hash_id ]);
 
-    # Obtain information for this particular hash
     $theHashEventNumber = $theHashValue['KENNEL_EVENT_NUMBER'];
     $theHashEventLocation = $theHashValue['EVENT_LOCATION'];
+
     $theSubTitle = "Hares at Hash Number $theHashEventNumber ($theHashEventLocation) ";
 
-    # Establish and set the return value
-    $returnValue = $this->render('hare_list.twig',array(
+    return $this->render('hare_list.twig', [
       'pageTitle' => 'The List of Hares',
       'pageSubTitle' => $theSubTitle,
       'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
+    ]);
   }
 
   public function getHasherListJson(Request $request, string $kennel_abbreviation){
