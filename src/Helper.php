@@ -155,7 +155,7 @@ class Helper {
             //Print a non-leaf node
             //$returnValue .= "[$theKey|$theInnerKey|$theInnerValue::Different]";
             $returnValue .= "{name:'$theKey',itemStyle:{color: ''},children: [";
-            $returnValue .= (printSunburstItem($theValue));
+            $returnValue .= ($this->printSunburstItem($theValue));
             $returnValue .= "]},";
           }
           break;
@@ -168,7 +168,7 @@ class Helper {
     function createSunburstFormatted($theArray){
       $returnValue = "";
       $returnValue .= "[";
-      $returnValue .= (printSunburstItem($theArray));
+      $returnValue .= ($this->printSunburstItem($theArray));
       $returnValue .= "]";
       return $returnValue;
     }
@@ -182,10 +182,10 @@ class Helper {
     }
 
     #2. Explode the associative array into a hierarchial format
-    $hierarchyData = explodeTree($assocArray,"/",false);
+    $hierarchyData = $this->explodeTree($assocArray,"/",false);
 
     #3. Create the formatted data for the sunburst graph
-    $formattedData = createSunburstFormatted($hierarchyData);
+    $formattedData = $this->createSunburstFormatted($hierarchyData);
 
     #Return the return value
     return $formattedData;
@@ -195,7 +195,7 @@ class Helper {
   function createSunburstFormattedV2($theArray){
     $returnValue = "";
     $returnValue .= "[";
-    $returnValue .= (printSunburstItemV2($theArray));
+    $returnValue .= ($this->printSunburstItemV2($theArray));
     $returnValue .= "]";
     return $returnValue;
   }
@@ -219,7 +219,7 @@ class Helper {
           //Print a non-leaf node
           //$returnValue .= "[$theKey|$theInnerKey|$theInnerValue::Different]";
           $returnValue .= "{name:'$theKey',itemStyle:{color: ''},children: [";
-          $returnValue .= (printSunburstItemV2($theValue));
+          $returnValue .= ($this->printSunburstItemV2($theValue));
           $returnValue .= "]},";
         }
         break;
@@ -265,7 +265,7 @@ class Helper {
     }
 
     #2. Explode the associative array into a hierarchial format
-    $hierarchyData = explodeTree($assocArray,"/",true);
+    $hierarchyData = $this->explodeTree($assocArray,"/",true);
 
     #2.5. Add in counts for each entry
     #$hierarchyData = addInTheTotalsFields($hierarchyData);
@@ -273,7 +273,7 @@ class Helper {
     #2.6. Remove the "123BLANK123" items ?
 
     #3. Create the formatted data for the sunburst graph
-    $formattedData = createSunburstFormattedV2($hierarchyData);
+    $formattedData = $this->createSunburstFormattedV2($hierarchyData);
 
     #Return the return value
     return $formattedData;

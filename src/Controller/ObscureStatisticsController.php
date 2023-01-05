@@ -1,21 +1,26 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
-require_once "BaseController.php";
-require_once realpath(__DIR__ . '/..').'/Utils/Helper.php';
-use Symfony\Component\HttpFoundation\Request;
+use App\Controller\BaseController;
+use App\Helper;
+use App\SqlQueries;
+use Doctrine\Persistence\ManagerRegistry;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Psr\Container\ContainerInterface;
 use Wamania\Snowball\StemmerFactory;
 
 class ObscureStatisticsController extends BaseController {
 
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  private SqlQueries $sqlQueries;
+
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+    parent::__construct($doctrine);
+    $this->sqlQueries = $sqlQueries;
   }
 
   public function kennelEventsHeatMap(Request $request, string $kennel_abbreviation){
@@ -297,22 +302,19 @@ class ObscureStatisticsController extends BaseController {
     }
 
     #Obtain the first hash of a given hasher
-    public function getHashersVirginHash(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHash', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHashersVirginHash(string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = $_POST['hasher_id'];
 
-      #Define the sql statement to execute
-      $theSql = SELECT_HASHERS_VIRGIN_HASH;
+    $theSql = $this->sqlQueries->getSelectHashersVirginHash();
 
-      #Query the database
-      $theirVirginHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy));
+    $theirVirginHash = $this->fetchAssoc($theSql, [ $theHasherKey, $kennelKy ]);
 
-      return new JsonResponse($theirVirginHash);
-    }
+    return new JsonResponse($theirVirginHash);
+  }
 
     #Obtain the first haring of a given hasher
     public function getHashersVirginHare(Request $request, string $kennel_abbreviation){
@@ -348,22 +350,19 @@ class ObscureStatisticsController extends BaseController {
     }
 
     #Obtain the latest hash of a given hasher
-    public function getHashersLatestHash(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHash', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHashersLatestHash(string $kennel_abbreviation) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = SELECT_HASHERS_MOST_RECENT_HASH;
+    $theSql = $this->sqlQueries->getSelectHashersMostRecentHash();
 
-      #Query the database
-      $theirLatestHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy));
+    $theirLatestHash = $this->fetchAssoc($theSql, [ $theHasherKey, $kennelKy ]);
 
-      return new JsonResponse($theirLatestHash);
-    }
+    return new JsonResponse($theirLatestHash);
+  }
 
     #Obtain the latest haring of a given hasher
     public function getHashersLatestHare(Request $request, string $kennel_abbreviation){
@@ -491,23 +490,20 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-    #Obtain the hasher hashes attended by city
-    public function getHasherHashesByCity(Request $request, string $kennel_abbreviation){
+  #Obtain the hasher hashes attended by city
+  #[Route('/{kennel_abbreviation}/statistics/hasher/hashes/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHasherHashesByCity(string $kennel_abbreviation) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_CITY;
+    $theSql = $this->sqlQueries->getHasherHashCountsByCity();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
     public function getKennelHashesByCity(Request $request, string $kennel_abbreviation){
 

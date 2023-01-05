@@ -1275,7 +1275,7 @@ get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'Hash
 #get('/{kennel_abbreviation}/listhares/byhash/{hash_id}',                          'HashController::listHaresByHashAction');
 get('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}',                     'HashController::listHashesByHasherAction');
 get('/{kennel_abbreviation}/listhashes/byhare/{hasher_id}',                       'HashController::listHashesByHareAction');
-get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController::viewHasherChartsAction');
+#get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController::viewHasherChartsAction');
 get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController::hashedWithAction');
 
 get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController::viewOverallHareChartsAction');
@@ -1375,8 +1375,8 @@ post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',   
 post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'ObscureStatisticsController::getNewbieOverallHareListByYear');
 
 # Mappings for hasher specific statistics
-post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController::getHashersVirginHash');
-post('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',                      'ObscureStatisticsController::getHashersLatestHash');
+#post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController::getHashersVirginHash');
+#post('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',                      'ObscureStatisticsController::getHashersLatestHash');
 post('/{kennel_abbreviation}/statistics/hasher/firstHare',                           'ObscureStatisticsController::getHashersVirginHare');
 post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController::getHashersLatestHare');
 
@@ -1390,7 +1390,7 @@ post('/{kennel_abbreviation}/statistics/hasher/hashes/by/quarter',              
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/month',                     'ObscureStatisticsController::getHasherHashesByMonth');
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/dayname',                   'ObscureStatisticsController::getHasherHashesByDayName');
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/state',                     'ObscureStatisticsController::getHasherHashesByState');
-post('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',                      'ObscureStatisticsController::getHasherHashesByCity');
+#post('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',                      'ObscureStatisticsController::getHasherHashesByCity');
 
 # Mappings for kennel hashes by (year/month/state/etc)
 post('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',                      'ObscureStatisticsController::getKennelHashesByCity');

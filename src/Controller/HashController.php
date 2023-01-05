@@ -16,10 +16,12 @@ use \Datetime;
 class HashController extends BaseController
 {
   private SqlQueries $sqlQueries;
+  private Helper $helper;
 
-  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries, Helper $helper) {
     parent::__construct($doctrine);
     $this->sqlQueries = $sqlQueries;
+    $this->helper = $helper;
   }
 
   #Define the action
@@ -842,10 +844,10 @@ class HashController extends BaseController
     $sql = "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
                    FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
                    HASHERS.HASHER_KY AS HASHER_KY,
-		   (SELECT HASH_KY FROM HASHES
-		     WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
-		       AND HASHES.KENNEL_KY = ?)
-		        AS FIRST_HARING_KEY
+                   (SELECT HASH_KY FROM HASHES
+                     WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
+                       AND HASHES.KENNEL_KY = ?)
+                        AS FIRST_HARING_KEY
           FROM HASHERS
           JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
                        MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
@@ -1107,42 +1109,42 @@ class HashController extends BaseController
 
     #Define the sql that performs the filtering
     $sql =
-	    "SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
-	       DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
+            "SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
+               DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
         SELECT HASH_KY
           FROM HASHES
          WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
            AND KENNEL_KY = ?) AS HASH_KY,
-	    HASHER_KY AS THE_KEY, HASHER_ABBREVIATION
-	  FROM (
-	SELECT HASHER_NAME, HASHER_KY, HASHER_ABBREVIATION, LAST_SEEN_DATE, (
-	       SELECT COUNT(*)
-		 FROM HASHES
-		WHERE KENNEL_KY = ?
-		  AND HASHES.EVENT_DATE > LAST_SEEN_DATE) AS NUM_HASHES_MISSED, (
-	       SELECT MAX(KENNEL_EVENT_NUMBER)
-		 FROM HASHES
-		WHERE HASHES.EVENT_DATE = LAST_SEEN_DATE
-		  AND HASHES.HASH_KY IN (
-		      SELECT HASH_KY
-			FROM HASHINGS
-		       WHERE KENNEL_KY = ?
-			 AND HASHINGS.HASHER_KY = HASHER_KY)) AS LAST_SEEN_EVENT
-	  FROM (
-	SELECT HASHER_NAME, HASHER_ABBREVIATION, HASHERS.HASHER_KY AS HASHER_KY, (
-		SELECT MAX(EVENT_DATE)
-		  FROM HASHES
-		 WHERE HASHES.HASH_KY IN (
-		       SELECT HASH_KY
-			 FROM HASHINGS
-			WHERE KENNEL_KY = ?
-			  AND HASHINGS.HASHER_KY = HASHERS.HASHER_KY)) AS LAST_SEEN_DATE
-	  FROM HASHERS
-	 WHERE HASHER_NAME NOT LIKE 'Just %'
-	   AND HASHER_NAME NOT LIKE 'NHN %'
-	   AND DECEASED = 0) INNER1
-	 WHERE LAST_SEEN_DATE IS NOT NULL) INNER2
-	 WHERE NUM_HASHES_MISSED > 0";
+            HASHER_KY AS THE_KEY, HASHER_ABBREVIATION
+          FROM (
+        SELECT HASHER_NAME, HASHER_KY, HASHER_ABBREVIATION, LAST_SEEN_DATE, (
+               SELECT COUNT(*)
+                 FROM HASHES
+                WHERE KENNEL_KY = ?
+                  AND HASHES.EVENT_DATE > LAST_SEEN_DATE) AS NUM_HASHES_MISSED, (
+               SELECT MAX(KENNEL_EVENT_NUMBER)
+                 FROM HASHES
+                WHERE HASHES.EVENT_DATE = LAST_SEEN_DATE
+                  AND HASHES.HASH_KY IN (
+                      SELECT HASH_KY
+                        FROM HASHINGS
+                       WHERE KENNEL_KY = ?
+                         AND HASHINGS.HASHER_KY = HASHER_KY)) AS LAST_SEEN_EVENT
+          FROM (
+        SELECT HASHER_NAME, HASHER_ABBREVIATION, HASHERS.HASHER_KY AS HASHER_KY, (
+                SELECT MAX(EVENT_DATE)
+                  FROM HASHES
+                 WHERE HASHES.HASH_KY IN (
+                       SELECT HASH_KY
+                         FROM HASHINGS
+                        WHERE KENNEL_KY = ?
+                          AND HASHINGS.HASHER_KY = HASHERS.HASHER_KY)) AS LAST_SEEN_DATE
+          FROM HASHERS
+         WHERE HASHER_NAME NOT LIKE 'Just %'
+           AND HASHER_NAME NOT LIKE 'NHN %'
+           AND DECEASED = 0) INNER1
+         WHERE LAST_SEEN_DATE IS NOT NULL) INNER2
+         WHERE NUM_HASHES_MISSED > 0";
 
     $sql2 = "$sql
           AND (HASHER_NAME LIKE ? OR
@@ -1237,12 +1239,12 @@ class HashController extends BaseController
     #Define the sql that performs the filtering
     $sql =
       "SELECT HASHER_NAME,
-	      100 * (NUM_HASHES / ALL_EVENTS_COUNT) AS OVERALL_PERCENTAGE,
+              100 * (NUM_HASHES / ALL_EVENTS_COUNT) AS OVERALL_PERCENTAGE,
               100 * (NUM_HASHES / HASHER_EVENTS_TO_DATE) AS CURRENT_PERCENTAGE,
               100 * (NUM_HASHES / CAREER_EVENTS) AS CAREER_PERCENTAGE,
               NUM_HASHES, HASHER_KY
           FROM (
-	SELECT HASHERS.HASHER_NAME AS HASHER_NAME, HASHERS.HASHER_KY AS HASHER_KY,
+        SELECT HASHERS.HASHER_NAME AS HASHER_NAME, HASHERS.HASHER_KY AS HASHER_KY,
                HASHERS.HASHER_ABBREVIATION AS HASHER_ABBREVIATION,
                ALL_EVENTS.THE_COUNT AS ALL_EVENTS_COUNT,
                HASHER_DETAILS.THE_COUNT AS NUM_HASHES,
@@ -1255,7 +1257,7 @@ class HashController extends BaseController
                  WHERE HASHES.KENNEL_KY=?
                    AND HASHES.EVENT_DATE >= HASHER_DETAILS.FIRST_HASH_DATE
                    AND HASHES.EVENT_DATE <= HASHER_DETAILS.LAST_HASH_DATE) AS CAREER_EVENTS
-	  FROM HASHERS
+          FROM HASHERS
          CROSS JOIN
                (SELECT COUNT(*) AS THE_COUNT
                   FROM HASHES
@@ -1285,7 +1287,7 @@ class HashController extends BaseController
                 WHERE HASHES.KENNEL_KY=?
                 GROUP BY HASHER_KY
                HAVING COUNT(*)>=10) AS HASHER_DETAILS
-	   ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY ";
+           ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY ";
 
     #Define the SQL that gets the count for the filtered results
     $sqlFilteredCount = "$sqlUnfilteredCount
@@ -1464,14 +1466,14 @@ class HashController extends BaseController
     #Define the sql statement to execute
     $theSql = "
       SELECT HASHERS.HASHER_NAME AS NAME, HASHERS.HASHER_KY AS THE_KEY, COUNT(*) AS VALUE
-	FROM HASHERS
-	JOIN HASHINGS ON HASHERS.HASHER_KY=HASHINGS.HASHER_KY
+        FROM HASHERS
+        JOIN HASHINGS ON HASHERS.HASHER_KY=HASHINGS.HASHER_KY
        WHERE HASHINGS.HASH_KY IN (
       SELECT HASHES.HASH_KY
-	FROM HASHINGS
-	JOIN HASHES ON HASHINGS.HASH_KY=HASHES.HASH_KY
+        FROM HASHINGS
+        JOIN HASHES ON HASHINGS.HASH_KY=HASHES.HASH_KY
        WHERE HASHINGS.HASHER_KY=?
-	 AND HASHES.KENNEL_KY=?)
+         AND HASHES.KENNEL_KY=?)
          AND HASHINGS.HASHER_KY!=?
        GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY
        ORDER BY VALUE DESC, NAME";
@@ -1497,81 +1499,100 @@ class HashController extends BaseController
   }
 
 
+  #[Route('/{kennel_abbreviation}/hashers/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
   public function viewHasherChartsAction(int $hasher_id, string $kennel_abbreviation) {
 
-    # Declare the SQL used to retrieve this information
-    $sql = "SELECT HASHER_KY, HASHER_NAME, HASHER_ABBREVIATION, FIRST_NAME, LAST_NAME, DECEASED FROM HASHERS WHERE HASHER_KY = ?";
+    $sql = "
+      SELECT HASHER_KY, HASHER_NAME, HASHER_ABBREVIATION, FIRST_NAME, LAST_NAME, DECEASED 
+        FROM HASHERS 
+       WHERE HASHER_KY = ?";
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql, array($hasher_id));
+    $hasher = $this->fetchAssoc($sql, [ $hasher_id ]);
 
-    # Obtain their hashes
-    $sqlTheHashes = "SELECT KENNEL_EVENT_NUMBER, LAT, LNG, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHINGS.HASH_KY FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-    WHERE HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array($hasher_id, $kennelKy));
+    $sqlTheHashes = "
+      SELECT KENNEL_EVENT_NUMBER, LAT, LNG, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHINGS.HASH_KY
+        FROM HASHINGS
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
 
-    #Obtain the average lat
-    $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-    WHERE HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($hasher_id, $kennelKy));
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $hasher_id, $kennelKy ]);
+
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHINGS
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $hasher_id, $kennelKy ]);
+
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
-    # Obtain the number of hashings
-    $hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(), array($hasher_id, $kennelKy, $hasher_id, $kennelKy));
+    $hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(),
+      [ $hasher_id, $kennelKy, $hasher_id, $kennelKy ]);
 
     # Obtain the number of harings
-    $hareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT, array($hasher_id, $kennelKy));
+    $hareCountValue = $this->fetchAssoc($this->sqlQueries->getPersonsHaringCount(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by month (name)
-    $theHashesByMonthNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_MONTH_NAME, array($hasher_id, $kennelKy));
+    $theHashesByMonthNameList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByMonthName(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by quarter
-    $theHashesByQuarterList = $this->fetchAll(HASHER_HASH_COUNTS_BY_QUARTER, array($hasher_id, $kennelKy));
+    $theHashesByQuarterList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByQuarter(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by quarter
-    $theHashesByStateList = $this->fetchAll(HASHER_HASH_COUNTS_BY_STATE, array($hasher_id, $kennelKy));
+    $theHashesByStateList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByState(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by county
-    $theHashesByCountyList = $this->fetchAll(HASHER_HASH_COUNTS_BY_COUNTY, array($hasher_id, $kennelKy));
+    $theHashesByCountyList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByCounty(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by postal code
-    $theHashesByPostalCodeList = $this->fetchAll(HASHER_HASH_COUNTS_BY_POSTAL_CODE, array($hasher_id, $kennelKy));
+    $theHashesByPostalCodeList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByPostalCode(), [ $hasher_id, $kennelKy ]);
 
     # Obtain the hashes by day name
-    $theHashesByDayNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_DAYNAME, array($hasher_id, $kennelKy));
+    $theHashesByDayNameList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByDayname(), [ $hasher_id, $kennelKy ]);
 
     #Obtain the hashes by year
-    $sqlHashesByYear = "SELECT YEAR(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
-     FROM
-    	HASHINGS
-        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-      WHERE
-    	HASHINGS.HASHER_KY = ? AND
-        HASHES.KENNEL_KY = ?
-    GROUP BY YEAR(EVENT_DATE)
-    ORDER BY YEAR(EVENT_DATE)";
-    $hashesByYearList = $this->fetchAll($sqlHashesByYear, array($hasher_id, $kennelKy));
+    $sqlHashesByYear = "
+      SELECT YEAR(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
+        FROM HASHINGS
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE HASHINGS.HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE)";
+
+    $hashesByYearList = $this->fetchAll($sqlHashesByYear, [ $hasher_id, $kennelKy ]);
 
     #Obtain the harings by year
-    $sqlHaringsByYear = "SELECT
-    	  YEAR(EVENT_DATE) AS THE_VALUE,
-        COUNT(*) AS TOTAL_HARING_COUNT
-    FROM HARINGS
-    JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-    JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-    WHERE
-        HARINGS.HARINGS_HASHER_KY = ? AND
-        HASHES.KENNEL_KY = ?
-    GROUP BY YEAR(EVENT_DATE)
-    ORDER BY YEAR(EVENT_DATE)";
-    $haringsByYearList = $this->fetchAll($sqlHaringsByYear, array($hasher_id, $kennelKy));
+    $sqlHaringsByYear = "
+      SELECT YEAR(EVENT_DATE) AS THE_VALUE,
+             COUNT(*) AS TOTAL_HARING_COUNT
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE)";
+
+    $haringsByYearList = $this->fetchAll($sqlHaringsByYear, [ $hasher_id, $kennelKy ]);
 
     #Query the database
-    $cityHashingsCountList = $this->fetchAll(HASHER_HASH_COUNTS_BY_CITY, array($hasher_id, $kennelKy));
+    $cityHashingsCountList = $this->fetchAll($this->sqlQueries->getHasherHashCountsByCity(), [ $hasher_id, $kennelKy ]);
 
     #Obtain largest entry from the list
     $cityHashingsCountMax = 1;
@@ -1580,83 +1601,81 @@ class HashController extends BaseController
     }
 
     #Obtain their largest streak
-    $longestStreakValue = $this->fetchAssoc(THE_LONGEST_STREAKS_FOR_HASHER, array($kennelKy, $hasher_id));
+    $longestStreakValue = $this->fetchAssoc($this->sqlQueries->getTheLongestStreaksForHasher(), [ $kennelKy, $hasher_id ]);
 
     #By Quarter/ Month ---------------------------------------------------
-    $quarterMonthSql = "SELECT CONCAT (THE_QUARTER,'/',MONTH_NAME,'/',THE_COUNT) AS THE_VALUE, THE_COUNT
-      FROM (
-      	SELECT
-      		CASE
-      			WHEN THE_VALUE IN ('1','2','3')  THEN 'Q1'
-      			WHEN THE_VALUE IN ('4','5','6') THEN 'Q2'
-      			WHEN THE_VALUE IN ('7','8','9') THEN 'Q3'
-      			WHEN THE_VALUE IN ('10','11','12') THEN 'Q4'
-      			ELSE 'XXX'
-      		END AS THE_QUARTER,
-      		CASE THE_VALUE
-      			WHEN '1' THEN 'January'
-      			WHEN '2' THEN 'February'
-      			WHEN '3' THEN 'March'
-      			WHEN '4' THEN 'April'
-      			WHEN '5' THEN 'May'
-      			WHEN '6' THEN 'June'
-      			WHEN '7' THEN 'July'
-      			WHEN '8' THEN 'August'
-      			WHEN '9' THEN 'September'
-      			WHEN '10' THEN 'October'
-      			WHEN '11' THEN 'November'
-      			WHEN '12' THEN 'December'
-      		END AS MONTH_NAME,
-      		THE_COUNT
-      	FROM
-      	(
-      		SELECT MONTH(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
-      		FROM
-      			HASHINGS
-      			JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-      		WHERE
-      			HASHINGS.HASHER_KY = ? AND
-      			HASHES.KENNEL_KY = ?
-      		GROUP BY MONTH(EVENT_DATE)
-      		ORDER BY MONTH(EVENT_DATE)
-      	) TEMP_TABLE
-      ) ASDF";
+    $quarterMonthSql = "
+      SELECT CONCAT (THE_QUARTER,'/',MONTH_NAME,'/',THE_COUNT) AS THE_VALUE, THE_COUNT
+        FROM (
+              SELECT CASE WHEN THE_VALUE IN ( '1', '2', '3') THEN 'Q1'
+                          WHEN THE_VALUE IN ( '4', '5', '6') THEN 'Q2'
+                          WHEN THE_VALUE IN ( '7', '8', '9') THEN 'Q3'
+                          WHEN THE_VALUE IN ('10','11','12') THEN 'Q4'
+                          ELSE 'XXX'
+                      END AS THE_QUARTER,
+                     CASE THE_VALUE
+                          WHEN '1' THEN 'January'
+                          WHEN '2' THEN 'February'
+                          WHEN '3' THEN 'March'
+                          WHEN '4' THEN 'April'
+                          WHEN '5' THEN 'May'
+                          WHEN '6' THEN 'June'
+                          WHEN '7' THEN 'July'
+                          WHEN '8' THEN 'August'
+                          WHEN '9' THEN 'September'
+                          WHEN '10' THEN 'October'
+                          WHEN '11' THEN 'November'
+                          WHEN '12' THEN 'December'
+                      END AS MONTH_NAME,
+                     THE_COUNT
+                FROM (
+                      SELECT MONTH(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
+                        FROM HASHINGS
+                        JOIN HASHES
+                          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                       WHERE HASHINGS.HASHER_KY = ?
+                         AND HASHES.KENNEL_KY = ?
+                       GROUP BY MONTH(EVENT_DATE)
+                       ORDER BY MONTH(EVENT_DATE)) TEMP_TABLE) ASDF";
 
 
     #Query the db
-    $quarterMonthValues = $this->fetchAll($quarterMonthSql, array($hasher_id, $kennelKy));
-    $quarterMonthFormattedData = convertToFormattedHiarchy($quarterMonthValues);
+    $quarterMonthValues = $this->fetchAll($quarterMonthSql, [ $hasher_id, $kennelKy ]);
+    $quarterMonthFormattedData = $this->helper->convertToFormattedHiarchy($quarterMonthValues);
 
     # End by Quarter Month ------------------------------------------------
 
     #Obtain the state/county/city data for the sunburst chart
-    $sunburstSqlA = "SELECT
-	     CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/',THE_COUNT) AS THE_VALUE, THE_COUNT
-       FROM (
-	        SELECT
-		        EVENT_STATE, COUNTY, EVENT_CITY,  COUNT(*) AS THE_COUNT
-	        FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-	        WHERE HASHINGS.HASHER_KY = ? AND HASHES.KENNEL_KY = ?
-	        GROUP BY EVENT_STATE, COUNTY, EVENT_CITY
-          ORDER BY EVENT_STATE, COUNTY, EVENT_CITY
-      ) TEMPTABLE
-      WHERE
-        EVENT_STATE IS NOT NULL AND EVENT_STATE != '' AND
-    	  COUNTY IS NOT NULL AND COUNTY != '' AND
-    	  EVENT_CITY IS NOT NULL AND EVENT_CITY != ''";
+    $sunburstSqlA = "
+      SELECT CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/',THE_COUNT) AS THE_VALUE, THE_COUNT
+        FROM (SELECT EVENT_STATE, COUNTY, EVENT_CITY,  COUNT(*) AS THE_COUNT
+                FROM HASHES
+                JOIN HASHINGS
+                  ON HASHES.HASH_KY = HASHINGS.HASH_KY
+               WHERE HASHINGS.HASHER_KY = ?
+                 AND HASHES.KENNEL_KY = ?
+               GROUP BY EVENT_STATE, COUNTY, EVENT_CITY
+               ORDER BY EVENT_STATE, COUNTY, EVENT_CITY) TEMPTABLE
+       WHERE EVENT_STATE IS NOT NULL
+         AND EVENT_STATE != ''
+         AND COUNTY IS NOT NULL
+         AND COUNTY != ''
+         AND EVENT_CITY IS NOT NULL
+         AND EVENT_CITY != ''";
 
     #Obtain their sunburst data
-    $sunburstValuesA = $this->fetchAll($sunburstSqlA, array($hasher_id, $kennelKy));
-    $sunburstFormattedData = convertToFormattedHiarchy($sunburstValuesA);
+    $sunburstValuesA = $this->fetchAll($sunburstSqlA, [ $hasher_id, $kennelKy ]);
+    $sunburstFormattedData = $this->helper->convertToFormattedHiarchy($sunburstValuesA);
 
     $hareTypes = $this->getHareTypes($kennelKy);
 
     if($this->hasLegacyHashCounts()) {
-      $sql = "SELECT LEGACY_HASHINGS_COUNT
-                FROM LEGACY_HASHINGS
-               WHERE HASHER_KY = ?
-                 AND KENNEL_KY = ?";
-      $legacy_run_count = $this->fetchOne($sql, array($hasher_id, $kennelKy));
+      $sql = "
+        SELECT LEGACY_HASHINGS_COUNT
+          FROM LEGACY_HASHINGS
+         WHERE HASHER_KY = ?
+           AND KENNEL_KY = ?";
+      $legacy_run_count = $this->fetchOne($sql, [ $hasher_id, $kennelKy ]);
       if(!$legacy_run_count) {
         $legacy_run_count = 0;
       }
@@ -1664,21 +1683,19 @@ class HashController extends BaseController
       $legacy_run_count = 0;
     }
 
-    $hareCounts = array();
+    $hareCounts = [];
 
     foreach ($hareTypes as &$hareType) {
-        $total = $this->fetchAssoc(PERSONS_HARING_TYPE_COUNT,
-          array((int) $hasher_id, $kennelKy, (int) $hareType['HARE_TYPE']));
-      array_push($hareCounts, array(
+      $total = $this->fetchAssoc($this->sqlQueries->getPersonsHaringTypeCount(), [ $hasher_id, $kennelKy, $hareType['HARE_TYPE']]);
+
+      array_push($hareCounts, [
         'type' => $hareType['HARE_TYPE_NAME'],
-        'total' => $total['THE_COUNT']));
+        'total' => $total['THE_COUNT']]);
     }
 
-    # Establish and set the return value
-    $returnValue = $this->render('hasher_chart_details.twig',array(
-      'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
-      'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
-        "Hare Details",
+    return $this->render('hasher_chart_details.twig', [
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : [],
+      'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").  "Hare Details",
       'sunburst_formatted_data' => $sunburstFormattedData,
       'quarter_month_formatted_data' => $quarterMonthFormattedData,
       'pageTitle' => 'Hasher Charts and Details',
@@ -1705,10 +1722,7 @@ class HashController extends BaseController
       'avg_lng' => $avgLng,
       'longest_streak' => $longestStreakValue['MAX_STREAK'],
       'legacy_run_count' => $legacy_run_count
-    ));
-
-    # Return the return value
-    return $returnValue;
+    ]);
   }
 
   #[Route('/{kennel_abbreviation}/hashes/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
@@ -1814,7 +1828,7 @@ class HashController extends BaseController
     $sqlHoundAnalversaryTemplate = "
       SELECT *
         FROM (SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
-	             COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")." AS THE_COUNT,
+                     COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")." AS THE_COUNT,
                      MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
                      'AAA' AS ANV_TYPE,
                      (SELECT XXX FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
@@ -1834,7 +1848,7 @@ class HashController extends BaseController
 
     $sqlHoundAnalversaryDateBasedTemplate = "
       SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
-	     (COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")." AS THE_COUNT,
+             (COUNT(*)) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")." AS THE_COUNT,
              MAX(HASHES.EVENT_DATE) AS MAX_EVENT_DATE,
              'AAA' AS ANV_TYPE,
              (SELECT XXX(HASHES.EVENT_DATE) FROM HASHES WHERE HASH_KY = ?) AS ANV_VALUE
@@ -2654,21 +2668,21 @@ public function percentageHarings(Request $request, string $kennel_abbreviation)
       JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
               FROM HARINGS
               JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-	      JOIN HASHES
-	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-	     WHERE HASHES.KENNEL_KY = ?
+              JOIN HASHES
+                ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+             WHERE HASHES.KENNEL_KY = ?
              GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE
         ON (HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
   foreach ($hareTypes as &$hareType) {
     $sql .="
       LEFT JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT
-	      FROM HARINGS
-	      JOIN HASHES
-	        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-	     WHERE HARINGS.HARE_TYPE & ? != 0
-	       AND HASHES.KENNEL_KY = ?
+              FROM HARINGS
+              JOIN HASHES
+                ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+             WHERE HARINGS.HARE_TYPE & ? != 0
+               AND HASHES.KENNEL_KY = ?
              GROUP BY HARINGS.HARINGS_HASHER_KY) ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE
-	ON (HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
+        ON (HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
     array_push($args, $hareType['HARE_TYPE']);
     array_push($args, $kennelKy);
     array_push($columnNames, 'Haring Count ('.$hareType['HARE_TYPE_NAME'].')');
@@ -2816,25 +2830,25 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
 
     #Define the SQL to execute
     $sql = "SELECT
-      	TEMPTABLE.HASHER_NAME,TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
+        TEMPTABLE.HASHER_NAME,TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
           HASHES.KENNEL_EVENT_NUMBER,
           HASHES.SPECIAL_EVENT_DESCRIPTION,
           HASHES.EVENT_LOCATION,
           HASHES.HASH_KY
       FROM
-      	HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
           JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
           JOIN (
-      		SELECT
-      			HARINGS_HASH_KY,
+                SELECT
+                        HARINGS_HASH_KY,
                   HASHER_NAME,
                   HARINGS_HASHER_KY
-      		FROM
-      			HARINGS
+                FROM
+                        HARINGS
                   JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-      		) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
       WHERE
-      	HARINGS.HARINGS_HASHER_KY = ?
+        HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
           AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
@@ -2874,25 +2888,25 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
 
     #Define the SQL to execute
     $sql = "SELECT
-      	TEMPTABLE.HASHER_NAME, TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
+        TEMPTABLE.HASHER_NAME, TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
           HASHES.KENNEL_EVENT_NUMBER,
           HASHES.SPECIAL_EVENT_DESCRIPTION,
           HASHES.EVENT_LOCATION,
           HASHES.HASH_KY
       FROM
-      	HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
           JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
           JOIN (
-      		SELECT
-      			HARINGS_HASH_KY,
+                SELECT
+                        HARINGS_HASH_KY,
                   HASHER_NAME,
                   HARINGS_HASHER_KY
-      		FROM
-      			HARINGS
+                FROM
+                        HARINGS
                   JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-      		) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
       WHERE
-      	HARINGS.HARINGS_HASHER_KY = ?
+        HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
           AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
@@ -2933,23 +2947,23 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
     #Define the SQL to execute
     $sql = "SELECT
            TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY,
-      	   TEMPTABLE.HASHER_NAME AS NAME,
+           TEMPTABLE.HASHER_NAME AS NAME,
            COUNT(*) AS VALUE
       FROM
-      	HARINGS
+        HARINGS
           JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
           JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
           JOIN (
-      		SELECT
-      			HARINGS_HASH_KY,
+                SELECT
+                        HARINGS_HASH_KY,
                   HASHER_NAME,
                   HARINGS_HASHER_KY
-      		FROM
-      			HARINGS
+                FROM
+                        HARINGS
                   JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-      		) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
       WHERE
-      	HARINGS.HARINGS_HASHER_KY = ?
+        HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
           AND HASHES.KENNEL_KY = ?
       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
@@ -2990,23 +3004,23 @@ public function haringTypeCountsAction(Request $request, string $kennel_abbrevia
     #Define the SQL to execute
     $sql = "SELECT
         TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY,
-      	TEMPTABLE.HASHER_NAME AS NAME,
+        TEMPTABLE.HASHER_NAME AS NAME,
           COUNT(*) AS VALUE
       FROM
-      	HARINGS
+        HARINGS
           JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
           JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
           JOIN (
-      		SELECT
-      			HARINGS_HASH_KY,
+                SELECT
+                        HARINGS_HASH_KY,
                   HASHER_NAME,
                   HARINGS_HASHER_KY
-      		FROM
-      			HARINGS
+                FROM
+                        HARINGS
                   JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-      		) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
       WHERE
-      	HARINGS.HARINGS_HASHER_KY = ?
+        HARINGS.HARINGS_HASHER_KY = ?
           AND TEMPTABLE.HARINGS_HASHER_KY <> ?
           AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
@@ -3184,16 +3198,16 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
   #Define the SQL to execute
   $sql = "SELECT
       HASHERS.HASHER_KY AS THE_KEY,
-    	HASHERS.HASHER_NAME AS NAME,
+        HASHERS.HASHER_NAME AS NAME,
         COUNT(*) AS VALUE
     FROM
-    	HARINGS
+        HARINGS
         JOIN HASHINGS ON HARINGS.HARINGS_HASH_KY = HASHINGS.HASH_KY
         JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY ".
         ($hare_type != 0 ? "" : "JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE ")."
     WHERE
-    	HARINGS.HARINGS_HASHER_KY = ?
+        HARINGS.HARINGS_HASHER_KY = ?
         AND HASHINGS.HASHER_KY != ?
         AND HASHES.KENNEL_KY = ? " .
         ($hare_type != 0 ? "AND HARINGS.HARE_TYPE & ? != 0 " : "AND HARINGS.HARE_TYPE != ?") . "
@@ -3532,7 +3546,7 @@ public function hashersOfTheYearsAction(Request $request, string $kennel_abbrevi
   $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
   FROM HASHES
   WHERE
-  	KENNEL_KY = ?
+        KENNEL_KY = ?
   GROUP BY YEAR(EVENT_DATE)
   ORDER BY YEAR(EVENT_DATE) DESC";
 
@@ -3610,7 +3624,7 @@ public function HaresOfTheYearsAction(Request $request, int $hare_type, string $
   $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
   FROM HASHES
   WHERE
-  	KENNEL_KY = ?
+        KENNEL_KY = ?
   GROUP BY YEAR(EVENT_DATE)
   ORDER BY YEAR(EVENT_DATE) DESC";
 
@@ -3890,36 +3904,36 @@ public function getProjectedHasherAnalversariesAction(Request $request, int $has
       HASH_COUNT,
       LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
       FIRST_HASH_KEY,
-  	  FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
+          FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
       FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE,
       LATEST_HASH_KEY,
       LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
       HASHER_KY,
       ((DATEDIFF(CURDATE(),FIRST_HASH.EVENT_DATE)) / HASH_COUNT) AS DAYS_BETWEEN_HASHES
   FROM
-  	(
-  	SELECT
-  		HASHER_NAME, HASHER_KY,
-  		HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-  		(
-  			SELECT COUNT(*)
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+        (
+        SELECT
+                HASHER_NAME, HASHER_KY,
+                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
+                (
+                        SELECT COUNT(*)
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
           AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)) AS HASH_COUNT,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
           AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)
               ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-  		(
-  			SELECT HASHES.HASH_KY
-  			FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-  			WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
+                (
+                        SELECT HASHES.HASH_KY
+                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
           AND HASHES.EVENT_DATE >= (CURDATE() - INTERVAL ? DAY)
               ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-  	FROM
-  		HASHERS
+        FROM
+                HASHERS
   )
   MAIN_TABLE
   JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
@@ -4695,8 +4709,8 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
       $sqlHaringsByQuarter = "SELECT
         QUARTER(EVENT_DATE) AS THE_VALUE,";
       foreach ($hareTypes as &$hareType) {
-	$sqlHaringsByQuarter .= "
-	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+        $sqlHaringsByQuarter .= "
+          SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
       }
       $sqlHaringsByQuarter .= "
         COUNT(*) AS TOTAL_HARING_COUNT
@@ -4717,7 +4731,7 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
       HASHES.EVENT_STATE,";
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByState .= "
-	  SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+          SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
     $sqlHaringsByState .= "
       COUNT(*) AS TOTAL_HARING_COUNT
@@ -4757,7 +4771,7 @@ private function getStandardHareChartsAction(Request $request, int $hasher_id, s
         DAYNAME(EVENT_DATE) AS THE_VALUE,";
   foreach ($hareTypes as &$hareType) {
     $sqlHaringsByDayName .= "
-	SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+        SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
     $sqlHaringsByDayName .= "
         COUNT(*) AS TOTAL_HARING_COUNT
