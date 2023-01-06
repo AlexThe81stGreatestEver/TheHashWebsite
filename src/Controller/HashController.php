@@ -3470,39 +3470,41 @@ public function kennelGeneralInfoStatsAction(Request $request, string $kennel_ab
 }
 
 
-public function cautionaryStatsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/cautionary/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function cautionaryStatsAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Establish the hasher keys for all hares for this kennel
-  $hareKeysSQL = "SELECT HARINGS_HASHER_KY AS HARE_KEY
-    FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-    WHERE HASHES.KENNEL_KY = ? ORDER BY RAND() LIMIT 5";
+    #Establish the hasher keys for all hares for this kennel
+    $hareKeysSQL = "
+      SELECT HARINGS_HASHER_KY AS HARE_KEY
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HASHES.KENNEL_KY = ?
+       ORDER BY RAND() LIMIT 5";
 
-  #Execute the SQL statement; create an array of rows
-  $hareKeys = $this->fetchAll($hareKeysSQL,array($kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $hareKeys = $this->fetchAll($hareKeysSQL, [ $kennelKy ]);
 
-  #Establish an array of ridiculous statistics
-  $sql = "SELECT VALUE FROM SITE_CONFIG WHERE NAME LIKE 'ridiculous%'";
-  $arrayOfRidiculousness = $this->fetchAll($sql,array());
+    #Establish an array of ridiculous statistics
+    $sql = "SELECT VALUE FROM SITE_CONFIG WHERE NAME LIKE 'ridiculous%'";
+    $arrayOfRidiculousness = $this->fetchAll($sql, []);
 
-  #Establish the keys of the random values to display
-  $randomKeysForRidiculousStats = array_rand($arrayOfRidiculousness, 5);
+    #Establish the keys of the random values to display
+    $randomKeysForRidiculousStats = array_rand($arrayOfRidiculousness, 5);
 
-  # Establish and set the return value
-  $returnValue = $this->render('cautionary_stats.twig',array(
-    'listOfRidiculousness' => $arrayOfRidiculousness,
-    'randomKeysForRidiculousStats' => $randomKeysForRidiculousStats,
-    'pageTitle' => 'Cautionary Statistics',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'hareKeys' => $hareKeys
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
+    return $this->render('cautionary_stats.twig', [
+      'listOfRidiculousness' => $arrayOfRidiculousness,
+      'randomKeysForRidiculousStats' => $randomKeysForRidiculousStats,
+      'pageTitle' => 'Cautionary Statistics',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hareKeys' => $hareKeys ]);
+  }
 
 
 public function miscellaneousStatsAction(Request $request, string $kennel_abbreviation){
