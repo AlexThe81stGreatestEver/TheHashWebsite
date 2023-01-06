@@ -1417,9 +1417,9 @@ post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',    
 #post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController::getCohareCountByHareAllHashes');
 #post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController::getCohareCountByHare');
 
-get('/{kennel_abbreviation}/basic/stats',         'HashController::basicStatsAction');
+#get('/{kennel_abbreviation}/basic/stats',         'HashController::basicStatsAction');
 #get('/{kennel_abbreviation}/cautionary/stats',    'HashController::cautionaryStatsAction');
-get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController::miscellaneousStatsAction');
+#get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController::miscellaneousStatsAction');
 
 #Revised top level pages
 #get('/{kennel_abbreviation}/people/stats', 'HashController::peopleStatsAction');

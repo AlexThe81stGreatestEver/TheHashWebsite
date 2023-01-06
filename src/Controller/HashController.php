@@ -3303,49 +3303,57 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
 
 
 
+  #[Route('/{kennel_abbreviation}/basic/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function basicStatsAction(string $kennel_abbreviation) {
 
-public function basicStatsAction(Request $request, string $kennel_abbreviation){
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    #SQL to determine the distinct year values
+    $sql = "
+      SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE) DESC";
 
-  #SQL to determine the distinct year values
-  $sql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-    KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
+    #Execute the SQL statement; create an array of rows
+    $yearValues = $this->fetchAll($sql, [ $kennelKy ]);
 
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($sql,array($kennelKy));
+    #Obtain the first hash
+    $firstHashSQL = "
+      SELECT *
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       ORDER BY EVENT_DATE ASC
+       LIMIT 1";
 
-  #Obtain the first hash
-  $firstHashSQL = "SELECT * FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
-  $firstHashValue = $this->fetchAssoc($firstHashSQL, array($kennelKy));
+    $firstHashValue = $this->fetchAssoc($firstHashSQL, [ $kennelKy ]);
 
-  #Obtain the most recent hash
-  $mostRecentHashSQL = "SELECT * FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE DESC LIMIT 1";
-  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array($kennelKy));
+    #Obtain the most recent hash
+    $mostRecentHashSQL = "
+      SELECT *
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       ORDER BY EVENT_DATE DESC
+       LIMIT 1";
 
-  # Establish and set the return value
-  $returnValue = $this->render('basic_stats.twig',array(
-    'pageTitle' => 'Basic Information and Statistics',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'first_hash' => $firstHashValue,
-    'latest_hash' => $mostRecentHashValue,
-    'theYearValues' => $yearValues,
-    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
-    'overall' => count($hareTypes) > 1 ? "Overall " : "",
-  ));
+    $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, [ $kennelKy ]);
 
-  #Return the return value
-  return $returnValue;
-
-}
-
+    return  $this->render('basic_stats.twig', [
+      'pageTitle' => 'Basic Information and Statistics',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'first_hash' => $firstHashValue,
+      'latest_hash' => $mostRecentHashValue,
+      'theYearValues' => $yearValues,
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+      'overall' => count($hareTypes) > 1 ? "Overall " : "" ]);
+  }
 
   #[Route('/{kennel_abbreviation}/people/stats',
     methods: ['GET'],
@@ -3506,35 +3514,38 @@ public function kennelGeneralInfoStatsAction(Request $request, string $kennel_ab
       'hareKeys' => $hareKeys ]);
   }
 
+  #[Route('/{kennel_abbreviation}/basic/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
 
-public function miscellaneousStatsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/miscellaneous/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function miscellaneousStatsAction(string $kennel_abbreviation) {
 
-  $siteNamePattern = $this->getSiteConfigItem("site_domain_name", "bogus");
+    $siteNamePattern = $this->getSiteConfigItem("site_domain_name", "bogus");
 
-  #Obtain the kennels that are being tracked in this website instance
-  $listOfKennelsSQL = "
-    SELECT KENNEL_ABBREVIATION, KENNEL_NAME, IN_RECORD_KEEPING, SITE_ADDRESS,
-           CASE WHEN IN_RECORD_KEEPING = 1 THEN ''
-                WHEN INSTR(SITE_ADDRESS, ?) > 0 THEN ''
-                ELSE '*'
-            END AS EXTERNAL
-      FROM KENNELS
-     WHERE IN_RECORD_KEEPING = 1 OR SITE_ADDRESS IS NOT NULL
-     ORDER BY IN_RECORD_KEEPING DESC, KENNEL_ABBREVIATION ASC";
-  $kennelValues = $this->fetchAll($listOfKennelsSQL, array($siteNamePattern));
+    #Obtain the kennels that are being tracked in this website instance
+    $listOfKennelsSQL = "
+      SELECT KENNEL_ABBREVIATION, KENNEL_NAME, IN_RECORD_KEEPING, SITE_ADDRESS,
+             CASE WHEN IN_RECORD_KEEPING = 1 THEN ''
+                  WHEN INSTR(SITE_ADDRESS, ?) > 0 THEN ''
+                  ELSE '*'
+              END AS EXTERNAL
+        FROM KENNELS
+       WHERE IN_RECORD_KEEPING = 1 OR SITE_ADDRESS IS NOT NULL
+       ORDER BY IN_RECORD_KEEPING DESC, KENNEL_ABBREVIATION ASC";
+    $kennelValues = $this->fetchAll($listOfKennelsSQL, [ $siteNamePattern ]);
 
-  # Establish and set the return value
-  $returnValue = $this->render('switch_kennel_screen.twig',array(
-    'pageTitle' => 'Switch Kennel',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'kennelValues' => $kennelValues
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
+    return $this->render('switch_kennel_screen.twig', [
+      'pageTitle' => 'Switch Kennel',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'kennelValues' => $kennelValues ]);
+  }
 
 public function highestAttendedHashesAction(Request $request, string $kennel_abbreviation){
 
