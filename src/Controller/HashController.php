@@ -1321,51 +1321,38 @@ class HashController extends BaseController
     return new JsonResponse($output);
   }
 
+  #[Route('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  public function listHashesByHasherAction(int $hasher_id, string $kennel_abbreviation) {
 
-
-  public function listHashesByHasherAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
-
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    #Define the SQL to execute
-    $sql = "SELECT
-          HASHES.HASH_KY,
-          KENNEL_EVENT_NUMBER,
-          EVENT_DATE,
-          DAYNAME(EVENT_DATE) AS EVENT_DAY_NAME,
-          EVENT_LOCATION,
-          EVENT_CITY,
-          SPECIAL_EVENT_DESCRIPTION,
-          HASH_TYPE_NAME
-    FROM HASHES
-    JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-    JOIN HASH_TYPES ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
-    WHERE HASHINGS.HASHER_KY = ? AND HASHES.KENNEL_KY = ?
-    ORDER BY HASHES.EVENT_DATE DESC";
+    $sql = "
+      SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_DATE, DAYNAME(EVENT_DATE) AS EVENT_DAY_NAME,
+             EVENT_LOCATION, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION, HASH_TYPE_NAME
+        FROM HASHES
+        JOIN HASHINGS
+          ON HASHES.HASH_KY = HASHINGS.HASH_KY
+        JOIN HASH_TYPES
+          ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
+       WHERE HASHINGS.HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE DESC";
 
-    #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $hasher_id, $kennelKy));
+    $hashList = $this->fetchAll($sql, [ $hasher_id, $kennelKy ]);
 
-    # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
-    # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
-    # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $pageSubtitle = "The hashes $hasherName has done";
-    $returnValue = $this->render('hash_list.twig',array(
+
+    return $this->render('hash_list.twig', [
       'pageTitle' => 'The List of Hashes',
       'pageSubTitle' => $pageSubtitle,
       'theList' => $hashList,
       'tableCaption' => '',
-      'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'kennel_abbreviation' => $kennel_abbreviation]);
   }
 
   public function attendanceRecordForHasherAction(Request $request, int $hasher_id, string $kennel_abbreviation){
