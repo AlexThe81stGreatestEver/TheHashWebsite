@@ -2721,62 +2721,54 @@ public function hashingCountsAction(string $kennel_abbreviation) {
 }
 
 
-public function haringCountsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/haringCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function haringCountsAction(string $kennel_abbreviation) {
 
-  $sql = $this->addHasherStatusToQuery($this->getHaringCountsQuery(true));
+    $sql = $this->addHasherStatusToQuery($this->getHaringCountsQuery(true));
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
+    # Declare the SQL used to retrieve this information
+    $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy ]);
 
-  # Establish and set the return value
-  $returnValue = $this->render('name_number_rank_list.twig',array(
-    'pageTitle' => 'Haring Counts',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Haring Count',
-    'tableCaption' => 'Hares, and the number of times they have hared. More is better.',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'HoundCounts'
-  ));
+    return $this->render('name_number_rank_list.twig', [
+      'pageTitle' => 'Haring Counts',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Haring Count',
+      'tableCaption' => 'Hares, and the number of times they have hared. More is better.',
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'HoundCounts' ]);
+  }
 
-  #Return the return value
-  return $returnValue;
-}
+  #[Route('/{kennel_abbreviation}/haringCounts/{hare_type}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%'])]
+  public function haringTypeCountsAction(string $kennel_abbreviation, int $hare_type) {
 
-public function haringTypeCountsAction(Request $request, string $kennel_abbreviation, int $hare_type) {
+    $sql = $this->addHasherStatusToQuery($this->getHaringCountsByTypeQuery(true));
 
-  $sql = $this->addHasherStatusToQuery($this->getHaringCountsByTypeQuery(true));
+    # Declare the SQL used to retrieve this information
+    $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $hare_type_name = $this->getHareTypeName($hare_type);
 
-  $hare_type_name = $this->getHareTypeName($hare_type);
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $hare_type, $kennelKy ]);
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, (int) $hare_type, $kennelKy));
-
-  # Establish and set the return value
-  $returnValue = $this->render('name_number_rank_list.twig',array(
-    'pageTitle' => $hare_type_name.' Haring Counts',
-    'columnOneName' => 'Hare Name',
-    'columnTwoName' => 'Hash Count',
-    'tableCaption' => 'Hares, and the number of hashes they have hared. More is better.',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => $hare_type_name.'HareCounts'
-  ));
-
-  #Return the return value
-  return $returnValue;
+    return $this->render('name_number_rank_list.twig', [
+      'pageTitle' => $hare_type_name.' Haring Counts',
+      'columnOneName' => 'Hare Name',
+      'columnTwoName' => 'Hash Count',
+      'tableCaption' => 'Hares, and the number of hashes they have hared. More is better.',
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => $hare_type_name.'HareCounts' ]);
 }
 
   public function coharelistByHareAllHashesAction(Request $request, int $hasher_id, string $kennel_abbreviation){
