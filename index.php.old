@@ -1242,8 +1242,8 @@ post('/admin/deleteHash',                                     'AdminController::
 #The per event budget screen
 get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 
-get('/{kennel_abbreviation}/mia',                                       'HashController::miaPreActionJson');
-post('/{kennel_abbreviation}/mia',                                       'HashController::miaPostActionJson');
+#get('/{kennel_abbreviation}/mia',                                       'HashController::miaPreActionJson');
+#post('/{kennel_abbreviation}/mia',                                       'HashController::miaPostActionJson');
 
 #post('/{kennel_abbreviation}/listhashers2',                                       'HashController::getHasherListJson');
 

@@ -477,21 +477,15 @@ class HashController extends BaseController
 
   }
 
-  public function miaPreActionJson(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/mia', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function miaPreActionJson(string $kennel_abbreviation) {
 
-    # Establish and set the return value
-    $returnValue = $this->render('hasher_mia.twig',array(
+    return $this->render('hasher_mia.twig', [
       'pageTitle' => 'Hashers Missing In Action',
       'pageSubTitle' => '',
-      #'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation,
       'pageCaption' => "",
-      'tableCaption' => ""
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'tableCaption' => "" ]);
   }
 
   public function attendancePercentagesPreActionJson(Request $request, string $kennel_abbreviation){
@@ -1044,12 +1038,12 @@ class HashController extends BaseController
   }
 
 
-  public function miaPostActionJson(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/mia', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function miaPostActionJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Obtain the post parameters
-    #$inputDraw = $_POST['draw'] ;
     $inputStart = $_POST['start'] ;
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
@@ -1057,29 +1051,27 @@ class HashController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
-    if(!is_numeric($inputLength)){
-      #$this->container->get('monolog')->addDebug("input length is not numeric");
+    if(!is_numeric($inputLength)) {
       $inputStart = "0";
       $inputLength = "50";
-    } else if($inputLength == "-1"){
-      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
+    } else if($inputLength == "-1") {
       $inputStart = "0";
       $inputLength = "1000000000";
     }
 
     #Validate input search
-    #We are using database parameterized statements, so we are good already...
 
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -1088,13 +1080,11 @@ class HashController extends BaseController
     $inputOrderColumnExtracted = "1";
     $inputOrderColumnIncremented = "1";
     $inputOrderDirectionExtracted = "asc";
-    if(!is_null($inputOrderRaw)){
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
+    if(!is_null($inputOrderRaw)) {
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-    }else{
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
+    } else {
       $inputOrderColumnIncremented = "DAYS_MIA";
       $inputOrderDirectionExtracted = "DESC";
     }
@@ -1105,51 +1095,48 @@ class HashController extends BaseController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql =
-            "SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
-               DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
-        SELECT HASH_KY
-          FROM HASHES
-         WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
-           AND KENNEL_KY = ?) AS HASH_KY,
-            HASHER_KY AS THE_KEY, HASHER_ABBREVIATION
-          FROM (
-        SELECT HASHER_NAME, HASHER_KY, HASHER_ABBREVIATION, LAST_SEEN_DATE, (
-               SELECT COUNT(*)
-                 FROM HASHES
-                WHERE KENNEL_KY = ?
-                  AND HASHES.EVENT_DATE > LAST_SEEN_DATE) AS NUM_HASHES_MISSED, (
-               SELECT MAX(KENNEL_EVENT_NUMBER)
-                 FROM HASHES
-                WHERE HASHES.EVENT_DATE = LAST_SEEN_DATE
-                  AND HASHES.HASH_KY IN (
-                      SELECT HASH_KY
-                        FROM HASHINGS
-                       WHERE KENNEL_KY = ?
-                         AND HASHINGS.HASHER_KY = HASHER_KY)) AS LAST_SEEN_EVENT
-          FROM (
-        SELECT HASHER_NAME, HASHER_ABBREVIATION, HASHERS.HASHER_KY AS HASHER_KY, (
-                SELECT MAX(EVENT_DATE)
-                  FROM HASHES
-                 WHERE HASHES.HASH_KY IN (
-                       SELECT HASH_KY
-                         FROM HASHINGS
-                        WHERE KENNEL_KY = ?
-                          AND HASHINGS.HASHER_KY = HASHERS.HASHER_KY)) AS LAST_SEEN_DATE
-          FROM HASHERS
-         WHERE HASHER_NAME NOT LIKE 'Just %'
-           AND HASHER_NAME NOT LIKE 'NHN %'
-           AND DECEASED = 0) INNER1
-         WHERE LAST_SEEN_DATE IS NOT NULL) INNER2
-         WHERE NUM_HASHES_MISSED > 0";
+    $sql = "
+      SELECT HASHER_NAME, LAST_SEEN_EVENT, LAST_SEEN_DATE, NUM_HASHES_MISSED,
+             DATEDIFF(CURDATE(), LAST_SEEN_DATE) AS DAYS_MIA, (
+             SELECT HASH_KY
+               FROM HASHES
+              WHERE KENNEL_EVENT_NUMBER = LAST_SEEN_EVENT
+                AND KENNEL_KY = ?) AS HASH_KY,
+             HASHER_KY AS THE_KEY, HASHER_ABBREVIATION
+        FROM (SELECT HASHER_NAME, HASHER_KY, HASHER_ABBREVIATION, LAST_SEEN_DATE, (
+                     SELECT COUNT(*)
+                       FROM HASHES
+                      WHERE KENNEL_KY = ?
+                        AND HASHES.EVENT_DATE > LAST_SEEN_DATE) AS NUM_HASHES_MISSED, (
+                     SELECT MAX(KENNEL_EVENT_NUMBER)
+                       FROM HASHES
+                      WHERE HASHES.EVENT_DATE = LAST_SEEN_DATE
+                        AND HASHES.HASH_KY IN (
+                            SELECT HASH_KY
+                              FROM HASHINGS
+                             WHERE KENNEL_KY = ?
+                               AND HASHINGS.HASHER_KY = HASHER_KY)) AS LAST_SEEN_EVENT
+                FROM (SELECT HASHER_NAME, HASHER_ABBREVIATION, HASHERS.HASHER_KY AS HASHER_KY, (
+                             SELECT MAX(EVENT_DATE)
+                               FROM HASHES
+                              WHERE HASHES.HASH_KY IN (
+                                    SELECT HASH_KY
+                                      FROM HASHINGS
+                                     WHERE KENNEL_KY = ?
+                                       AND HASHINGS.HASHER_KY = HASHERS.HASHER_KY)) AS LAST_SEEN_DATE
+                        FROM HASHERS
+                       WHERE HASHER_NAME NOT LIKE 'Just %'
+                         AND HASHER_NAME NOT LIKE 'NHN %'
+                         AND DECEASED = 0) INNER1
+               WHERE LAST_SEEN_DATE IS NOT NULL) INNER2
+       WHERE NUM_HASHES_MISSED > 0";
 
     $sql2 = "$sql
-          AND (HASHER_NAME LIKE ? OR
-          HASHER_ABBREVIATION LIKE ?)";
+         AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)";
 
     $sql3 = "$sql2
-         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-         LIMIT $inputStart,$inputLength";
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
     $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM ($sql2) A";
@@ -1160,26 +1147,27 @@ class HashController extends BaseController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql3,array($kennelKy, $kennelKy, $kennelKy, $kennelKy,
-      (string) $inputSearchValueModified, (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql3, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy,
+      $inputSearchValueModified, $inputSearchValueModified ]);
 
     #Perform the untiltered count
     $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,
-      array($kennelKy, $kennelKy, $kennelKy, $kennelKy)))['THE_COUNT'];
+      [ $kennelKy, $kennelKy, $kennelKy, $kennelKy ]))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy, $kennelKy, $kennelKy, $kennelKy,
-      (string) $inputSearchValueModified, (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy,
+      $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
