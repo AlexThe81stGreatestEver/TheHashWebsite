@@ -3386,37 +3386,35 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
       'the_count' => $theCount2 ]);
   }
 
-public function yearByYearStatsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/year_by_year/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function yearByYearStatsAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #SQL to determine the distinct year values
-  $sql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-    KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
+    #SQL to determine the distinct year values
+    $sql = "
+      SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE) DESC";
 
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($sql,array($kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $yearValues = $this->fetchAll($sql, [ $kennelKy ]);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  # Establish and set the return value
-  $returnValue = $this->render('section_year_by_year.twig',array(
-    'pageTitle' => 'Year Summary Stats',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'year_values' => $yearValues,
-    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
-    'overall' => count($hareTypes) > 1 ? " (Overall)" : ""
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
+    return $this->render('section_year_by_year.twig', [
+      'pageTitle' => 'Year Summary Stats',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'year_values' => $yearValues,
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : [],
+      'overall' => count($hareTypes) > 1 ? " (Overall)" : "" ]);
+  }
 
 public function kennelRecordsStatsAction(Request $request, string $kennel_abbreviation){
 
