@@ -1276,7 +1276,7 @@ get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'Hash
 #get('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}',                     'HashController::listHashesByHasherAction');
 get('/{kennel_abbreviation}/listhashes/byhare/{hasher_id}',                       'HashController::listHashesByHareAction');
 #get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController::viewHasherChartsAction');
-get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController::hashedWithAction');
+#get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController::hashedWithAction');
 
 #get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController::viewOverallHareChartsAction');
 #get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController::viewHareChartsAction');

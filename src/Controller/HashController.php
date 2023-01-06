@@ -1436,55 +1436,46 @@ class HashController extends BaseController
 
 
 
-  public function hashedWithAction(Request $request, int $hasher_id, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashedWith/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  public function hashedWithAction(int $hasher_id, string $kennel_abbreviation) {
 
-    # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ? ";
 
-    # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
-    # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    #Define the sql statement to execute
     $theSql = "
       SELECT HASHERS.HASHER_NAME AS NAME, HASHERS.HASHER_KY AS THE_KEY, COUNT(*) AS VALUE
         FROM HASHERS
-        JOIN HASHINGS ON HASHERS.HASHER_KY=HASHINGS.HASHER_KY
+        JOIN HASHINGS
+          ON HASHERS.HASHER_KY=HASHINGS.HASHER_KY
        WHERE HASHINGS.HASH_KY IN (
-      SELECT HASHES.HASH_KY
-        FROM HASHINGS
-        JOIN HASHES ON HASHINGS.HASH_KY=HASHES.HASH_KY
-       WHERE HASHINGS.HASHER_KY=?
-         AND HASHES.KENNEL_KY=?)
+             SELECT HASHES.HASH_KY
+               FROM HASHINGS
+               JOIN HASHES
+                 ON HASHINGS.HASH_KY = HASHES.HASH_KY
+              WHERE HASHINGS.HASHER_KY=?
+                AND HASHES.KENNEL_KY=?)
          AND HASHINGS.HASHER_KY!=?
        GROUP BY HASHERS.HASHER_NAME, HASHERS.HASHER_KY
        ORDER BY VALUE DESC, NAME";
 
-    #Query the database
-    $theResults = $this->fetchAll($theSql, array($hasher_id, $kennelKy, $hasher_id));
+    $theResults = $this->fetchAll($theSql, [ $hasher_id, $kennelKy, $hasher_id ]);
 
-    #Define the page title
     $pageTitle = "Hashers that have hashed with $hasherName";
 
-    #Set the return value
-    $returnValue = $this->render('name_number_list.twig',array(
+    return $this->render('name_number_list.twig', [
       'pageTitle' => $pageTitle,
       'tableCaption' => '',
       'columnOneName' => 'Hasher Name',
       'columnTwoName' => 'Count',
       'theList' => $theResults,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'HashedWith'
-    ));
-
-    return $returnValue;
+      'pageTracking' => 'HashedWith' ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/hashers/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
   public function viewHasherChartsAction(int $hasher_id, string $kennel_abbreviation) {
