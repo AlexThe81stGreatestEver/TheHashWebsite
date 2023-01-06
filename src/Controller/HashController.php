@@ -1355,34 +1355,27 @@ class HashController extends BaseController
       'kennel_abbreviation' => $kennel_abbreviation]);
   }
 
-  public function attendanceRecordForHasherAction(Request $request, int $hasher_id, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  public function attendanceRecordForHasherAction(int $hasher_id, string $kennel_abbreviation) {
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll(HASHER_ATTENDANCE_RECORD_LIST,array($kennelKy,(int) $hasher_id, $kennelKy));
+    $hashList = $this->fetchAll($this->sqlQueries->getHasherAttendanceRecordList(),
+      [ $kennelKy, $hasher_id, $kennelKy ] );
 
-    # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
-    # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
-    # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
-    $pageSubtitle = "The hashes attended by  $hasherName";
-    $returnValue = $this->render('hasher_attendance_list.twig',array(
+    $pageSubtitle = "The hashes attended by $hasherName";
+
+    return $this->render('hasher_attendance_list.twig', [
       'pageTitle' => 'Attendance Record',
       'pageSubTitle' => $pageSubtitle,
       'theList' => $hashList,
       'tableCaption' => '',
-      'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
 

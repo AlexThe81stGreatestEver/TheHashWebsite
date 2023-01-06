@@ -1269,7 +1269,7 @@ get('/{kennel_abbreviation}/eventsMarkerMap',                                   
 
 #get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController::listStreakersByHashAction');
 
-get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'HashController::attendanceRecordForHasherAction');
+#get('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',        'HashController::attendanceRecordForHasherAction');
 
 #get('/{kennel_abbreviation}/listhashers/byhash/{hash_id}',                        'HashController::listHashersByHashAction');
 #get('/{kennel_abbreviation}/listhares/byhash/{hash_id}',                          'HashController::listHaresByHashAction');

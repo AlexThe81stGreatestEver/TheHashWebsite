@@ -2,6 +2,11 @@
 
 {% block content %}
 
+  <style type="text/css">
+    table.dataTable tbody tr.attended { background-color: #00C851; }
+    table.dataTable tbody tr.missed { background-color: #ffbb33; }
+  </style>
+
 <script type = "text/javascript" language = "javascript">
 
   //Call these functions upon page load
@@ -35,7 +40,7 @@
     </thead>
     <tbody>
       {% for item in theList %}
-          <tr {% if item.ATTENDED == 'YES' %} bgcolor="#00C851" {% else %} bgcolor="#ffbb33" {% endif %}>
+          <tr {% if item.ATTENDED == 'YES' %} class="attended" {% else %} class="missed" {% endif %}>
           <td><a href='/{{kennel_abbreviation}}/hashes/{{item.HASH_KY}}'>{{item.KENNEL_EVENT_NUMBER}}</a></td>
           <td>{{item.ATTENDED}}</td>
           <td>{{item.HASH_TYPE_NAME}}</td>
