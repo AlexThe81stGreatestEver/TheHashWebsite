@@ -4083,548 +4083,488 @@ public function getHareAnalversariesByHareTypeAction(Request $request, int $hare
   }
 
 
+  #[Route('/{kennel_abbreviation}/jumboCountsTable',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function jumboCountsTablePreActionJson(string $kennel_abbreviation) {
 
-#Define the action
-public function jumboCountsTablePreActionJson(Request $request, string $kennel_abbreviation){
+    $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_counts_minimum_hash_count', 10);
+    $subTitle = "Minimum of $minimumHashCount hashes";
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $hareTypes = $this->getHareTypes($kennelKy);
+    $hashTypes = $this->getHashTypes($kennelKy, 0);
 
-  #Establish the subTitle
-  $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_counts_minimum_hash_count', 10);
-  $subTitle = "Minimum of $minimumHashCount hashes";
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-  $hareTypes = $this->getHareTypes($kennelKy);
-  $hashTypes = $this->getHashTypes($kennelKy, 0);
-
-  # Establish and set the return value
-  $returnValue = $this->render('jumbo_counts_list_json.twig',array(
-    'pageTitle' => 'The Jumbo List of Counts (Experimental Page)',
-    'pageSubTitle' => $subTitle,
-    #'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageCaption' => "",
-    'tableCaption' => "",
-    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
-    "hashTypes" => count($hashTypes) > 1 ? $hashTypes : array()
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
-
-public function jumboCountsTablePostActionJson(Request $request, string $kennel_abbreviation){
-
-  #$this->container->get('monolog')->addDebug("Entering the function jumboStatsTablePostActionJson------------------------");
-
-  #Establish he minimum hash count
-  $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_counts_minimum_hash_count', 10);
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-  $hashTypes = $this->getHashTypes($kennelKy, 0);
-
-  if(count($hareTypes) == 1) {
-    $hareTypes = array();
+    return $this->render('jumbo_counts_list_json.twig', [
+      'pageTitle' => 'The Jumbo List of Counts (Experimental Page)',
+      'pageSubTitle' => $subTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageCaption' => "",
+      'tableCaption' => "",
+      "hareTypes" => count($hareTypes) > 1 ? $hareTypes : [],
+      "hashTypes" => count($hashTypes) > 1 ? $hashTypes : [] ]);
   }
 
-  if(count($hashTypes) == 1) {
-    $hashTypes = array();
-  }
+  #[Route('/{kennel_abbreviation}/jumboCountsTable',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function jumboCountsTablePostActionJson(string $kennel_abbreviation) {
 
-  #Obtain the post parameters
-  #$inputDraw = $_POST['draw'] ;
-  $inputStart = $_POST['start'] ;
-  $inputLength = $_POST['length'] ;
-  $inputColumns = $_POST['columns'];
-  $inputSearch = $_POST['search'];
-  $inputSearchValue = $inputSearch['value'];
+    $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_counts_minimum_hash_count', 10);
 
-  #-------------- Begin: Validate the post parameters ------------------------
-  #Validate input start
-  if(!is_numeric($inputStart)){
-    #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
-    $inputStart = 0;
-  }
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Validate input length
-  if(!is_numeric($inputLength)){
-    #$this->container->get('monolog')->addDebug("input length is not numeric");
-    $inputStart = "0";
-    $inputLength = "50";
-  } else if($inputLength == "-1"){
-    #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
-    $inputStart = "0";
-    $inputLength = "1000000000";
-  }
+    $hareTypes = $this->getHareTypes($kennelKy);
+    $hashTypes = $this->getHashTypes($kennelKy, 0);
 
-  #Validate input search
-  #We are using database parameterized statements, so we are good already...
+    if(count($hareTypes) == 1) {
+      $hareTypes = [];
+    }
 
-  #---------------- End: Validate the post parameters ------------------------
+    if(count($hashTypes) == 1) {
+      $hashTypes = [];
+    }
 
-  #-------------- Begin: Modify the input parameters  ------------------------
-  #Modify the search string
-  $inputSearchValueModified = "%$inputSearchValue%";
+    #Obtain the post parameters
+    $inputStart = $_POST['start'] ;
+    $inputLength = $_POST['length'] ;
+    $inputColumns = $_POST['columns'];
+    $inputSearch = $_POST['search'];
+    $inputSearchValue = $inputSearch['value'];
 
-  #Obtain the column/order information
-  $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "1";
-  $inputOrderColumnIncremented = "2";
-  $inputOrderDirectionExtracted = "desc";
-  if(!is_null($inputOrderRaw)){
-    #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
-    $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
-    $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
-    $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-  }else{
-    #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
-  }
+    #-------------- Begin: Validate the post parameters ------------------------
 
-  #-------------- End: Modify the input parameters  --------------------------
+    #Validate input start
+    if(!is_numeric($inputStart)){
+      $inputStart = 0;
+    }
 
+    #Validate input length
+    if(!is_numeric($inputLength)){
+      $inputStart = "0";
+      $inputLength = "50";
+    } else if($inputLength == "-1"){
+      $inputStart = "0";
+      $inputLength = "1000000000";
+    }
 
-  #-------------- Begin: Define the SQL used here   --------------------------
+    #---------------- End: Validate the post parameters ------------------------
 
-  #Define the sql that performs the filtering
-  $sql = "SELECT
-      HASHER_NAME,
-      HASH_COUNT,";
+    #-------------- Begin: Modify the input parameters  ------------------------
 
-  foreach ($hashTypes as &$hashType) {
-    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
-  }
+    #Modify the search string
+    $inputSearchValueModified = "%$inputSearchValue%";
 
-  $sql .= "HARE_COUNT,";
+    #Obtain the column/order information
+    $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
+    $inputOrderColumnExtracted = "1";
+    $inputOrderColumnIncremented = "2";
+    $inputOrderDirectionExtracted = "desc";
+    if(!is_null($inputOrderRaw)) {
+      $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
+      $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
+      $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
+    }
 
-  foreach ($hareTypes as &$hareType) {
-    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
-  }
+    #-------------- End: Modify the input parameters  --------------------------
 
-  $args = array($kennelKy, $kennelKy);
+    #-------------- Begin: Define the SQL used here   --------------------------
 
-  $sql .= "
-      LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
-      FIRST_HASH_KEY,
-      FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
-      FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE,
-      LATEST_HASH_KEY,
-      LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
-      OUTER_HASHER_KY AS HASHER_KY
-  FROM
-        (
-        SELECT
-                HASHERS.HASHER_NAME,
-                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-                (
-                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-                (
-                        SELECT COUNT(*)
-                        FROM HARINGS
-                        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+    #Define the sql that performs the filtering
+    $sql = "
+      SELECT HASHER_NAME, HASH_COUNT,";
 
-  foreach ($hareTypes as &$hareType) {
-    array_push($args, $kennelKy);
-    array_push($args, $hareType['HARE_TYPE']);
+    foreach ($hashTypes as &$hashType) {
+      $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+    }
+
+    $sql .= "HARE_COUNT,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+    }
+
+    $args = [ $kennelKy, $kennelKy ];
+
     $sql .= "
-                (
-                        SELECT COUNT(*)
-                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+             LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE, FIRST_HASH_KEY,
+             FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
+             FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE, LATEST_HASH_KEY,
+             LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
+             OUTER_HASHER_KY AS HASHER_KY
+        FROM (SELECT HASHERS.HASHER_NAME, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+                      FROM HASHINGS
+                      JOIN HASHES
+                        ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                     WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                       AND HASHES.KENNEL_KY = ?) AS HASH_COUNT, (
+                           SELECT COUNT(*)
+                             FROM HARINGS
+                             JOIN HASHES
+                               ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                             JOIN HARE_TYPES
+                               ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                            WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+    foreach ($hareTypes as &$hareType) {
+      array_push($args, $kennelKy);
+      array_push($args, $hareType['HARE_TYPE']);
+      $sql .= "(
+                           SELECT COUNT(*)
+                             FROM HARINGS
+                             JOIN HASHES
+                               ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                            WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                              AND HASHES.KENNEL_KY = ?
+                              AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+    }
+
+    foreach ($hashTypes as &$hashType) {
+      array_push($args, $kennelKy);
+      array_push($args, $hashType['HASH_TYPE']);
+      $sql .= "(
+                           SELECT COUNT(*)
+                             FROM HASHINGS
+                             JOIN HASHES
+                               ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                            WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                              AND HASHES.KENNEL_KY = ?
+                              AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+    }
+
+    array_push($args, $kennelKy);
+    array_push($args, $kennelKy);
+    array_push($args, $minimumHashCount);
+    array_push($args, $inputSearchValueModified);
+
+    $sql .= "(
+                           SELECT HASHES.HASH_KY
+                             FROM HASHINGS
+                             JOIN HASHES
+                               ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                            WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                              AND HASHES.KENNEL_KY = ?
+                            ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY, (
+                           SELECT HASHES.HASH_KY
+                             FROM HASHINGS
+                             JOIN HASHES
+                               ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                            WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                              AND HASHES.KENNEL_KY = ?
+                            ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+                FROM HASHERS) MAIN_TABLE
+        JOIN HASHES LATEST_HASH
+          ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
+        JOIN HASHES FIRST_HASH
+          ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
+       WHERE HASH_COUNT >= ?
+         AND HASHER_NAME LIKE ?
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
+
+    #Define the SQL that gets the count for the filtered results
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT HASHERS.HASHER_NAME AS HASHER_NAME, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*)
+                       FROM HASHINGS
+                       JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
+                FROM HASHERS) MAIN_TABLE
+       WHERE HASH_COUNT >= ?
+         AND HASHER_NAME LIKE ?";
+
+    #Define the sql that gets the overall counts
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*)
+                       FROM HASHINGS
+                       JOIN HASHES 
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
+                FROM HASHERS) MAIN_TABLE
+       WHERE HASH_COUNT >= ?";
+
+    #-------------- End: Define the SQL used here   ----------------------------
+
+    #-------------- Begin: Query the database   --------------------------------
+
+    #Perform the filtered search
+    $theResults = $this->fetchAll($sql,$args);
+
+    #Perform the untiltered count
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [
+      $kennelKy, $minimumHashCount ]))['THE_COUNT'];
+
+    #Perform the filtered count
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [
+      $kennelKy, $minimumHashCount, $inputSearchValueModified ]))['THE_COUNT'];
+    
+    #-------------- End: Query the database   --------------------------------
+
+    $output = [
+      "sEcho" => "foo",
+      "iTotalRecords" => $theUnfilteredCount,
+      "iTotalDisplayRecords" => $theFilteredCount,
+      "aaData" => $theResults ];
+
+    return new JsonResponse($output);
+  }
+
+  #[Route('/{kennel_abbreviation}/jumboPercentagesTable',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function jumboPercentagesTablePreActionJson(string $kennel_abbreviation) {
+
+    $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_percentages_minimum_hash_count', 10);
+    $subTitle = "Minimum of $minimumHashCount hashes";
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $hareTypes = $this->getHareTypes($kennelKy);
+    $hashTypes = $this->getHashTypes($kennelKy, 0);
+
+    return $this->render('jumbo_percentages_list_json.twig', [
+      'pageTitle' => 'The Jumbo List of Percentages (Experimental Page)',
+      'pageSubTitle' => $subTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageCaption' => "",
+      'tableCaption' => "",
+      "hareTypes" => count($hareTypes) > 1 ? $hareTypes : [],
+      'hashTypes' => count($hashTypes) > 1 ? $hashTypes : [] ]);
+  }
+
+
+  #[Route('/{kennel_abbreviation}/jumboPercentagesTable',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function jumboPercentagesTablePostActionJson(string $kennel_abbreviation){
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $hareTypes = $this->getHareTypes($kennelKy);
+    $hashTypes = $this->getHashTypes($kennelKy, 0);
+
+    if(count($hareTypes) == 1) {
+      $hareTypes = [];
+    }
+
+    if(count($hashTypes) == 1) {
+      $hashTypes = [];
+    }
+
+    #Define the minimum hash count
+    $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_percentages_minimum_hash_count', 10);
+
+    #Obtain the post parameters
+    $inputStart = $_POST['start'] ;
+    $inputLength = $_POST['length'] ;
+    $inputColumns = $_POST['columns'];
+    $inputSearch = $_POST['search'];
+    $inputSearchValue = $inputSearch['value'];
+
+    #-------------- Begin: Validate the post parameters ------------------------
+
+    #Validate input start
+    if(!is_numeric($inputStart)){
+      $inputStart = 0;
+    }
+
+    #Validate input length
+    if(!is_numeric($inputLength)){
+      $inputStart = "0";
+      $inputLength = "50";
+    } else if($inputLength == "-1") {
+      $inputStart = "0";
+      $inputLength = "1000000000";
+    }
+
+    #---------------- End: Validate the post parameters ------------------------
+
+    #-------------- Begin: Modify the input parameters  ------------------------
+
+    #Modify the search string
+    $inputSearchValueModified = "%$inputSearchValue%";
+
+    #Obtain the column/order information
+    $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
+    $inputOrderColumnExtracted = "1";
+    $inputOrderColumnIncremented = "2";
+    $inputOrderDirectionExtracted = "desc";
+    if(!is_null($inputOrderRaw)) {
+      $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
+      $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
+      $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
+    }
+
+    #-------------- End: Modify the input parameters  --------------------------
+
+
+    #-------------- Begin: Define the SQL used here   --------------------------
+
+    #Define the sql that performs the filtering
+    $sql = "
+      SELECT HASHER_NAME,HASH_COUNT,";
+
+    foreach ($hashTypes as &$hashType) {
+      $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+    }
+
+    $sql .= "HARE_COUNT,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
+    }
+
+    $sql .= "(HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sql .= "
+        (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
+    }
+
+    foreach ($hareTypes as &$hareType) {
+      $sql .= "
+        CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
+    }
+
+    $args = [ $kennelKy, $kennelKy ];
+
+    $sql .= "
+             LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE, FIRST_HASH_KEY,
+             FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
+             FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE, LATEST_HASH_KEY,
+             LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER, OUTER_HASHER_KY AS HASHER_KY
+        FROM (SELECT HASHERS.HASHER_NAME, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
+                       FROM HASHINGS JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HASH_COUNT, (
+                     SELECT COUNT(*)
+                       FROM HARINGS
+                       JOIN HASHES
+                         ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                       JOIN HARE_TYPES
+                         ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                      WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
+
+    foreach ($hareTypes as &$hareType) {
+      array_push($args, $kennelKy);
+      array_push($args, $hareType['HARE_TYPE']);
+      $sql .= "(
+                     SELECT COUNT(*)
+                       FROM HARINGS
+                       JOIN HASHES
+                         ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                      WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
                         AND HASHES.KENNEL_KY = ?
                         AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
-  }
+    }
 
-  foreach ($hashTypes as &$hashType) {
-    array_push($args, $kennelKy);
-    array_push($args, $hashType['HASH_TYPE']);
-    $sql .= "
-                (
-                        SELECT COUNT(*)
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+    foreach ($hashTypes as &$hashType) {
+      array_push($args, $kennelKy);
+      array_push($args, $hashType['HASH_TYPE']);
+      $sql .= "(
+                     SELECT COUNT(*)
+                       FROM HASHINGS
+                       JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
                         AND HASHES.KENNEL_KY = ?
                         AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
-  }
+    }
 
-  array_push($args, $kennelKy);
-  array_push($args, $kennelKy);
-  array_push($args, $minimumHashCount);
-  array_push($args, $inputSearchValueModified);
-
-  $sql .= "
-                (
-                        SELECT HASHES.HASH_KY
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-              ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-                (
-                        SELECT HASHES.HASH_KY
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-              ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-        FROM
-                HASHERS
-  )
-  MAIN_TABLE
-  JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-  JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
-  ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-  LIMIT $inputStart,$inputLength";
-  #$this->container->get('monolog')->addDebug("sql: $sql");
-
-  #Define the SQL that gets the count for the filtered results
-  $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-  FROM
-    (
-    SELECT
-      HASHERS.HASHER_NAME AS HASHER_NAME,
-      HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-      (
-        SELECT COUNT(*)
-        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
-    FROM
-      HASHERS
-  )
-  MAIN_TABLE
-  WHERE HASH_COUNT >= ? AND HASHER_NAME LIKE ?";
-
-  #Define the sql that gets the overall counts
-  $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
-  FROM
-      (
-      SELECT
-        HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-        (
-          SELECT COUNT(*)
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
-      FROM
-        HASHERS
-    )
-    MAIN_TABLE
-    WHERE HASH_COUNT >= ?";
-
-  #-------------- End: Define the SQL used here   ----------------------------
-
-  #-------------- Begin: Query the database   --------------------------------
-  #$this->container->get('monolog')->addDebug("Point A");
-
-  #Perform the filtered search
-  $theResults = $this->fetchAll($sql,$args);
-  #$this->container->get('monolog')->addDebug("Point B");
-
-  #Perform the untiltered count
-  $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
-    $kennelKy,
-    $minimumHashCount
-  )))['THE_COUNT'];
-  #$this->container->get('monolog')->addDebug("Point C");
-
-  #Perform the filtered count
-  $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-    $kennelKy,
-    $minimumHashCount,
-    (string) $inputSearchValueModified)))['THE_COUNT'];
-  #$this->container->get('monolog')->addDebug("Point D");
-  #-------------- End: Query the database   --------------------------------
-
-  #$this->container->get('monolog')->addDebug("Point theUnfilteredCount $theUnfilteredCount");
-  #$this->container->get('monolog')->addDebug("Point theFilteredCount $theFilteredCount");
-
-  #Establish the output
-  $output = array(
-    "sEcho" => "foo",
-    "iTotalRecords" => $theUnfilteredCount,
-    "iTotalDisplayRecords" => $theFilteredCount,
-    "aaData" => $theResults
-  );
-
-  return new JsonResponse($output);
-}
-
-#Define the action
-public function jumboPercentagesTablePreActionJson(Request $request, string $kennel_abbreviation){
-
-  #Establish the sub title
-  $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_percentages_minimum_hash_count', 10);
-  $subTitle = "Minimum of $minimumHashCount hashes";
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-  $hareTypes = $this->getHareTypes($kennelKy);
-  $hashTypes = $this->getHashTypes($kennelKy, 0);
-
-  # Establish and set the return value
-  $returnValue = $this->render('jumbo_percentages_list_json.twig',array(
-    'pageTitle' => 'The Jumbo List of Percentages (Experimental Page)',
-    'pageSubTitle' => $subTitle,
-    #'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageCaption' => "",
-    'tableCaption' => "",
-    "hareTypes" => count($hareTypes) > 1 ? $hareTypes : array(),
-    'hashTypes' => count($hashTypes) > 1 ? $hashTypes : array()
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
-
-public function jumboPercentagesTablePostActionJson(Request $request, string $kennel_abbreviation){
-
-  #$this->container->get('monolog')->addDebug("Entering the function jumboPercentagesTablePostActionJson------------------------");
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-  $hashTypes = $this->getHashTypes($kennelKy, 0);
-
-  if(count($hareTypes) == 1) {
-    $hareTypes = array();
-  }
-
-  if(count($hashTypes) == 1) {
-    $hashTypes = array();
-  }
-
-  #Define the minimum hash count
-  $minimumHashCount = $this->getSiteConfigItemAsInt('jumbo_percentages_minimum_hash_count', 10);
-
-  #Obtain the post parameters
-  #$inputDraw = $_POST['draw'] ;
-  $inputStart = $_POST['start'] ;
-  $inputLength = $_POST['length'] ;
-  $inputColumns = $_POST['columns'];
-  $inputSearch = $_POST['search'];
-  $inputSearchValue = $inputSearch['value'];
-
-  #-------------- Begin: Validate the post parameters ------------------------
-  #Validate input start
-  if(!is_numeric($inputStart)){
-    #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
-    $inputStart = 0;
-  }
-
-  #Validate input length
-  if(!is_numeric($inputLength)){
-    #$this->container->get('monolog')->addDebug("input length is not numeric");
-    $inputStart = "0";
-    $inputLength = "50";
-  } else if($inputLength == "-1"){
-    #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
-    $inputStart = "0";
-    $inputLength = "1000000000";
-  }
-
-  #Validate input search
-  #We are using database parameterized statements, so we are good already...
-
-  #---------------- End: Validate the post parameters ------------------------
-
-  #-------------- Begin: Modify the input parameters  ------------------------
-  #Modify the search string
-  $inputSearchValueModified = "%$inputSearchValue%";
-
-  #Obtain the column/order information
-  $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-  $inputOrderColumnExtracted = "1";
-  $inputOrderColumnIncremented = "2";
-  $inputOrderDirectionExtracted = "desc";
-  if(!is_null($inputOrderRaw)){
-    #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
-    $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
-    $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
-    $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-  }else{
-    #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
-  }
-
-  #-------------- End: Modify the input parameters  --------------------------
-
-
-  #-------------- Begin: Define the SQL used here   --------------------------
-
-  #Define the sql that performs the filtering
-  $sql = "SELECT HASHER_NAME,HASH_COUNT,";
-
-  foreach ($hashTypes as &$hashType) {
-    $sql .= $hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
-  }
-
-  $sql .= "HARE_COUNT,";
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .= $hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
-  }
-
-  $sql .= "(HARE_COUNT/HASH_COUNT) AS HARING_TO_HASHING_PERCENTAGE,";
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .= "
-      (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HASH_COUNT) AS ".$hareType['HARE_TYPE_NAME']."_HARING_TO_HASHING_PERCENTAGE,";
-  }
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .= "
-      CASE WHEN HARE_COUNT > 0 THEN (".$hareType['HARE_TYPE_NAME']."_HARE_COUNT/HARE_COUNT) ELSE 0 END AS ".$hareType['HARE_TYPE_NAME']."_TO_OVERALL_HARING_PERCENTAGE,";
-  }
-
-  $args = array($kennelKy, $kennelKy);
-
-  $sql .= "
-      LATEST_HASH.EVENT_DATE AS LATEST_EVENT_DATE,
-      FIRST_HASH_KEY,
-      FIRST_HASH.KENNEL_EVENT_NUMBER AS FIRST_KENNEL_EVENT_NUMBER,
-      FIRST_HASH.EVENT_DATE AS FIRST_EVENT_DATE,
-      LATEST_HASH_KEY,
-      LATEST_HASH.KENNEL_EVENT_NUMBER AS LATEST_KENNEL_EVENT_NUMBER,
-      OUTER_HASHER_KY AS HASHER_KY
-  FROM
-        (
-        SELECT
-                HASHERS.HASHER_NAME,
-                HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-                (
-                        SELECT COUNT(*) + ".$this->getLegacyHashingsCountSubquery("HASHINGS")."
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT,
-                (
-                        SELECT COUNT(*)
-                        FROM HARINGS
-                        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HARE_COUNT,";
-
-  foreach ($hareTypes as &$hareType) {
     array_push($args, $kennelKy);
-    array_push($args, $hareType['HARE_TYPE']);
-    $sql .= "
-                (
-                        SELECT COUNT(*)
-                        FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                        WHERE HARINGS_HASHER_KY = OUTER_HASHER_KY
-                        AND HASHES.KENNEL_KY = ?
-                        AND HARINGS.HARE_TYPE & ? != 0) AS ".$hareType['HARE_TYPE_NAME']."_HARE_COUNT,";
-  }
-
-  foreach ($hashTypes as &$hashType) {
     array_push($args, $kennelKy);
-    array_push($args, $hashType['HASH_TYPE']);
-    $sql .= "
-                (
-                        SELECT COUNT(*)
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+    array_push($args, $minimumHashCount);
+    array_push($args, $inputSearchValueModified);
+
+    $sql .= "(
+                     SELECT HASHES.HASH_KY
+                       FROM HASHINGS
+                       JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
                         AND HASHES.KENNEL_KY = ?
-                        AND HASHES.HASH_TYPE = ?) AS ".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+                      ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY, (
+                     SELECT HASHES.HASH_KY
+                       FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?
+                      ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
+                FROM HASHERS) MAIN_TABLE
+        JOIN HASHES LATEST_HASH
+          ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
+        JOIN HASHES FIRST_HASH
+          ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
+       WHERE HASH_COUNT >= ?
+         AND HASHER_NAME LIKE ?
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
+
+    #Define the SQL that gets the count for the filtered results
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT HASHERS.HASHER_NAME, HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*)
+                       FROM HASHINGS
+                       JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
+                FROM HASHERS) MAIN_TABLE
+       WHERE HASH_COUNT >= ?
+         AND HASHER_NAME LIKE ?";
+
+    #Define the sql that gets the overall counts
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT HASHERS.HASHER_KY AS OUTER_HASHER_KY, (
+                     SELECT COUNT(*)
+                       FROM HASHINGS
+                       JOIN HASHES
+                         ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                      WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY
+                        AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
+                FROM HASHERS) MAIN_TABLE
+       WHERE HASH_COUNT >= ?";
+
+    #-------------- End: Define the SQL used here   ----------------------------
+
+    #-------------- Begin: Query the database   --------------------------------
+
+    #Perform the filtered search
+    $theResults = $this->fetchAll($sql, $args);
+
+    #Perform the untiltered count
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy, $minimumHashCount ]))['THE_COUNT'];
+
+    #Perform the filtered count
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $kennelKy, $minimumHashCount, 
+      $inputSearchValueModified ]))['THE_COUNT'];
+    
+    #-------------- End: Query the database   --------------------------------
+
+    $output = [
+      "sEcho" => "foo",
+      "iTotalRecords" => $theUnfilteredCount,
+      "iTotalDisplayRecords" => $theFilteredCount,
+      "aaData" => $theResults ];
+
+    return new JsonResponse($output);
   }
-
-  array_push($args, $kennelKy);
-  array_push($args, $kennelKy);
-  array_push($args, $minimumHashCount);
-  array_push($args, $inputSearchValueModified);
-
-  $sql .= "
-                (
-                        SELECT HASHES.HASH_KY
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-              ORDER BY HASHES.EVENT_DATE ASC LIMIT 1) AS FIRST_HASH_KEY,
-                (
-                        SELECT HASHES.HASH_KY
-                        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?
-              ORDER BY HASHES.EVENT_DATE DESC LIMIT 1) AS LATEST_HASH_KEY
-        FROM
-                HASHERS
-  )
-  MAIN_TABLE
-  JOIN HASHES LATEST_HASH ON LATEST_HASH.HASH_KY = LATEST_HASH_KEY
-  JOIN HASHES FIRST_HASH ON FIRST_HASH.HASH_KY = FIRST_HASH_KEY
-  WHERE HASH_COUNT >= ? AND (HASHER_NAME LIKE ? )
-  ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-  LIMIT $inputStart,$inputLength";
-  #$this->container->get('monolog')->addDebug("sql: $sql");
-
-  #Define the SQL that gets the count for the filtered results
-  $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-  FROM
-    (
-    SELECT
-      HASHERS.HASHER_NAME,
-      HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-      (
-        SELECT COUNT(*)
-        FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
-    FROM
-      HASHERS
-  )
-  MAIN_TABLE
-  WHERE HASH_COUNT >= ? AND ( HASHER_NAME LIKE ? )";
-
-  #Define the sql that gets the overall counts
-  $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
-  FROM
-      (
-      SELECT
-        HASHERS.HASHER_KY AS OUTER_HASHER_KY,
-        (
-          SELECT COUNT(*)
-          FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-          WHERE HASHINGS.HASHER_KY = OUTER_HASHER_KY AND HASHES.KENNEL_KY = ?) AS HASH_COUNT
-      FROM
-        HASHERS
-    )
-    MAIN_TABLE
-    WHERE HASH_COUNT >= ?";
-
-  #-------------- End: Define the SQL used here   ----------------------------
-
-  #-------------- Begin: Query the database   --------------------------------
-  #$this->container->get('monolog')->addDebug("Point A");
-
-  #Perform the filtered search
-  $theResults = $this->fetchAll($sql, $args);
-  #$this->container->get('monolog')->addDebug("Point B");
-
-  #Perform the untiltered count
-  $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array(
-    $kennelKy,
-    $minimumHashCount,
-  )))['THE_COUNT'];
-  #$this->container->get('monolog')->addDebug("Point C");
-
-  #Perform the filtered count
-  $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-    $kennelKy,
-    $minimumHashCount,
-    (string) $inputSearchValueModified)))['THE_COUNT'];
-  #$this->container->get('monolog')->addDebug("Point D");
-  #-------------- End: Query the database   --------------------------------
-
-  #$this->container->get('monolog')->addDebug("Point theUnfilteredCount $theUnfilteredCount");
-  #$this->container->get('monolog')->addDebug("Point theFilteredCount $theFilteredCount");
-
-  #Establish the output
-  $output = array(
-    "sEcho" => "foo",
-    "iTotalRecords" => $theUnfilteredCount,
-    "iTotalDisplayRecords" => $theFilteredCount,
-    "aaData" => $theResults
-  );
-
-  return new JsonResponse($output);
-}
 
   private function getStandardHareChartsAction(int $hasher_id, string $kennel_abbreviation) {
 

@@ -1354,12 +1354,12 @@ get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsC
 get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController::hasherNameAnalysisWordCloudAction');
 
 # View the jumbo counts table
-get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController::jumboCountsTablePreActionJson');
-post('/{kennel_abbreviation}/jumboCountsTable',                'HashController::jumboCountsTablePostActionJson');
+#get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController::jumboCountsTablePreActionJson');
+#post('/{kennel_abbreviation}/jumboCountsTable',                'HashController::jumboCountsTablePostActionJson');
 
 # View the jumbo percentages table
-get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HashController::jumboPercentagesTablePreActionJson');
-post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController::jumboPercentagesTablePostActionJson');
+#get('/{kennel_abbreviation}/jumboPercentagesTable',                 'HashController::jumboPercentagesTablePreActionJson');
+#post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController::jumboPercentagesTablePostActionJson');
 
 #Show events by event tag
 get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController::listHashesByEventTagAction');
