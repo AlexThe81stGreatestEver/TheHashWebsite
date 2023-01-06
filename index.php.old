@@ -1343,7 +1343,7 @@ get('/{kennel_abbreviation}/percentages/harings',                               
 #get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController::getHasherAnalversariesAction');
 get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController::getHareAnalversariesAction');
 get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController::getHareAnalversariesByHareTypeAction');
-get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController::getProjectedHasherAnalversariesAction');
+#get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController::getProjectedHasherAnalversariesAction');
 
 get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController::getLongestStreaksAction');
 get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController::aboutContactAction');
