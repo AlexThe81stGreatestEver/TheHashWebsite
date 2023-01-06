@@ -272,33 +272,28 @@ class HashController extends BaseController
 
   }
 
-  public function cohareCountsPreActionJson(Request $request, string $kennel_abbreviation, string $hare_type){
+  #[Route('/{kennel_abbreviation}/CohareCounts/{hare_type}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%'])]
+  public function cohareCountsPreActionJson(string $kennel_abbreviation, int $hare_type) {
 
-    # Establish and set the return value
-    $returnValue = $this->render('cohare_list_json.twig',array(
-      'pageTitle' => ($hare_type == "all" ? "Overall" : $this->getHareTypeName($hare_type)).' Co-Hare Counts',
+    return $this->render('cohare_list_json.twig', [
+      'pageTitle' => ($hare_type == 0 ? "Overall" : $this->getHareTypeName($hare_type)).' Co-Hare Counts',
       'pageSubTitle' => 'Total number of events where two hashers have hared together.',
       'kennel_abbreviation' => $kennel_abbreviation,
       'hare_type' => $hare_type,
-      'pageTracking' => 'CoHareCounts'
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'pageTracking' => 'CoHareCounts' ]);
   }
 
-  public function allCohareCountsPreActionJson(Request $request, string $kennel_abbreviation){
-    return $this->cohareCountsPreActionJson($request, $kennel_abbreviation, "all");
+  #[Route('/{kennel_abbreviation}/allCohareCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function allCohareCountsPreActionJson(string $kennel_abbreviation){
+    return $this->cohareCountsPreActionJson($kennel_abbreviation, 0);
   }
 
-  public function getCohareCountsJson(Request $request, string $kennel_abbreviation){
-
-    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
+  #[Route('/{kennel_abbreviation}/cohareCounts', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getCohareCountsJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Obtain the post parameters
-    #$inputDraw = $_POST['draw'] ;
     $inputStart = $_POST['start'] ;
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
@@ -306,46 +301,41 @@ class HashController extends BaseController
     $hare_type = $_POST['hare_type'];
     $inputSearchValue = $inputSearch['value'];
 
-    $typeClause = $hare_type=="all" ? "" : "AND b.HARE_TYPE & ? != 0 AND c.HARE_TYPE & ? != 0";
+    $typeClause = $hare_type == 0 ? "" : "AND b.HARE_TYPE & ? != 0 AND c.HARE_TYPE & ? != 0";
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
     #Obtain the column/order information
     $inputOrderRaw = isset($_POST['order']) ? $_POST['order'] : null;
-    if(!is_null($inputOrderRaw)){
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
+    if(!is_null($inputOrderRaw)) {
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-    }else{
+    } else {
       $inputOrderColumnExtracted = "2";
       $inputOrderDirectionExtracted = "desc";
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
+
     $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
 
     #-------------- End: Modify the input parameters  --------------------------
@@ -355,8 +345,7 @@ class HashController extends BaseController
 
     #Define the sql that performs the filtering
     $sql =
-      "SELECT a.HASHER_NAME AS HASHER_NAME1, d.HASHER_NAME AS HASHER_NAME2,
-              COUNT(*) AS THE_COUNT,
+      "SELECT a.HASHER_NAME AS HASHER_NAME1, d.HASHER_NAME AS HASHER_NAME2, COUNT(*) AS THE_COUNT,
               a.HASHER_KY AS HASHER_KY1, d.HASHER_KY AS HASHER_KY2
          FROM HASHERS a
          JOIN HARINGS b
@@ -376,66 +365,58 @@ class HashController extends BaseController
         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
         LIMIT $inputStart,$inputLength";
 
-    #$this->container->get('monolog')->addDebug("sql: $sql");
-
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-      FROM (
-       SELECT 1
-         FROM HASHERS a
-         JOIN HARINGS b
-           ON b.HARINGS_HASHER_KY=a.HASHER_KY
-         JOIN HARINGS c
-           ON b.HARINGS_HASH_KY = c.HARINGS_HASH_KY
-         JOIN HASHERS d
-           ON c.HARINGS_HASHER_KY = d.HASHER_KY
-          AND a.HASHER_KY < d.HASHER_KY
-         JOIN HASHES e
-           ON e.HASH_KY = c.HARINGS_HASH_KY
-        WHERE e.KENNEL_KY = ?
-          AND (a.HASHER_NAME LIKE ? OR a.HASHER_ABBREVIATION LIKE ?
-           OR  d.HASHER_NAME LIKE ? OR d.HASHER_ABBREVIATION LIKE ?)
-          $typeClause
-        GROUP BY a.HASHER_NAME, d.HASHER_NAME, a.HASHER_KY, d.HASHER_KY
-      ) AS INNER_QUERY";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT 1
+                FROM HASHERS a
+                JOIN HARINGS b
+                  ON b.HARINGS_HASHER_KY=a.HASHER_KY
+                JOIN HARINGS c
+                  ON b.HARINGS_HASH_KY = c.HARINGS_HASH_KY
+                JOIN HASHERS d
+                  ON c.HARINGS_HASHER_KY = d.HASHER_KY
+                 AND a.HASHER_KY < d.HASHER_KY
+                JOIN HASHES e
+                  ON e.HASH_KY = c.HARINGS_HASH_KY
+               WHERE e.KENNEL_KY = ?
+                 AND (a.HASHER_NAME LIKE ? OR a.HASHER_ABBREVIATION LIKE ?
+                  OR  d.HASHER_NAME LIKE ? OR d.HASHER_ABBREVIATION LIKE ?)
+                     $typeClause
+               GROUP BY a.HASHER_NAME, d.HASHER_NAME, a.HASHER_KY, d.HASHER_KY) AS INNER_QUERY";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT
-      FROM (
-       SELECT 1
-         FROM HASHERS a
-         JOIN HARINGS b
-           ON b.HARINGS_HASHER_KY=a.HASHER_KY
-         JOIN HARINGS c
-           ON b.HARINGS_HASH_KY = c.HARINGS_HASH_KY
-         JOIN HASHERS d
-           ON c.HARINGS_HASHER_KY = d.HASHER_KY
-          AND a.HASHER_KY < d.HASHER_KY
-         JOIN HASHES e
-           ON e.HASH_KY = c.HARINGS_HASH_KY
-        WHERE e.KENNEL_KY = ?
-          $typeClause
-        GROUP BY a.HASHER_NAME, d.HASHER_NAME, a.HASHER_KY, d.HASHER_KY
-      ) AS INNER_QUERY";
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM (SELECT 1
+                FROM HASHERS a
+                JOIN HARINGS b
+                  ON b.HARINGS_HASHER_KY=a.HASHER_KY
+                JOIN HARINGS c
+                  ON b.HARINGS_HASH_KY = c.HARINGS_HASH_KY
+                JOIN HASHERS d
+                  ON c.HARINGS_HASHER_KY = d.HASHER_KY
+                 AND a.HASHER_KY < d.HASHER_KY
+                JOIN HASHES e
+                  ON e.HASH_KY = c.HARINGS_HASH_KY
+               WHERE e.KENNEL_KY = ?
+                     $typeClause
+               GROUP BY a.HASHER_NAME, d.HASHER_NAME, a.HASHER_KY, d.HASHER_KY) AS INNER_QUERY";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
 
-    $args = array(
-      $kennelKy,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified);
+    $args = [ $kennelKy, $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified ];
 
-    $args2 = array($kennelKy);
+    $args2 = [ $kennelKy ];
 
-    if($hare_type!="all") {
-        array_push($args, $hare_type);
-        array_push($args, $hare_type);
-        array_push($args2, $hare_type);
-        array_push($args2, $hare_type);
+    if($hare_type != 0) {
+      array_push($args, $hare_type);
+      array_push($args, $hare_type);
+      array_push($args2, $hare_type);
+      array_push($args2, $hare_type);
     }
 
     #Perform the filtered search
@@ -450,12 +431,11 @@ class HashController extends BaseController
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
