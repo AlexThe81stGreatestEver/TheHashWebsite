@@ -3365,27 +3365,26 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
 }
 
 
-public function analversariesStatsAction(string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/analversaries/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function analversariesStatsAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Determine the number of hashes already held for this kennel
-  $sql2 = $this->getHashingCountsQuery(false);
-  $sql2 = "$sql2 LIMIT 1";
-  $theCount2 = $this->fetchAssoc($sql2, array($kennelKy, $kennelKy));
-  $theCount2 = $theCount2['VALUE'];
+    #Determine the number of hashes already held for this kennel
+    $sql2 = $this->getHashingCountsQuery(false);
+    $sql2 = "$sql2 LIMIT 1";
+    $theCount2 = $this->fetchAssoc($sql2, [ $kennelKy, $kennelKy ]);
+    $theCount2 = $theCount2['VALUE'];
 
-  # Establish and set the return value
-  $returnValue = $this->render('section_analversaries.twig',array(
-    'pageTitle' => 'Analversary Stats',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'the_count' => $theCount2
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
+    return $this->render('section_analversaries.twig', [
+      'pageTitle' => 'Analversary Stats',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'the_count' => $theCount2 ]);
+  }
 
 public function yearByYearStatsAction(Request $request, string $kennel_abbreviation){
 
