@@ -3416,24 +3416,23 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
       'overall' => count($hareTypes) > 1 ? " (Overall)" : "" ]);
   }
 
-public function kennelRecordsStatsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/kennel/records',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function kennelRecordsStatsAction(string $kennel_abbreviation){
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  # Establish and set the return value
-  $returnValue = $this->render('section_kennel_records.twig',array(
-    'pageTitle' => 'Kennel Records',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    "hare_types" => count($hareTypes) > 1 ? $hareTypes : array()
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
+    return $this->render('section_kennel_records.twig', [
+      'pageTitle' => 'Kennel Records',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      "hare_types" => count($hareTypes) > 1 ? $hareTypes : [] ]);
+  }
 
 
 public function kennelGeneralInfoStatsAction(Request $request, string $kennel_abbreviation){
