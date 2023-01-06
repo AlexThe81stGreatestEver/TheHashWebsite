@@ -3264,24 +3264,18 @@ public function basicStatsAction(Request $request, string $kennel_abbreviation){
 }
 
 
-public function peopleStatsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/people/stats', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function peopleStatsAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
   $hareTypes = $this->getHareTypes($kennelKy);
 
-  # Establish and set the return value
-  $returnValue = $this->render('section_people.twig',array(
+  return $this->render('section_people.twig', [
     'pageTitle' => 'People Stats',
     'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
     'overall' => count($hareTypes) > 1 ? "Overall " : "",
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-
+    'kennel_abbreviation' => $kennel_abbreviation ]);
 }
 
 

@@ -1422,7 +1422,7 @@ get('/{kennel_abbreviation}/cautionary/stats',    'HashController::cautionarySta
 get('/{kennel_abbreviation}/miscellaneous/stats', 'HashController::miscellaneousStatsAction');
 
 #Revised top level pages
-get('/{kennel_abbreviation}/people/stats', 'HashController::peopleStatsAction');
+#get('/{kennel_abbreviation}/people/stats', 'HashController::peopleStatsAction');
 get('/{kennel_abbreviation}/analversaries/stats', 'HashController::analversariesStatsAction');
 get('/{kennel_abbreviation}/year_by_year/stats', 'HashController::yearByYearStatsAction');
 get('/{kennel_abbreviation}/kennel/records', 'HashController::kennelRecordsStatsAction');
