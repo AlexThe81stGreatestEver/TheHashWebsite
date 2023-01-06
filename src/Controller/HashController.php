@@ -94,12 +94,18 @@ class HashController extends BaseController
     return $response;
   }
 
-  #[Route('/', methods: ['GET'])]
+  #[Route('/',
+    methods: ['GET']
+  )]
   public function slashAction() {
     return $this->slashKennelAction2($this->getDefaultKennel($this->container));
   }
 
-  #[Route('/{kennel_abbreviation}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function slashKennelAction2(string $kennel_abbreviation) {
     return $this->render('slash2.twig', $this->getSlashTwigArgs($kennel_abbreviation));
   }
@@ -231,7 +237,12 @@ class HashController extends BaseController
       'table_colors' => $tableColors);
   }
 
-  #[Route('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function listStreakersByHashAction(string $kennel_abbreviation, int $hash_id) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -272,7 +283,12 @@ class HashController extends BaseController
 
   }
 
-  #[Route('/{kennel_abbreviation}/CohareCounts/{hare_type}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%'])]
+  #[Route('/{kennel_abbreviation}/CohareCounts/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
   public function cohareCountsPreActionJson(string $kennel_abbreviation, int $hare_type) {
 
     return $this->render('cohare_list_json.twig', [
@@ -283,12 +299,20 @@ class HashController extends BaseController
       'pageTracking' => 'CoHareCounts' ]);
   }
 
-  #[Route('/{kennel_abbreviation}/allCohareCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/allCohareCounts',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function allCohareCountsPreActionJson(string $kennel_abbreviation){
     return $this->cohareCountsPreActionJson($kennel_abbreviation, 0);
   }
 
-  #[Route('/{kennel_abbreviation}/cohareCounts', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/cohareCounts',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getCohareCountsJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -457,7 +481,11 @@ class HashController extends BaseController
 
   }
 
-  #[Route('/{kennel_abbreviation}/mia', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/mia',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function miaPreActionJson(string $kennel_abbreviation) {
 
     return $this->render('hasher_mia.twig', [
@@ -480,7 +508,12 @@ class HashController extends BaseController
     return $returnValue;
   }
 
-  #[Route('/{kennel_abbreviation}/listhashers/byhash/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/listhashers/byhash/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function listHashersByHashAction(int $hash_id, string $kennel_abbreviation) {
 
     $sql = "
@@ -513,7 +546,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/listhares/byhash/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/listhares/byhash/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function listHaresByHashAction(int $hash_id, string $kennel_abbreviation) {
 
     $sql = "
@@ -552,7 +590,11 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/listhashers2', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/listhashers2',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHasherListJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1018,7 +1060,11 @@ class HashController extends BaseController
   }
 
 
-  #[Route('/{kennel_abbreviation}/mia', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/mia',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function miaPostActionJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1286,7 +1332,12 @@ class HashController extends BaseController
     return new JsonResponse($output);
   }
 
-  #[Route('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/listhashes/byhasher/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function listHashesByHasherAction(int $hasher_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1320,7 +1371,12 @@ class HashController extends BaseController
       'kennel_abbreviation' => $kennel_abbreviation]);
   }
 
-  #[Route('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/attendanceRecordForHasher/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function attendanceRecordForHasherAction(int $hasher_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1392,9 +1448,12 @@ class HashController extends BaseController
     return $returnValue;
   }
 
-
-
-  #[Route('/{kennel_abbreviation}/hashedWith/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/hashedWith/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function hashedWithAction(int $hasher_id, string $kennel_abbreviation) {
 
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ? ";
@@ -1435,7 +1494,12 @@ class HashController extends BaseController
       'pageTracking' => 'HashedWith' ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hashers/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/hashers/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function viewHasherChartsAction(int $hasher_id, string $kennel_abbreviation) {
 
     $sql = "
@@ -1661,7 +1725,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hashes/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hashes/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function viewHashAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1746,7 +1815,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function consolidatedEventAnalversariesAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1891,7 +1965,12 @@ class HashController extends BaseController
       ]);
     }
 
-  #[Route('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/omniAnalversariesForEvent/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function omniAnalversariesForEventAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2104,7 +2183,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2140,7 +2224,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEventCounty/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventCountyAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2185,7 +2274,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEventPostalCode/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventPostalCodeAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2228,7 +2322,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEventState/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventStateAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2272,7 +2371,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEventNeighborhood/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventNeighborhoodAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2315,7 +2419,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/hasherCountsForEventCity/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function hasherCountsForEventCityAction(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2355,7 +2464,12 @@ class HashController extends BaseController
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hash_id' => '%app.pattern.hash_id%'])]
+  #[Route('/{kennel_abbreviation}/backSlidersForEventV2/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function backSlidersForEventV2Action(int $hash_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2671,37 +2785,44 @@ function addHasherStatusToQuery(string $query) {
      ORDER BY VALUE DESC";
 }
 
-#[Route('/{kennel_abbreviation}/hashingCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
-public function hashingCountsAction(string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/hashingCounts',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashingCountsAction(string $kennel_abbreviation) {
 
-  $sql = $this->addHasherStatusToQuery($this->getHashingCountsQuery(true, true));
+    $sql = $this->addHasherStatusToQuery($this->getHashingCountsQuery(true, true));
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
+    # Declare the SQL used to retrieve this information
+    $sql = $this->addRankToQuery($sql, "THE_KEY, NAME, VALUE, STATUS", "VALUE");
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, [$kennelKy, $kennelKy]);
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [$kennelKy, $kennelKy]);
 
-  # Establish and set the return value
-  $returnValue = $this->render('name_number_rank_list.twig', [
-    'pageTitle' => 'Hasher Counts',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Hash Count',
-    'tableCaption' => 'Hashers, and the number of hashes they have done. More is better.',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'HashCounts'
-  ]);
+    # Establish and set the return value
+    $returnValue = $this->render('name_number_rank_list.twig', [
+      'pageTitle' => 'Hasher Counts',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Hash Count',
+      'tableCaption' => 'Hashers, and the number of hashes they have done. More is better.',
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'HashCounts'
+    ]);
 
-  #Return the return value
-  return $returnValue;
-}
+    #Return the return value
+    return $returnValue;
+  }
 
-
-  #[Route('/{kennel_abbreviation}/haringCounts', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/haringCounts',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function haringCountsAction(string $kennel_abbreviation) {
 
     $sql = $this->addHasherStatusToQuery($this->getHaringCountsQuery(true));
@@ -2725,7 +2846,12 @@ public function hashingCountsAction(string $kennel_abbreviation) {
       'pageTracking' => 'HoundCounts' ]);
   }
 
-  #[Route('/{kennel_abbreviation}/haringCounts/{hare_type}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%'])]
+  #[Route('/{kennel_abbreviation}/haringCounts/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
   public function haringTypeCountsAction(string $kennel_abbreviation, int $hare_type) {
 
     $sql = $this->addHasherStatusToQuery($this->getHaringCountsByTypeQuery(true));
@@ -3221,7 +3347,11 @@ public function basicStatsAction(Request $request, string $kennel_abbreviation){
 }
 
 
-  #[Route('/{kennel_abbreviation}/people/stats', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/people/stats',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function peopleStatsAction(string $kennel_abbreviation) {
 
   $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -3639,7 +3769,12 @@ public function HaresOfTheYearsAction(Request $request, int $hare_type, string $
 }
 
 
-  #[Route('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function getHasherAnalversariesAction(int $hasher_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -3803,7 +3938,12 @@ public function getHareAnalversariesByHareTypeAction(Request $request, int $hare
 }
 
 
-  #[Route('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function getProjectedHasherAnalversariesAction(int $hasher_id, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -4685,7 +4825,12 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   }
 
 
-  #[Route('/{kennel_abbreviation}/hares/overall/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/hares/overall/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
   public function viewOverallHareChartsAction(int $hasher_id, string $kennel_abbreviation) {
 
     $commonValues = $this->getStandardHareChartsAction($hasher_id, $kennel_abbreviation);
@@ -4763,7 +4908,13 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
     return $this->render('hare_chart_overall_details.twig', $finalArray);
   }
 
-  #[Route('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%', 'hare_type' => '%app.pattern.hare_type%'])]
+  #[Route('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
   public function viewHareChartsAction(int $hare_type, int $hasher_id, string $kennel_abbreviation) {
 
     $commonValues = $this->getStandardHareChartsAction($hasher_id, $kennel_abbreviation);
@@ -4853,7 +5004,10 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
     return $this->render('hare_chart_details.twig', $finalArray);
   }
 
-  #[Route('/{kennel_abbreviation}/hashers/twoHasherComparison', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/hashers/twoHasherComparison',
+    methods: ['GET'],
+    requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function twoPersonComparisonPreAction(string $kennel_abbreviation) {
 
     $pageTitle = "Two Person Comparison";
@@ -5019,7 +5173,12 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
     return $returnValue;
   }
 
-  #[Route('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%', 'hasher_id2' => '%app.pattern.hasher_id%'])]
+  #[Route('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',
+    methods: ['GET'],
+    requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%',
+      'hasher_id2' => '%app.pattern.hasher_id%']
+  )]
   public function twoPersonComparisonAction(string $kennel_abbreviation, int $hasher_id, int $hasher_id2) {
 
     $pageTitle = "Hasher Showdown";

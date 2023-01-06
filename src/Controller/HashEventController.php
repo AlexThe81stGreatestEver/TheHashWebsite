@@ -820,7 +820,11 @@ class HashEventController extends BaseController {
       return new JsonResponse($hareList);
     }
 
-  #[Route('/{kennel_abbreviation}/listhashes2', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/listhashes2',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function listHashesPreActionJson(string $kennel_abbreviation) {
 
     return $this->render('hash_list_json.twig', [
@@ -830,7 +834,11 @@ class HashEventController extends BaseController {
     ]);
   }
 
-  #[Route('/{kennel_abbreviation}/listhashes2', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/listhashes2',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function listHashesPostActionJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);

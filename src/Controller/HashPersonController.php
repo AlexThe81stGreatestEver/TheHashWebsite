@@ -330,7 +330,11 @@ class HashPersonController extends BaseController
   }
 
 
-  #[Route('/{kennel_abbreviation}/hashers/retrieve', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/hashers/retrieve',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function retrieveHasherAction() {
 
     #Obtain the post values

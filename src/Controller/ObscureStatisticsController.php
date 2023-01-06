@@ -302,7 +302,11 @@ class ObscureStatisticsController extends BaseController {
     }
 
     #Obtain the first hash of a given hasher
-  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHash', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHash',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHashersVirginHash(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -316,7 +320,11 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirVirginHash);
   }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHare', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHare',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   #Obtain the first haring of a given hasher
   public function getHashersVirginHare(string $kennel_abbreviation) {
 
@@ -350,8 +358,12 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theirVirginHash);
     }
 
-    #Obtain the latest hash of a given hasher
-  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHash', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #Obtain the latest hash of a given hasher
+  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHashersLatestHash(string $kennel_abbreviation) {
 
     $theHasherKey = $_POST['hasher_id'];
@@ -365,8 +377,12 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirLatestHash);
   }
 
-    #Obtain the latest haring of a given hasher
-  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHare', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #Obtain the latest haring of a given hasher
+  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHashersLatestHare(string $kennel_abbreviation) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -489,7 +505,11 @@ class ObscureStatisticsController extends BaseController {
     }
 
   #Obtain the hasher hashes attended by city
-  #[Route('/{kennel_abbreviation}/statistics/hasher/hashes/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHasherHashesByCity(string $kennel_abbreviation) {
 
     $theHasherKey = $_POST['hasher_id'];
@@ -563,7 +583,11 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHasherAllHaringsByQuarter(string $kennel_abbreviation){
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -628,7 +652,11 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function getHasherAllHaringsByCity(string $kennel_abbreviation) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -661,7 +689,12 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%' ]
+  )]
   public function getHasherHaringsByQuarter(string $kennel_abbreviation, int $hare_type) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -675,7 +708,12 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%' ]
+  )]
   public function getHasherHaringsByMonth(string $kennel_abbreviation, $hare_type) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -706,7 +744,12 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%' ]
+  )]
   public function getHasherHaringsByState(string $kennel_abbreviation, $hare_type) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -720,7 +763,12 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%' ]
+  )]
   public function getHasherHaringsByCity(string $kennel_abbreviation, $hare_type) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -734,7 +782,12 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-  #[Route('/{kennel_abbreviation}/coharecount/byhare/{hare_type}', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/{hare_type}',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%' ]
+  )]
   public function getCohareCountByHare(string $kennel_abbreviation, int $hare_type) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
@@ -749,7 +802,11 @@ class ObscureStatisticsController extends BaseController {
   }
 
 
-  #[Route('/{kennel_abbreviation}/coharecount/byhare/allhashes', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ])]
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/allhashes',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
   public function getCohareCountByHareAllHashes(string $kennel_abbreviation) {
 
     $theHasherKey = (int) $_POST['hasher_id'];
