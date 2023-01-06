@@ -1278,8 +1278,8 @@ get('/{kennel_abbreviation}/listhashes/byhare/{hasher_id}',                     
 #get('/{kennel_abbreviation}/hashers/{hasher_id}',                                 'HashController::viewHasherChartsAction');
 get('/{kennel_abbreviation}/hashedWith/{hasher_id}',                                 'HashController::hashedWithAction');
 
-get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController::viewOverallHareChartsAction');
-get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController::viewHareChartsAction');
+#get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController::viewOverallHareChartsAction');
+#get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController::viewHareChartsAction');
 
 get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController::viewKennelChartsAction');
 
@@ -1377,8 +1377,8 @@ post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',        
 # Mappings for hasher specific statistics
 #post('/{kennel_abbreviation}/statistics/hasher/firstHash',                           'ObscureStatisticsController::getHashersVirginHash');
 #post('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',                      'ObscureStatisticsController::getHashersLatestHash');
-post('/{kennel_abbreviation}/statistics/hasher/firstHare',                           'ObscureStatisticsController::getHashersVirginHare');
-post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController::getHashersLatestHare');
+#post('/{kennel_abbreviation}/statistics/hasher/firstHare',                           'ObscureStatisticsController::getHashersVirginHare');
+#post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController::getHashersLatestHare');
 
 # Mappings for kennel specific statistics
 post('/{kennel_abbreviation}/statistics/kennel/firstHash',                           'ObscureStatisticsController::getKennelsVirginHash');
@@ -1386,7 +1386,7 @@ post('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',                 
 
 # Mappings for hasher hashes by (year/month/state/etc)
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/year',                      'ObscureStatisticsController::getHasherHashesByYear');
-post('/{kennel_abbreviation}/statistics/hasher/hashes/by/quarter',                   'ObscureStatisticsController::getHasherHashesByQuarter');
+#post('/{kennel_abbreviation}/statistics/hasher/hashes/by/quarter',                   'ObscureStatisticsController::getHasherHashesByQuarter');
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/month',                     'ObscureStatisticsController::getHasherHashesByMonth');
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/dayname',                   'ObscureStatisticsController::getHasherHashesByDayName');
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/state',                     'ObscureStatisticsController::getHasherHashesByState');
@@ -1399,23 +1399,23 @@ post('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',           
 
 # Mappings for hasher harings by (year/month/state/etc)
 post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/year',                      'ObscureStatisticsController::getHasherAllHaringsByYear');
-post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',                   'ObscureStatisticsController::getHasherAllHaringsByQuarter');
+#post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',                   'ObscureStatisticsController::getHasherAllHaringsByQuarter');
 post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/month',                     'ObscureStatisticsController::getHasherAllHaringsByMonth');
 post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/dayname',                   'ObscureStatisticsController::getHasherAllHaringsByDayName');
 post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/state',                     'ObscureStatisticsController::getHasherAllHaringsByState');
-post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'ObscureStatisticsController::getHasherAllHaringsByCity');
+#post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',                      'ObscureStatisticsController::getHasherAllHaringsByCity');
 
 # Mappings for hasher harings by (year/month/state/etc) by hare type
 post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',                      'ObscureStatisticsController::getHasherHaringsByYear');
-post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'ObscureStatisticsController::getHasherHaringsByQuarter');
-post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'ObscureStatisticsController::getHasherHaringsByMonth');
-post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/dayname',                   'ObscureStatisticsController::getHasherHaringsByDayName');
-post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',                     'ObscureStatisticsController::getHasherHaringsByState');
-post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',                      'ObscureStatisticsController::getHasherHaringsByCity');
+#post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',                   'ObscureStatisticsController::getHasherHaringsByQuarter');
+#post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month',                     'ObscureStatisticsController::getHasherHaringsByMonth');
+#post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/dayname',                   'ObscureStatisticsController::getHasherHaringsByDayName');
+#post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',                     'ObscureStatisticsController::getHasherHaringsByState');
+#post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city',                      'ObscureStatisticsController::getHasherHaringsByCity');
 
 # Per person stats (more of them)
-post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController::getCohareCountByHareAllHashes');
-post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController::getCohareCountByHare');
+#post('/{kennel_abbreviation}/coharecount/byhare/allhashes','ObscureStatisticsController::getCohareCountByHareAllHashes');
+#post('/{kennel_abbreviation}/coharecount/byhare/{hare_type}','ObscureStatisticsController::getCohareCountByHare');
 
 get('/{kennel_abbreviation}/basic/stats',         'HashController::basicStatsAction');
 get('/{kennel_abbreviation}/cautionary/stats',    'HashController::cautionaryStatsAction');

@@ -316,24 +316,25 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirVirginHash);
   }
 
-    #Obtain the first haring of a given hasher
-    public function getHashersVirginHare(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/firstHare', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  #Obtain the first haring of a given hasher
+  public function getHashersVirginHare(string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-      $theHareType = (int) $request->request->get('hare_type');
+    #Obtain the post values
+    $theHasherKey = (int) $_POST['hasher_id'];
+    $theHareType = (int) $_POST['hare_type'];
 
-      #Define the sql statement to execute
-      $theSql = SELECT_HASHERS_VIRGIN_HARE;
+    #Define the sql statement to execute
+    $theSql = $this->sqlQueries->getSelectHashersVirginHare();
 
-      #Query the database
-      $theirVirginHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
+    #Query the database
+    $theirVirginHash = $this->fetchAssoc($theSql, [ $theHasherKey, $kennelKy, $theHareType, $theHareType ]);
 
-      return new JsonResponse($theirVirginHash);
-    }
+    return new JsonResponse($theirVirginHash);
+  }
 
     public function getKennelsVirginHash(Request $request, string $kennel_abbreviation){
 
@@ -365,23 +366,20 @@ class ObscureStatisticsController extends BaseController {
   }
 
     #Obtain the latest haring of a given hasher
-    public function getHashersLatestHare(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHare', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHashersLatestHare(string $kennel_abbreviation) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-      $theHareType = (int) $request->request->get('hare_type');
+    $theHasherKey = (int) $_POST['hasher_id'];
+    $theHareType = (int) $_POST['hare_type'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = SELECT_HASHERS_MOST_RECENT_HARE;
+    $theSql = $this->sqlQueries->getSelectHashersMostRecentHare();
 
-      #Query the database
-      $theirLatestHash = $this->fetchAssoc($theSql, array((int) $theHasherKey, (int) $kennelKy, $theHareType, $theHareType));
+    $theirLatestHash = $this->fetchAssoc($theSql, [ $theHasherKey, $kennelKy, $theHareType, $theHareType ]);
 
-      return new JsonResponse($theirLatestHash);
-    }
+    return new JsonResponse($theirLatestHash);
+  }
 
     public function getKennelsLatestHash(Request $request, string $kennel_abbreviation){
 
@@ -565,22 +563,19 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-    public function getHasherAllHaringsByQuarter(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHasherAllHaringsByQuarter(string $kennel_abbreviation){
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_QUARTER;
+    $theSql = $this->sqlQueries->getHasherAllHaringCountsByQuarter();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
     public function getHasherAllHaringsByMonth(Request $request, string $kennel_abbreviation){
 
@@ -633,22 +628,19 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-    public function getHasherAllHaringsByCity(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHasherAllHaringsByCity(string $kennel_abbreviation) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_CITY;
+    $theSql = $this->sqlQueries->getHasherAllHaringCountsByCity();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
 
     # Mappings for hasher (non hyper) harings by (year/month/state/etc)
@@ -669,39 +661,33 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-    public function getHasherHaringsByQuarter(Request $request, string $kennel_abbreviation, int $hare_type){
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  public function getHasherHaringsByQuarter(string $kennel_abbreviation, int $hare_type) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_QUARTER;
+    $theSql = $this->sqlQueries->getHasherHaringCountsByQuarter();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy, $hare_type ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
-    public function getHasherHaringsByMonth(Request $request, string $kennel_abbreviation, $hare_type) {
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/month', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  public function getHasherHaringsByMonth(string $kennel_abbreviation, $hare_type) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_MONTH;
+    $theSql = $this->sqlQueries->getHasherHaringCountsByMonth();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy, $hare_type ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
     public function getHasherHaringsByDayName(Request $request, string $kennel_abbreviation, $hare_type) {
 
@@ -720,82 +706,62 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-    public function getHasherHaringsByState(Request $request, string $kennel_abbreviation, $hare_type) {
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  public function getHasherHaringsByState(string $kennel_abbreviation, $hare_type) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_STATE;
+    $theSql = $this->sqlQueries->getHasherHaringCountsByState();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy, $hare_type ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
+  #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/city', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  public function getHasherHaringsByCity(string $kennel_abbreviation, $hare_type) {
 
-    public function getHasherHaringsByCity(Request $request, string $kennel_abbreviation, $hare_type) {
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $theSql = $this->sqlQueries->getHasherHaringCountsByCity();
 
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_CITY;
+    $theResults = $this->fetchAll($theSql, [ $theHasherKey, $kennelKy, $hare_type ]);
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
+    return new JsonResponse($theResults);
+  }
 
-      return new JsonResponse($theResults);
-    }
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/{hare_type}', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hare_type' => '%app.pattern.hare_type%' ])]
+  public function getCohareCountByHare(string $kennel_abbreviation, int $hare_type) {
 
-    public function getCohareCountByHare(Request $request, string $kennel_abbreviation, int $hare_type){
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $theSql = $this->sqlQueries->getCohareCountByHare();
 
-      #Define the sql statement to execute
-      $theSql = COHARE_COUNT_BY_HARE;
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $theHasherKey, $theHasherKey, $hare_type ]);
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $theHasherKey,
-        (int) $theHasherKey,
-        (int) $hare_type));
-
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
 
-    public function getCohareCountByHareAllHashes(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/allhashes', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ])]
+  public function getCohareCountByHareAllHashes(string $kennel_abbreviation) {
 
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
+    $theHasherKey = (int) $_POST['hasher_id'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = OVERALL_COHARE_COUNT_BY_HARE;
+    $theSql = $this->sqlQueries->getOverallCohareCountByHare();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $theHasherKey,
-        (int) $theHasherKey));
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $theHasherKey, $theHasherKey ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
 
 

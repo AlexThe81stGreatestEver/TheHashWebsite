@@ -4607,368 +4607,372 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
   return new JsonResponse($output);
 }
 
-private function getStandardHareChartsAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
+  private function getStandardHareChartsAction(int $hasher_id, string $kennel_abbreviation) {
 
-  # Declare the SQL used to retrieve this information
-  $sql = "SELECT HASHER_KY, HASHER_NAME, HASHER_ABBREVIATION, FIRST_NAME, LAST_NAME, DECEASED FROM HASHERS WHERE HASHER_KY = ?";
+    $sql = "SELECT HASHER_KY, HASHER_NAME, HASHER_ABBREVIATION, FIRST_NAME, LAST_NAME, DECEASED
+              FROM HASHERS
+             WHERE HASHER_KY = ?";
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  # Make a database call to obtain the hasher information
-  $hasher = $this->fetchAssoc($sql, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql, [ $hasher_id ]);
 
-  # Obtain the number of harings
-  $overallHareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id, $kennelKy));
+    $overallHareCountValue = $this->fetchAssoc($this->sqlQueries->getPersonsHaringCount(),
+      [ $hasher_id, $kennelKy ]);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  $hareCounts = array();
+    $hareCounts = [];
 
-  foreach ($hareTypes as &$hareType) {
-      $total = $this->fetchAssoc(PERSONS_HARING_TYPE_COUNT,
-        array((int) $hasher_id, $kennelKy, (int) $hareType['HARE_TYPE']));
-    array_push($hareCounts, array(
-      'type' => $hareType['HARE_TYPE_NAME'],
-      'total' => $total['THE_COUNT']));
-  }
-
-  #Obtain the harings by year
-  $sqlHaringsByYear = "SELECT
-      YEAR(EVENT_DATE) AS THE_VALUE,";
-  $args = array();
-
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByYear .= "
-      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
-    array_push($args, (int) $hareType['HARE_TYPE']);
-  }
-  array_push($args, (int) $hasher_id);
-  array_push($args, $kennelKy);
-
-  $sqlHaringsByYear .= "
-      COUNT(*) AS TOTAL_HARING_COUNT
-  FROM
-      HARINGS
-      JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-      JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE
-      HARINGS.HARINGS_HASHER_KY = ? AND
-      HASHES.KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE)";
-
-  $haringsByYearList = $this->fetchAll($sqlHaringsByYear, $args);
-
-  # Obtain the hashes by month (name)
-  $sqlHaringsByMonth = "SELECT
-      THE_VALUE,";
-
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByMonth .= $hareType['HARE_TYPE_NAME']."_COUNT, ";
-  }
-
-  $sqlHaringsByMonth .= "
-        TOTAL_HARING_COUNT,
-      CASE THE_VALUE
-        WHEN '1' THEN 'January'
-        WHEN '2' THEN 'February'
-        WHEN '3' THEN 'March'
-        WHEN '4' THEN 'April'
-        WHEN '5' THEN 'May'
-        WHEN '6' THEN 'June'
-        WHEN '7' THEN 'July'
-        WHEN '8' THEN 'August'
-        WHEN '9' THEN 'September'
-        WHEN '10' THEN 'October'
-        WHEN '11' THEN 'November'
-        WHEN '12' THEN 'December'
-        END AS MONTH_NAME
-    FROM (
-      SELECT
-          MONTH(EVENT_DATE) AS THE_VALUE,";
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByMonth .= "
-      SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
-  }
-    $sqlHaringsByMonth .= "
-          COUNT(*) AS TOTAL_HARING_COUNT
-        FROM
-          HARINGS
-          JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-        WHERE
-          HARINGS.HARINGS_HASHER_KY = ? AND
-          HASHES.KENNEL_KY = ?
-        GROUP BY MONTH(EVENT_DATE)
-        ORDER BY MONTH(EVENT_DATE)
-    ) TEMPTABLE";
-  $theHaringsByMonthNameList = $this->fetchAll($sqlHaringsByMonth, $args);
-
-  # Obtain the hashes by quarter
-      $sqlHaringsByQuarter = "SELECT
-        QUARTER(EVENT_DATE) AS THE_VALUE,";
-      foreach ($hareTypes as &$hareType) {
-        $sqlHaringsByQuarter .= "
-          SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
-      }
-      $sqlHaringsByQuarter .= "
-        COUNT(*) AS TOTAL_HARING_COUNT
-      FROM
-        HARINGS
-        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ? AND
-        HASHES.KENNEL_KY = ?
-      GROUP BY QUARTER(EVENT_DATE)
-      ORDER BY QUARTER(EVENT_DATE)
-  ";
-  $theHaringsByQuarterList = $this->fetchAll($sqlHaringsByQuarter, $args);
-
-  # Obtain the hashes by state
-  $sqlHaringsByState = "SELECT
-      HASHES.EVENT_STATE,";
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByState .= "
-          SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    foreach ($hareTypes as &$hareType) {
+      $total = $this->fetchAssoc($this->sqlQueries->getPersonsHaringTypeCount(),
+        [ $hasher_id, $kennelKy, $hareType['HARE_TYPE'] ]);
+      array_push($hareCounts, [
+        'type' => $hareType['HARE_TYPE_NAME'],
+        'total' => $total['THE_COUNT']]);
     }
-    $sqlHaringsByState .= "
-      COUNT(*) AS TOTAL_HARING_COUNT
-    FROM
-      HARINGS
-      JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-      JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-    WHERE
-      HARINGS.HARINGS_HASHER_KY = ? AND
-      HASHES.KENNEL_KY = ?
-    GROUP BY HASHES.EVENT_STATE
-    ORDER BY HASHES.EVENT_STATE
-  ";
-  $theHaringsByStateList = $this->fetchAll($sqlHaringsByState, $args);
 
-  # Obtain the hashes by day name
-  $sqlHaringsByDayName = "SELECT
-      THE_VALUE,";
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByDayName .=
-      $hareType['HARE_TYPE_NAME']."_COUNT,";
-  }
-  $sqlHaringsByDayName .= "
-        TOTAL_HARING_COUNT,
-      CASE THE_VALUE
-        WHEN 'Sunday' THEN '0'
-        WHEN 'Monday' THEN '1'
-        WHEN 'Tuesday' THEN '2'
-        WHEN 'Wednesday' THEN '3'
-        WHEN 'Thursday' THEN '4'
-        WHEN 'Friday' THEN '5'
-        WHEN 'Saturday' THEN '6'
-      END AS DAYNUMBER
-    FROM
-    (
-      SELECT
-        DAYNAME(EVENT_DATE) AS THE_VALUE,";
-  foreach ($hareTypes as &$hareType) {
-    $sqlHaringsByDayName .= "
+    #Obtain the harings by year
+    $sqlHaringsByYear = "
+      SELECT YEAR(EVENT_DATE) AS THE_VALUE,";
+
+    $args = [];
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByYear .= "
+        SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0  THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+      array_push($args, $hareType['HARE_TYPE']);
+    }
+
+    array_push($args, $hasher_id);
+    array_push($args, $kennelKy);
+
+    $sqlHaringsByYear .= "
+             COUNT(*) AS TOTAL_HARING_COUNT
+        FROM HARINGS
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE)";
+
+    $haringsByYearList = $this->fetchAll($sqlHaringsByYear, $args);
+
+    # Obtain the hashes by month (name)
+    $sqlHaringsByMonth = "
+      SELECT THE_VALUE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByMonth .= $hareType['HARE_TYPE_NAME']."_COUNT, ";
+    }
+
+    $sqlHaringsByMonth .= "
+             TOTAL_HARING_COUNT,
+             CASE THE_VALUE
+                WHEN '1' THEN 'January'
+                WHEN '2' THEN 'February'
+                WHEN '3' THEN 'March'
+                WHEN '4' THEN 'April'
+                WHEN '5' THEN 'May'
+                WHEN '6' THEN 'June'
+                WHEN '7' THEN 'July'
+                WHEN '8' THEN 'August'
+                WHEN '9' THEN 'September'
+                WHEN '10' THEN 'October'
+                WHEN '11' THEN 'November'
+                WHEN '12' THEN 'December'
+              END AS MONTH_NAME
+        FROM (SELECT MONTH(EVENT_DATE) AS THE_VALUE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByMonth .= "
         SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
-    $sqlHaringsByDayName .= "
-        COUNT(*) AS TOTAL_HARING_COUNT
-      FROM
-        HARINGS
-        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ? AND
-        HASHES.KENNEL_KY = ?
-      GROUP BY DAYNAME(EVENT_DATE)
-      ORDER BY DAYNAME(EVENT_DATE)
-    )TEMP
-    ORDER BY DAYNUMBER ASC";
-  $theHaringsByDayNameList = $this->fetchAll($sqlHaringsByDayName, $args);
+    
+    $sqlHaringsByMonth .= "
+                     COUNT(*) AS TOTAL_HARING_COUNT
+                FROM HARINGS
+                JOIN HARE_TYPES
+                  ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HARINGS.HARINGS_HASHER_KY = ?
+                 AND HASHES.KENNEL_KY = ?
+               GROUP BY MONTH(EVENT_DATE)
+               ORDER BY MONTH(EVENT_DATE)) TEMPTABLE";
 
-  # Establish and set the return value
-  $returnValue = array(
-    'hasherValue' => $hasher,
-    'hareCounts' => $hareCounts,
-    'overallHareCount' => $overallHareCountValue['THE_COUNT'],
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'harings_by_year_list' => $haringsByYearList,
-    'harings_by_month_list' => $theHaringsByMonthNameList,
-    'harings_by_quarter_list' => $theHaringsByQuarterList,
-    'harings_by_state_list' => $theHaringsByStateList,
-    'harings_by_dayname_list' => $theHaringsByDayNameList
-  );
+    $theHaringsByMonthNameList = $this->fetchAll($sqlHaringsByMonth, $args);
 
-  # Return the return value
-  return $returnValue;
+    # Obtain the hashes by quarter
+    $sqlHaringsByQuarter = "
+      SELECT QUARTER(EVENT_DATE) AS THE_VALUE,";
 
-}
-
-
-public function viewOverallHareChartsAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
-
-  $commonValues = $this->getStandardHareChartsAction($request, $hasher_id, $kennel_abbreviation);
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $this->fetchAll(HASHER_ALL_HARING_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy));
-
-  #Obtain largest entry from the list
-  $cityHaringsCountMax = 1;
-  if(isset($cityHaringCountList[0]['THE_COUNT'])){
-    $cityHaringsCountMax = $cityHaringCountList[0]['THE_COUNT'];
-  }
-
-  #Obtain the favorite cohare list
-  $cohareCountList = $this->fetchAll(OVERALL_COHARE_COUNT_BY_HARE, array(
-    $kennelKy,
-    (int) $hasher_id,
-    (int) $hasher_id));
-
-  #Obtain the largest entry from the list
-  $cohareCountMax = 1;
-  if(isset($cohareCountList[0]['THE_COUNT'])){
-    $cohareCountMax = $cohareCountList[0]['THE_COUNT'];
-  }
-
-  # Obtain their hashes
-  $sqlTheHashes = "SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, $kennelKy));
-
-  #Obtain the average lat
-  $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HARINGS JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-  WHERE HARINGS.HARINGS_HASHER_KY = ? AND KENNEL_KY = ? and LAT is not null and LNG is not null";
-  $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id, $kennelKy));
-  $avgLat = $theAverageLatLong['THE_LAT'];
-  $avgLng = $theAverageLatLong['THE_LNG'];
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-
-  $customValues = array(
-    'pageTitle' => (count($hareTypes) > 1 ? 'Overall ' : '').
-      'Hare Charts and Details',
-    'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").
-      "Hare Details",
-    'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
-    'firstHeader' => 'Basic Details',
-    'secondHeader' => 'Statistics',
-    'city_haring_count_list' => $cityHaringCountList,
-    'city_harings_max_value' => $cityHaringsCountMax,
-    'cohare_count_list' =>$cohareCountList,
-    'cohare_count_max' => $cohareCountMax,
-    'the_hashes' => $theHashes,
-    'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
-    'avg_lat' => $avgLat,
-    'avg_lng' => $avgLng
-  );
-  $finalArray = array_merge($commonValues,$customValues);
-  $returnValue = $this->render('hare_chart_overall_details.twig',$finalArray);
-
-  # Return the return value
-  return $returnValue;
-}
-
-
-
-public function viewHareChartsAction(Request $request, int $hare_type, int $hasher_id, string $kennel_abbreviation) {
-
-  $commonValues = $this->getStandardHareChartsAction($request, $hasher_id, $kennel_abbreviation);
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #Obtain the list of favorite cities to hare in
-  $cityHaringCountList = $this->fetchAll(HASHER_HARING_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy, (int) $hare_type));
-
-  #Obtain largest entry from the list
-  $cityHaringsCountMax = 1;
-  if(isset($cityHaringCountList[0]['THE_COUNT'])){
-    $cityHaringsCountMax = $cityHaringCountList[0]['THE_COUNT'];
-  }
-
-  #Obtain the favorite cohare list
-  $cohareCountList = $this->fetchAll(COHARE_COUNT_BY_HARE, array(
-    $kennelKy,
-    (int) $hasher_id,
-    (int) $hasher_id,
-    (int) $hare_type));
-
-  #Obtain the largest entry from the list
-  $cohareCountMax = 1;
-  if(isset($cohareCountList[0]['THE_COUNT'])){
-    $cohareCountMax = $cohareCountList[0]['THE_COUNT'];
-  }
-
-  # Obtain their hashes
-  $sqlTheHashes = "
-    SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE,
-           HASHES.HASH_KY, LAT, LNG
-      FROM HARINGS
-      JOIN HASHES
-        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-     WHERE HARINGS.HARINGS_HASHER_KY = ?
-       AND KENNEL_KY = ?
-       AND HARINGS.HARE_TYPE & ? != 0
-       AND LAT IS NOT NULL
-       AND LNG IS NOT NULL";
-  $theHashes = $this->fetchAll($sqlTheHashes, array((int) $hasher_id, $kennelKy,
-    (int) $hare_type));
-
-  #Obtain the average lat
-  $sqlTheAverageLatLong = "
-    SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
-      FROM HARINGS
-      JOIN HASHES
-        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-     WHERE HARINGS.HARINGS_HASHER_KY = ?
-       AND KENNEL_KY = ?
-       AND HARINGS.HARE_TYPE & ? != 0
-       AND LAT IS NOT NULL
-       AND LNG IS NOT NULL";
-  $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $hasher_id,
-    $kennelKy, (int) $hare_type));
-  $avgLat = $theAverageLatLong['THE_LAT'];
-  $avgLng = $theAverageLatLong['THE_LNG'];
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-
-  $hare_type_name = $this->getHareTypeName($hare_type);
-
-  foreach ($hareTypes as &$hareType) {
-    if($hareType['HARE_TYPE'] == $hare_type) {
-      $chart_color = $hareType['CHART_COLOR'];
-      break;
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByQuarter .= "
+             SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
     }
+
+    $sqlHaringsByQuarter .= "
+             COUNT(*) AS TOTAL_HARING_COUNT
+        FROM HARINGS
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY QUARTER(EVENT_DATE)
+       ORDER BY QUARTER(EVENT_DATE)";
+
+    $theHaringsByQuarterList = $this->fetchAll($sqlHaringsByQuarter, $args);
+
+    # Obtain the hashes by state
+    $sqlHaringsByState = "
+      SELECT HASHES.EVENT_STATE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByState .= "
+             SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    }
+
+    $sqlHaringsByState .= "
+             COUNT(*) AS TOTAL_HARING_COUNT
+        FROM HARINGS
+        JOIN HARE_TYPES
+          ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY HASHES.EVENT_STATE
+       ORDER BY HASHES.EVENT_STATE";
+
+    $theHaringsByStateList = $this->fetchAll($sqlHaringsByState, $args);
+
+    # Obtain the hashes by day name
+    $sqlHaringsByDayName = "
+      SELECT THE_VALUE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByDayName .=
+        $hareType['HARE_TYPE_NAME']."_COUNT,";
+    }
+
+    $sqlHaringsByDayName .= "
+             TOTAL_HARING_COUNT,
+             CASE THE_VALUE
+                WHEN 'Sunday' THEN '0'
+                WHEN 'Monday' THEN '1'
+                WHEN 'Tuesday' THEN '2'
+                WHEN 'Wednesday' THEN '3'
+                WHEN 'Thursday' THEN '4'
+                WHEN 'Friday' THEN '5'
+                WHEN 'Saturday' THEN '6'
+              END AS DAYNUMBER
+        FROM (SELECT DAYNAME(EVENT_DATE) AS THE_VALUE,";
+
+    foreach ($hareTypes as &$hareType) {
+      $sqlHaringsByDayName .= "
+                     SUM(CASE WHEN HARINGS.HARE_TYPE & ? != 0 THEN 1 ELSE 0 END) ".$hareType['HARE_TYPE_NAME']."_COUNT,";
+    }
+
+    $sqlHaringsByDayName .= "
+                     COUNT(*) AS TOTAL_HARING_COUNT
+                FROM HARINGS
+                JOIN HARE_TYPES
+                  ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HARINGS.HARINGS_HASHER_KY = ?
+                 AND HASHES.KENNEL_KY = ?
+               GROUP BY DAYNAME(EVENT_DATE)
+               ORDER BY DAYNAME(EVENT_DATE)) TEMP
+       ORDER BY DAYNUMBER ASC";
+
+    $theHaringsByDayNameList = $this->fetchAll($sqlHaringsByDayName, $args);
+
+    return [
+      'hasherValue' => $hasher,
+      'hareCounts' => $hareCounts,
+      'overallHareCount' => $overallHareCountValue['THE_COUNT'],
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'harings_by_year_list' => $haringsByYearList,
+      'harings_by_month_list' => $theHaringsByMonthNameList,
+      'harings_by_quarter_list' => $theHaringsByQuarterList,
+      'harings_by_state_list' => $theHaringsByStateList,
+      'harings_by_dayname_list' => $theHaringsByDayNameList ];
   }
 
-  $customValues = array(
-    'pageTitle' => $hare_type_name.' Hare Charts and Details',
-    'hare_types' => $hareTypes,
-    'firstHeader' => 'Basic Details',
-    'secondHeader' => 'Statistics',
-    'city_haring_count_list' => $cityHaringCountList,
-    'city_harings_max_value' => $cityHaringsCountMax,
-    'cohare_count_list' =>$cohareCountList,
-    'cohare_count_max' => $cohareCountMax,
-    'the_hashes' => $theHashes,
-    'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
-    'avg_lat' => $avgLat,
-    'avg_lng' => $avgLng,
-    'hare_type' => $hare_type,
-    'hare_type_name' => $hare_type_name,
-    'chart_color' => $chart_color
-  );
-  $finalArray = array_merge($commonValues,$customValues);
-  $returnValue = $this->render('hare_chart_details.twig',$finalArray);
 
-  # Return the return value
-  return $returnValue;
-}
+  #[Route('/{kennel_abbreviation}/hares/overall/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%'])]
+  public function viewOverallHareChartsAction(int $hasher_id, string $kennel_abbreviation) {
+
+    $commonValues = $this->getStandardHareChartsAction($hasher_id, $kennel_abbreviation);
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Obtain the list of favorite cities to hare in
+    $cityHaringCountList = $this->fetchAll($this->sqlQueries->getHasherAllHaringCountsByCity(),
+      [ $hasher_id, $kennelKy ]);
+
+    #Obtain largest entry from the list
+    $cityHaringsCountMax = 1;
+    if(isset($cityHaringCountList[0]['THE_COUNT'])) {
+      $cityHaringsCountMax = $cityHaringCountList[0]['THE_COUNT'];
+    }
+
+    #Obtain the favorite cohare list
+    $cohareCountList = $this->fetchAll($this->sqlQueries->getOverallCohareCountByHare(), [
+      $kennelKy, $hasher_id, $hasher_id ]);
+
+    #Obtain the largest entry from the list
+    $cohareCountMax = 1;
+    if(isset($cohareCountList[0]['THE_COUNT'])) {
+      $cohareCountMax = $cohareCountList[0]['THE_COUNT'];
+    }
+
+    # Obtain their hashes
+    $sqlTheHashes = "
+      SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $hasher_id, $kennelKy ]);
+
+    #Obtain the average lat
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $hasher_id, $kennelKy ]);
+
+    $avgLat = $theAverageLatLong['THE_LAT'];
+    $avgLng = $theAverageLatLong['THE_LNG'];
+
+    $hareTypes = $this->getHareTypes($kennelKy);
+
+    $customValues = [
+      'pageTitle' => (count($hareTypes) > 1 ? 'Overall ' : '').  'Hare Charts and Details',
+      'overall_hare_details' => (count($hareTypes) > 1 ? "Overall " : "").  "Hare Details",
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : [],
+      'firstHeader' => 'Basic Details',
+      'secondHeader' => 'Statistics',
+      'city_haring_count_list' => $cityHaringCountList,
+      'city_harings_max_value' => $cityHaringsCountMax,
+      'cohare_count_list' =>$cohareCountList,
+      'cohare_count_max' => $cohareCountMax,
+      'the_hashes' => $theHashes,
+      'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
+      'avg_lat' => $avgLat,
+      'avg_lng' => $avgLng ];
+
+    $finalArray = array_merge($commonValues, $customValues);
+
+    return $this->render('hare_chart_overall_details.twig', $finalArray);
+  }
+
+  #[Route('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%', 'hare_type' => '%app.pattern.hare_type%'])]
+  public function viewHareChartsAction(int $hare_type, int $hasher_id, string $kennel_abbreviation) {
+
+    $commonValues = $this->getStandardHareChartsAction($hasher_id, $kennel_abbreviation);
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Obtain the list of favorite cities to hare in
+    $cityHaringCountList = $this->fetchAll($this->sqlQueries->getHasherHaringCountsByCity(),
+      [ $hasher_id, $kennelKy, $hare_type ]);
+
+    #Obtain largest entry from the list
+    $cityHaringsCountMax = 1;
+    if(isset($cityHaringCountList[0]['THE_COUNT'])){
+      $cityHaringsCountMax = $cityHaringCountList[0]['THE_COUNT'];
+    }
+
+    #Obtain the favorite cohare list
+    $cohareCountList = $this->fetchAll($this->sqlQueries->getCohareCountByHare(),
+      [ $kennelKy, $hasher_id, $hasher_id, $hare_type ]);
+
+    #Obtain the largest entry from the list
+    $cohareCountMax = 1;
+    if(isset($cohareCountList[0]['THE_COUNT'])){
+      $cohareCountMax = $cohareCountList[0]['THE_COUNT'];
+    }
+
+    # Obtain their hashes
+    $sqlTheHashes = "
+      SELECT KENNEL_EVENT_NUMBER, SPECIAL_EVENT_DESCRIPTION, EVENT_LOCATION, EVENT_DATE, HASHES.HASH_KY, LAT, LNG
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND HARINGS.HARE_TYPE & ? != 0
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $hasher_id, $kennelKy, $hare_type ]);
+
+    #Obtain the average lat
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HARINGS
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND KENNEL_KY = ?
+         AND HARINGS.HARE_TYPE & ? != 0
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $hasher_id, $kennelKy, $hare_type ]);
+    $avgLat = $theAverageLatLong['THE_LAT'];
+    $avgLng = $theAverageLatLong['THE_LNG'];
+
+    $hareTypes = $this->getHareTypes($kennelKy);
+
+    $hare_type_name = $this->getHareTypeName($hare_type);
+
+    foreach ($hareTypes as &$hareType) {
+      if($hareType['HARE_TYPE'] == $hare_type) {
+        $chart_color = $hareType['CHART_COLOR'];
+        break;
+      }
+    }
+
+    $customValues = [
+      'pageTitle' => $hare_type_name.' Hare Charts and Details',
+      'hare_types' => $hareTypes,
+      'firstHeader' => 'Basic Details',
+      'secondHeader' => 'Statistics',
+      'city_haring_count_list' => $cityHaringCountList,
+      'city_harings_max_value' => $cityHaringsCountMax,
+      'cohare_count_list' =>$cohareCountList,
+      'cohare_count_max' => $cohareCountMax,
+      'the_hashes' => $theHashes,
+      'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
+      'avg_lat' => $avgLat,
+      'avg_lng' => $avgLng,
+      'hare_type' => $hare_type,
+      'hare_type_name' => $hare_type_name,
+      'chart_color' => $chart_color
+    ];
+
+    $finalArray = array_merge($commonValues, $customValues);
+    return $this->render('hare_chart_details.twig', $finalArray);
+  }
 
 public function twoPersonComparisonPreAction(Request $request, string $kennel_abbreviation){
 
