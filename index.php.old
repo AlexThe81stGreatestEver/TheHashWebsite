@@ -1346,7 +1346,7 @@ get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      
 #get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController::getProjectedHasherAnalversariesAction');
 
 get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController::getLongestStreaksAction');
-get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController::aboutContactAction');
+#get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController::aboutContactAction');
 
 # Hash name (substring) analysis
 get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController::hasherNameAnalysisAction');

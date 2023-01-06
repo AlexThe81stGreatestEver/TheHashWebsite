@@ -1915,26 +1915,22 @@ class ObscureStatisticsController extends BaseController {
         return new JsonResponse($output);
     }
 
-    #Landing screen for year in review
-    public function aboutContactAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/aboutContact',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function aboutContactAction(string $kennel_abbreviation) {
 
-      #Establish the page title
-      $pageTitle = "About this application";
+    $pageTitle = "About this application";
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Establish the return value
-      $returnValue = $this->render('about.twig', array (
-        'pageTitle' => $pageTitle,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'adminEmail' => str_rot13($this->getAdministratorEmail())
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
+    return $this->render('about.twig', [
+      'pageTitle' => $pageTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'adminEmail' => str_rot13($this->getAdministratorEmail()) ]);
+  }
 
     #Landing screen for year in review
     public function hasherNameAnalysisAction(Request $request, string $kennel_abbreviation){
