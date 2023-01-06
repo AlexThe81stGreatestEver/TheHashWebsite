@@ -1425,8 +1425,8 @@ post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',    
 #get('/{kennel_abbreviation}/people/stats', 'HashController::peopleStatsAction');
 #get('/{kennel_abbreviation}/analversaries/stats', 'HashController::analversariesStatsAction');
 #get('/{kennel_abbreviation}/year_by_year/stats', 'HashController::yearByYearStatsAction');
-get('/{kennel_abbreviation}/kennel/records', 'HashController::kennelRecordsStatsAction');
-get('/{kennel_abbreviation}/kennel/general_info', 'HashController::kennelGeneralInfoStatsAction');
+#get('/{kennel_abbreviation}/kennel/records', 'HashController::kennelRecordsStatsAction');
+#get('/{kennel_abbreviation}/kennel/general_info', 'HashController::kennelGeneralInfoStatsAction');
 
 #URLs for fastest/slowest to reach analversaries
 get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/bydays', 'ObscureStatisticsController::quickestToReachAnalversaryByDaysAction');

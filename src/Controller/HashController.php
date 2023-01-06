@@ -3434,36 +3434,44 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
       "hare_types" => count($hareTypes) > 1 ? $hareTypes : [] ]);
   }
 
+  #[Route('/{kennel_abbreviation}/kennel/general_info',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
+  )]
+  public function kennelGeneralInfoStatsAction(string $kennel_abbreviation) {
 
-public function kennelGeneralInfoStatsAction(Request $request, string $kennel_abbreviation){
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    #Obtain the first hash
+    $firstHashSQL = "
+      SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       ORDER BY EVENT_DATE ASC
+       LIMIT 1";
+    $firstHashValue = $this->fetchAssoc($firstHashSQL, [ $kennelKy ]);
 
-  #Obtain the first hash
-  $firstHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE ASC LIMIT 1";
-  $firstHashValue = $this->fetchAssoc($firstHashSQL, array($kennelKy));
+    #Obtain the most recent hash
+    $mostRecentHashSQL = "
+      SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+      ORDER BY EVENT_DATE DESC
+      LIMIT 1";
+    $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, [ $kennelKy ]);
 
-  #Obtain the most recent hash
-  $mostRecentHashSQL = "SELECT HASH_KY, EVENT_DATE, KENNEL_EVENT_NUMBER FROM HASHES WHERE KENNEL_KY = ? ORDER BY EVENT_DATE DESC LIMIT 1";
-  $mostRecentHashValue = $this->fetchAssoc($mostRecentHashSQL, array($kennelKy));
-
-  # Establish and set the return value
-  $returnValue = $this->render('section_kennel_general_info.twig',array(
-    'pageTitle' => 'Kennel General Info',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'first_hash' => $firstHashValue,
-    'latest_hash' => $mostRecentHashValue,
-    'hare_types' => $hareTypes
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
+    # Establish and set the return value
+    return $this->render('section_kennel_general_info.twig', [
+      'pageTitle' => 'Kennel General Info',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'first_hash' => $firstHashValue,
+      'latest_hash' => $mostRecentHashValue,
+      'hare_types' => $hareTypes ]);
+  }
 
   #[Route('/{kennel_abbreviation}/cautionary/stats',
     methods: ['GET'],
