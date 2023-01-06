@@ -1245,7 +1245,7 @@ get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 get('/{kennel_abbreviation}/mia',                                       'HashController::miaPreActionJson');
 post('/{kennel_abbreviation}/mia',                                       'HashController::miaPostActionJson');
 
-post('/{kennel_abbreviation}/listhashers2',                                       'HashController::getHasherListJson');
+#post('/{kennel_abbreviation}/listhashers2',                                       'HashController::getHasherListJson');
 
 get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController::listVirginHaringsPreActionJson');
 post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController::getVirginHaringsListJson');
@@ -1451,9 +1451,9 @@ get('/{kennel_abbreviation}/hashers/of/the/years','HashController::hashersOfTheY
 get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController::HaresOfTheYearsAction');
 
 #Establish the mortal kombat head to head matchup functionality
-get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HashController::twoPersonComparisonPreAction');
-get('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',     'HashController::twoPersonComparisonAction');
-post('/{kennel_abbreviation}/hashers/retrieve',                         'HashPersonController::retrieveHasherAction');
+#get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HashController::twoPersonComparisonPreAction');
+#get('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/',     'HashController::twoPersonComparisonAction');
+#post('/{kennel_abbreviation}/hashers/retrieve',                         'HashPersonController::retrieveHasherAction');
 
 # kennel home page
 get('/{kennel_abbreviation}',                               'HashController::slashKennelAction2');

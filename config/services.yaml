@@ -6,7 +6,6 @@
 parameters:
     app.pattern.hash_id: '\d+'
     app.pattern.hasher_id: '\d+'
-    app.pattern.hasher_id2: '\d+'
     app.pattern.hare_id: '\d+'
     app.pattern.user_id: '\d+'
     app.pattern.hare_type: '\d+'

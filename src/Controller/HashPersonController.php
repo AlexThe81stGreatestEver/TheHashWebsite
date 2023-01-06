@@ -1,24 +1,29 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use App\Controller\BaseController;
+use App\SqlQueries;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Psr\Container\ContainerInterface;
 
 class HashPersonController extends BaseController
 {
+  private SqlQueries $sqlQueries;
 
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+    parent::__construct($doctrine);
+    $this->sqlQueries = $sqlQueries;
   }
 
   public function deleteHashPersonPreAction(Request $request, int $hasher_id){
@@ -325,35 +330,19 @@ class HashPersonController extends BaseController
   }
 
 
-    public function retrieveHasherAction (Request $request){
+  #[Route('/{kennel_abbreviation}/hashers/retrieve', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function retrieveHasherAction() {
 
-      #Establish the return message
-      $returnMessage = "This has not been set yet...";
+    #Obtain the post values
+    $hasherKey = (int) $_POST['hasher_key'];
 
-      #Obtain the post values
-      $hasherKey = $request->request->get('hasher_key');
+    #Determine the hasher identity
+    $hasherIdentitySql = "SELECT HASHER_NAME FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
 
+    # Make a database call to obtain the hasher information
+    $hasherValue = $this->fetchAssoc($hasherIdentitySql, [ $hasherKey ]);
 
-      #Validate the post values; ensure that they are both numbers
-      if(ctype_digit($hasherKey)){
-
-        #Determine the hasher identity
-        $hasherIdentitySql = "SELECT * FROM HASHERS WHERE HASHERS.HASHER_KY = ? ;";
-
-        # Make a database call to obtain the hasher information
-        $hasherValue = $this->fetchAssoc($hasherIdentitySql, array((int) $hasherKey));
-
-        #Obtain the hasher name from the object
-        $tempHasherName = $hasherValue['HASHER_NAME'];
-
-        #Establish the return value
-        $returnMessage = $tempHasherName;
-
-
-      } else{
-        $returnMessage = "Something is wrong with the input.$hasherKey";
-      }
-
-      return new JsonResponse($returnMessage);
-    }
+    #Obtain the hasher name from the object
+    return new JsonResponse($hasherValue['HASHER_NAME']);
+  }
 }

@@ -578,14 +578,12 @@ class HashController extends BaseController
     ]);
   }
 
-  public function getHasherListJson(Request $request, string $kennel_abbreviation){
-
-    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
+  #[Route('/{kennel_abbreviation}/listhashers2', methods: ['POST'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function getHasherListJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Obtain the post parameters
-    #$inputDraw = $_POST['draw'] ;
     $inputStart = $_POST['start'] ;
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
@@ -593,29 +591,24 @@ class HashController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
-    if(!is_numeric($inputStart)){
-      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
+    if(!is_numeric($inputStart)) {
       $inputStart = 0;
     }
 
     #Validate input length
-    if(!is_numeric($inputLength)){
-      #$this->container->get('monolog')->addDebug("input length is not numeric");
+    if(!is_numeric($inputLength)) {
       $inputStart = "0";
       $inputLength = "50";
-    } else if($inputLength == "-1"){
-      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
+    } else if($inputLength == "-1") {
       $inputStart = "0";
       $inputLength = "1000000000";
     }
-
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -625,12 +618,9 @@ class HashController extends BaseController
     $inputOrderColumnIncremented = "1";
     $inputOrderDirectionExtracted = "asc";
     if(!is_null($inputOrderRaw)){
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-    }else{
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
 
     #-------------- End: Modify the input parameters  --------------------------
@@ -646,16 +636,21 @@ class HashController extends BaseController
         SELECT HASHER_NAME AS NAME, HASHER_ABBREVIATION,
                COUNT(HASHINGS.HASHER_KY) AS THE_COUNT, HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-          JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
-         WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+          JOIN HASHINGS
+            ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+          JOIN HASHES
+            ON HASHES.HASH_KY = HASHINGS.HASH_KY
+         WHERE KENNEL_KY = ?
+           AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
          GROUP BY HASHINGS.HASHER_KY
          UNION ALL
         SELECT HASHER_NAME AS NAME, HASHER_ABBREVIATION,
                LEGACY_HASHINGS_COUNT AS THE_COUNT, LEGACY_HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN LEGACY_HASHINGS ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
-         WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)) AS INNER1
+          JOIN LEGACY_HASHINGS
+            ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
+         WHERE KENNEL_KY = ?
+           AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)) AS INNER1
          GROUP BY NAME, HASHER_ABBREVIATION, THE_KEY
          ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
          LIMIT $inputStart,$inputLength";
@@ -668,15 +663,20 @@ class HashController extends BaseController
           FROM (
         SELECT HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-          JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
-         WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+          JOIN HASHINGS
+            ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+          JOIN HASHES
+            ON HASHES.HASH_KY = HASHINGS.HASH_KY
+         WHERE KENNEL_KY = ?
+           AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
          GROUP BY HASHINGS.HASHER_KY
          UNION ALL
         SELECT LEGACY_HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN LEGACY_HASHINGS ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
-         WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)) AS INNER1
+          JOIN LEGACY_HASHINGS
+            ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
+         WHERE KENNEL_KY = ?
+           AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)) AS INNER1
          GROUP BY THE_KEY) AS INNER_QUERY";
 
       #Define the sql that gets the overall counts
@@ -687,37 +687,32 @@ class HashController extends BaseController
           FROM (
         SELECT HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-          JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
+          JOIN HASHINGS
+            ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+          JOIN HASHES
+            ON HASHES.HASH_KY = HASHINGS.HASH_KY
          WHERE KENNEL_KY = ?
          GROUP BY HASHINGS.HASHER_KY
          UNION ALL
         SELECT LEGACY_HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN LEGACY_HASHINGS ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
+          JOIN LEGACY_HASHINGS
+            ON HASHERS.HASHER_KY = LEGACY_HASHINGS.HASHER_KY
          WHERE KENNEL_KY = ?) AS INNER1
          GROUP BY THE_KEY) AS INNER_QUERY";
 
       #Perform the filtered search
-      $theResults = $this->fetchAll($sql,array(
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified));
+      $theResults = $this->fetchAll($sql, [
+        $kennelKy, $inputSearchValueModified, $inputSearchValueModified, $kennelKy,
+        $inputSearchValueModified, $inputSearchValueModified ]);
 
       #Perform the untiltered count
-      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy, $kennelKy)))['THE_COUNT'];
+      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy, $kennelKy ]))['THE_COUNT'];
 
       #Perform the filtered count
-      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified,
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified)))['THE_COUNT'];
+      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [
+        $kennelKy, $inputSearchValueModified, $inputSearchValueModified, $kennelKy,
+        $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
 
     } else {
 
@@ -725,9 +720,12 @@ class HashController extends BaseController
         SELECT HASHER_NAME AS NAME, HASHER_ABBREVIATION,
                COUNT(HASHINGS.HASHER_KY) AS THE_COUNT, HASHINGS.HASHER_KY AS THE_KEY
           FROM HASHERS
-          JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-          JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
-         WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+          JOIN HASHINGS
+            ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+          JOIN HASHES
+            ON HASHES.HASH_KY = HASHINGS.HASH_KY
+         WHERE KENNEL_KY = ?
+           AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
          GROUP BY HASHINGS.HASHER_KY
          ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
          LIMIT $inputStart,$inputLength";
@@ -737,9 +735,12 @@ class HashController extends BaseController
         SELECT COUNT(*) AS THE_COUNT
           FROM (SELECT 1
                   FROM HASHERS
-                  JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-                  JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
-                 WHERE KENNEL_KY = ? AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+                  JOIN HASHINGS
+                    ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+                  JOIN HASHES
+                    ON HASHES.HASH_KY = HASHINGS.HASH_KY
+                 WHERE KENNEL_KY = ?
+                   AND (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
                  GROUP BY HASHINGS.HASHER_KY) AS INNER_QUERY";
 
       #Define the sql that gets the overall counts
@@ -747,34 +748,30 @@ class HashController extends BaseController
         SELECT COUNT(*) AS THE_COUNT
           FROM (SELECT 1
                   FROM HASHERS
-                  JOIN HASHINGS ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
-                  JOIN HASHES ON HASHES.HASH_KY = HASHINGS.HASH_KY
+                  JOIN HASHINGS
+                    ON HASHERS.HASHER_KY = HASHINGS.HASHER_KY
+                  JOIN HASHES
+                    ON HASHES.HASH_KY = HASHINGS.HASH_KY
                  WHERE KENNEL_KY = ?
                  GROUP BY HASHINGS.HASHER_KY) AS INNER_QUERY";
 
       #Perform the filtered search
-      $theResults = $this->fetchAll($sql,array(
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified));
+      $theResults = $this->fetchAll($sql, [ $kennelKy, $inputSearchValueModified, $inputSearchValueModified ]);
 
       #Perform the untiltered count
-      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+      $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy ]))['THE_COUNT'];
 
       #Perform the filtered count
-      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-        $kennelKy,
-        (string) $inputSearchValueModified,
-        (string) $inputSearchValueModified)))['THE_COUNT'];
+      $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,
+        [ $kennelKy, $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
     }
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
@@ -4896,259 +4893,195 @@ public function jumboPercentagesTablePostActionJson(Request $request, string $ke
     return $this->render('hare_chart_details.twig', $finalArray);
   }
 
-public function twoPersonComparisonPreAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashers/twoHasherComparison', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%'])]
+  public function twoPersonComparisonPreAction(string $kennel_abbreviation) {
 
-  $pageTitle = "Two Person Comparison";
+    $pageTitle = "Two Person Comparison";
 
-  #Establish the return value
-  $returnValue = $this->render('hasher_comparison_selection_screen.twig', array (
-    'pageTitle' => $pageTitle,
-    'playerOneDefault' => 'Selection Required',
-    'playerTwoDefault' => 'Selection Required',
-    'pageSubTitle' => 'Select Your Contestants',
-    'pageHeader' => 'Why is this so complicated ?',
-    'instructions' => 'You need to select two hashers to compare. Start typing in the search box to find your favorite hasher. When their name shows up, click the "+ player one" link next to their name. Repeat the process of typing in the search box and then click the "+ player two" link. Then, when both hashers have been selected, click on the the giant "submit" button. Enjoy!',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  # Return the return value
-  return $returnValue;
-
-}
-
-private function createComparisonObjectCoreAttributes(string $hasher1, string $hasher2, string $statTitle, string $dataType){
-
-  #Establish the return value object
-  $returnValue = array();
-
-  $returnValue = array(
-    'statName' => $statTitle,
-    'hasher1' => $hasher1,
-    'hasher2' => $hasher2,
-    'dataType' => $dataType
-  );
-
-  #Return the return object
-  return $returnValue;
-}
-
-private function createComparisonObjectWithStatsAsInts(int $stat1, int $stat2, string $hasher1, string $hasher2, string $statTitle){
-
-  #Establish the return value object
-  $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle, "int");
-
-  #Establish the winner
-  $verdict = '';
-  if($stat1 > $stat2){
-    $verdict = 'hasher1';
-  }else if ($stat2 > $stat1){
-    $verdict = 'hasher2';
-  }else{
-    $verdict = 'tie';
+    return $this->render('hasher_comparison_selection_screen.twig', [
+      'pageTitle' => $pageTitle,
+      'playerOneDefault' => 'Selection Required',
+      'playerTwoDefault' => 'Selection Required',
+      'pageSubTitle' => 'Select Your Contestants',
+      'pageHeader' => 'Why is this so complicated ?',
+      'instructions' => 'You need to select two hashers to compare. Start typing in the search box to find your favorite hasher. When their name shows up, click the "+ player one" link next to their name. Repeat the process of typing in the search box and then click the "+ player two" link. Then, when both hashers have been selected, click on the the giant "submit" button. Enjoy!',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
-  #Fill in the return value with more attributes
-  $additionalAttributes =   array(
-    'val1' => $stat1,
-    'val2' => $stat2,
-    'verdict' => $verdict);
-
-  #Combine the arrays
-  $returnValue = $returnValue + $additionalAttributes;
-
-  #Return the return value
-  return $returnValue;
-}
-
-
-private function createComparisonObjectWithStatsAsDoubles(float $stat1, float $stat2, string $hasher1, string $hasher2, string $statTitle){
-
-  #Establish the return value object
-  $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle,"float");
-
-  $verdict = '';
-  if($stat1 > $stat2){
-    $verdict = 'hasher1';
-  }else if ($stat2 > $stat1){
-    $verdict = 'hasher2';
-  }else{
-    $verdict = 'tie';
+  private function createComparisonObjectCoreAttributes(string $hasher1, string $hasher2, string $statTitle, string $dataType) {
+    return [ 'statName' => $statTitle, 'hasher1' => $hasher1, 'hasher2' => $hasher2, 'dataType' => $dataType ];
   }
 
-  #Fill in the return value with more attributes
-  $additionalAttributes = array(
-    'val1' => $stat1,
-    'val2' => $stat2,
-    'verdict' => $verdict);
+  private function createComparisonObjectWithStatsAsInts(int $stat1, int $stat2, string $hasher1, string $hasher2, string $statTitle) {
 
-  #Combine the arrays
-  $returnValue = $returnValue + $additionalAttributes;
+    $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle, "int");
 
-  #Return the return value
-  return $returnValue;
-}
+    # Establish the winner
+    if($stat1 > $stat2) {
+      $verdict = 'hasher1';
+    } else if ($stat2 > $stat1) {
+      $verdict = 'hasher2';
+    } else {
+      $verdict = 'tie';
+    }
 
-private function createComparisonObjectWithStatsAsDates(string $stat1, string $stat2, string $hasher1, string $hasher2, string $statTitle, bool $greaterIsBetter, int $key1, int $key2){
+    # Fill in the return value with more attributes
+    $additionalAttributes = [ 'val1' => $stat1, 'val2' => $stat2, 'verdict' => $verdict ];
 
-  #Establish the return value object
-  $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle,"date");
-
-  #Establish the verdict variable
-  $verdict = '';
-
-  #Establish the date time values
-  $date1 = DateTime::createFromFormat('m/d/Y',$stat1);
-  $date2 = DateTime::createFromFormat('m/d/Y',$stat2);
-
-  #Populate the verdict value
-  if($date1 > $date2){
-    $verdict = ($greaterIsBetter ? 'hasher1':'hasher2');
-  }else if ($date2 > $date1){
-    $verdict = ($greaterIsBetter ? 'hasher2':'hasher1');
-  }else {
-    $verdict = 'tie';
+    # Combine the arrays
+    return $returnValue + $additionalAttributes;
   }
 
 
+  private function createComparisonObjectWithStatsAsDoubles(float $stat1, float $stat2, string $hasher1, string $hasher2, string $statTitle) {
 
+    $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle, "float");
 
-  #Fill in the return value with more attributes
-  $additionalAttributes = array(
-    'val1' => $stat1,
-    'val2' => $stat2,
-    'verdict' => $verdict,
-    'hashKey1' => $key1,
-    'hashKey2' => $key2);
+    if($stat1 > $stat2) {
+      $verdict = 'hasher1';
+    } else if ($stat2 > $stat1) {
+      $verdict = 'hasher2';
+    } else {
+      $verdict = 'tie';
+    }
 
-  #Combine the arrays
-  $returnValue = $returnValue + $additionalAttributes;
+    # Fill in the return value with more attributes
+    $additionalAttributes = [ 'val1' => $stat1, 'val2' => $stat2, 'verdict' => $verdict ];
 
-  #Return the return value
-  return $returnValue;
-
-}
-
-private function twoPersonComparisonDataFetch(Request $request, int $kennelKy, int $hasher_id1, int $hasher_id2){
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-  if(count($hareTypes) == 1) {
-    $hareTypes = array();
+    # Combine the arrays
+    return $returnValue + $additionalAttributes;
   }
 
-  #Establish the reurn value array
-  $returnValue = array();
+  private function createComparisonObjectWithStatsAsDates(string $stat1, string $stat2, string $hasher1, string $hasher2, string $statTitle, bool $greaterIsBetter, int $key1, int $key2) {
 
-  # Declare the SQL used to retrieve this information
-  $sql = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
+    $returnValue = $this->createComparisonObjectCoreAttributes($hasher1, $hasher2, $statTitle, "date");
 
-  # Make a database call to obtain the hasher information
-  $hasher1 = $this->fetchAssoc($sql, array((int) $hasher_id1));
-  $hasher2 = $this->fetchAssoc($sql, array((int) $hasher_id2));
+    # Establish the date time values
+    $date1 = DateTime::createFromFormat('m/d/Y', $stat1);
+    $date2 = DateTime::createFromFormat('m/d/Y', $stat2);
 
+    # Populate the verdict value
+    if($date1 > $date2) {
+      $verdict = ($greaterIsBetter ? 'hasher1' : 'hasher2');
+    } else if ($date2 > $date1) {
+      $verdict = ($greaterIsBetter ? 'hasher2' : 'hasher1');
+    } else {
+      $verdict = 'tie';
+    }
 
-  #Obtain the overall hashing count
-  $hashingCountH1 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id1, $kennelKy, (int) $hasher_id1, $kennelKy)))['THE_COUNT'];
-  $hashingCountH2 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id2, $kennelKy, (int) $hasher_id2, $kennelKy)))['THE_COUNT'];
-  $statObject = $this-> createComparisonObjectWithStatsAsInts($hashingCountH1, $hashingCountH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hashing Count");
-  $returnValue[] = $statObject;
+    #Fill in the return value with more attributes
+    $additionalAttributes = [ 'val1' => $stat1, 'val2' => $stat2, 'verdict' => $verdict,
+      'hashKey1' => $key1, 'hashKey2' => $key2 ];
 
-  #Obtain the overall haring count
-  $hareCountOverallH1 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id1, $kennelKy)))['THE_COUNT'];
-  $hareCountOverallH2 = ($this->fetchAssoc(PERSONS_HARING_COUNT, array((int) $hasher_id2, $kennelKy)))['THE_COUNT'];
-  $statObject = $this-> createComparisonObjectWithStatsAsInts($hareCountOverallH1, $hareCountOverallH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring Count");
-  $returnValue[] = $statObject;
-
-  #Obtain the haring counts
-  foreach ($hareTypes as &$hareType) {
-    $hareCountH1[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id1, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
-    $hareCountH2[$hareType['HARE_TYPE']] = ($this->fetchAssoc(PERSONS_HARING_TYPE_COUNT, array((int) $hasher_id2, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
-    $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountH1[$hareType['HARE_TYPE']], $hareCountH2[$hareType['HARE_TYPE']], $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring Count");
-    $returnValue[] = $statObject;
+    #Combine the arrays
+    return $returnValue + $additionalAttributes;
   }
 
-  #Obtain the overall haring percentage
-  $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountOverallH1/$hashingCountH1),
-    ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring / Hashing %");
-  $returnValue[] = $statObject;
+  private function twoPersonComparisonDataFetch(int $kennelKy, int $hasher_id1, int $hasher_id2) {
 
-  foreach ($hareTypes as &$hareType) {
-    #Obtain the haring percentage
-    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hashingCountH1),
-      ($hashingCountH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / Hashing %");
+    $hareTypes = $this->getHareTypes($kennelKy);
+    if(count($hareTypes) == 1) {
+      $hareTypes = [];
+    }
+
+    $returnValue = [];
+
+    $sql = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
+
+    $hasher1 = $this->fetchAssoc($sql, [ $hasher_id1 ]);
+    $hasher2 = $this->fetchAssoc($sql, [ $hasher_id2 ]);
+
+    #Obtain the overall hashing count
+    $hashingCountH1 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), [ $hasher_id1, $kennelKy, $hasher_id1, $kennelKy ]))['THE_COUNT'];
+    $hashingCountH2 = ($this->fetchAssoc($this->getPersonsHashingCountQuery(), [ $hasher_id2, $kennelKy, $hasher_id2, $kennelKy ]))['THE_COUNT'];
+    $statObject = $this->createComparisonObjectWithStatsAsInts($hashingCountH1, $hashingCountH2, $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Hashing Count");
     $returnValue[] = $statObject;
 
-    #Obtain the haring / all haring percentage
-    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hareCountOverallH1),
-      ($hareCountOverallH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / All Haring %");
+    #Obtain the overall haring count
+    $hareCountOverallH1 = ($this->fetchAssoc($this->sqlQueries->getPersonsHaringCount(), [ $hasher_id1, $kennelKy ]))['THE_COUNT'];
+    $hareCountOverallH2 = ($this->fetchAssoc($this->sqlQueries->getPersonsHaringCount(), [ $hasher_id2, $kennelKy ]))['THE_COUNT'];
+    $statObject = $this-> createComparisonObjectWithStatsAsInts($hareCountOverallH1, $hareCountOverallH2,$hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring Count");
     $returnValue[] = $statObject;
+
+    #Obtain the haring counts
+    foreach ($hareTypes as &$hareType) {
+      $hareCountH1[$hareType['HARE_TYPE']] = ($this->fetchAssoc($this->sqlQueries->getPersonsHaringTypeCount(), [ $hasher_id1, $kennelKy, $hareType['HARE_TYPE'] ]))['THE_COUNT'];
+      $hareCountH2[$hareType['HARE_TYPE']] = ($this->fetchAssoc($this->sqlQueries->getPersonsHaringTypeCount(), [ $hasher_id2, $kennelKy, $hareType['HARE_TYPE'] ]))['THE_COUNT'];
+      $statObject = $this->createComparisonObjectWithStatsAsInts($hareCountH1[$hareType['HARE_TYPE']], $hareCountH2[$hareType['HARE_TYPE']], $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring Count");
+      $returnValue[] = $statObject;
+    }
+
+    #Obtain the overall haring percentage
+    $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountOverallH1/$hashingCountH1),
+      ($hashingCountH2 == 0 ? 0 : $hareCountOverallH2/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], "Overall Haring / Hashing %");
+    $returnValue[] = $statObject;
+
+    foreach ($hareTypes as &$hareType) {
+      #Obtain the haring percentage
+      $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hashingCountH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hashingCountH1),
+        ($hashingCountH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hashingCountH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / Hashing %");
+      $returnValue[] = $statObject;
+
+      #Obtain the haring / all haring percentage
+      $statObject = $this->createComparisonObjectWithStatsAsDoubles( ($hareCountOverallH1 == 0 ? 0 : $hareCountH1[$hareType['HARE_TYPE']]/$hareCountOverallH1),
+        ($hareCountOverallH2 == 0 ? 0 : $hareCountH2[$hareType['HARE_TYPE']]/$hareCountOverallH2), $hasher1['HASHER_NAME'], $hasher2['HASHER_NAME'], $hareType['HARE_TYPE_NAME']." Haring / All Haring %");
+      $returnValue[] = $statObject;
+    }
+
+    #Obtain the virgin hash dates
+    $virginHashH1 = $this->fetchAssoc($this->sqlQueries->getSelectHashersVirginHash(), [ $hasher_id1, $kennelKy ]);
+    $virginHashH2 = $this->fetchAssoc($this->sqlQueries->getSelectHashersVirginHash(), [ $hasher_id2, $kennelKy ]);
+    $statObject = $this->createComparisonObjectWithStatsAsDates(
+      is_null($virginHashH1['EVENT_DATE_FORMATTED']) ? "": $virginHashH1['EVENT_DATE_FORMATTED'] ,
+      is_null($virginHashH2['EVENT_DATE_FORMATTED']) ? "": $virginHashH2['EVENT_DATE_FORMATTED'] ,
+      $hasher1['HASHER_NAME'],
+      $hasher2['HASHER_NAME'],
+      "First Hash",
+      FALSE,
+      is_null($virginHashH1['HASH_KY']) ? 0 : $virginHashH1['HASH_KY'] ,
+      is_null($virginHashH2['HASH_KY']) ? 0 : $virginHashH2['HASH_KY']);
+    $returnValue[] = $statObject;
+
+    #Obtain the latest hash dates
+    $latestHashH1 = $this->fetchAssoc($this->sqlQueries->getSelectHashersMostRecentHash(), [ $hasher_id1, $kennelKy ]);
+    $latestHashH2 = $this->fetchAssoc($this->sqlQueries->getSelectHashersMostRecentHash(), [ $hasher_id2, $kennelKy ]);
+    $statObject = $this->createComparisonObjectWithStatsAsDates(
+      is_null($latestHashH1['EVENT_DATE_FORMATTED']) ? "": $latestHashH1['EVENT_DATE_FORMATTED'] ,
+      is_null($latestHashH2['EVENT_DATE_FORMATTED']) ? "": $latestHashH2['EVENT_DATE_FORMATTED'] ,
+      $hasher1['HASHER_NAME'],
+      $hasher2['HASHER_NAME'],
+      "Latest Hash",
+      TRUE,
+      is_null($latestHashH1['HASH_KY']) ? 0 : $latestHashH1['HASH_KY'] ,
+      is_null($latestHashH2['HASH_KY']) ? 0 : $latestHashH2['HASH_KY']);
+    $returnValue[] = $statObject;
+
+    return $returnValue;
   }
 
-  #Obtain the virgin hash dates
-  $virginHashH1 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id1, $kennelKy));
-  $virginHashH2 = $this->fetchAssoc(SELECT_HASHERS_VIRGIN_HASH, array((int) $hasher_id2, $kennelKy));
-  $statObject = $this->createComparisonObjectWithStatsAsDates(
-    is_null($virginHashH1['EVENT_DATE_FORMATTED']) ? "": $virginHashH1['EVENT_DATE_FORMATTED'] ,
-    is_null($virginHashH2['EVENT_DATE_FORMATTED']) ? "": $virginHashH2['EVENT_DATE_FORMATTED'] ,
-    $hasher1['HASHER_NAME'],
-    $hasher2['HASHER_NAME'],
-    "First Hash",
-    FALSE,
-    is_null($virginHashH1['HASH_KY']) ? 0 : $virginHashH1['HASH_KY'] ,
-    is_null($virginHashH2['HASH_KY']) ? 0 : $virginHashH2['HASH_KY']);
-  $returnValue[] = $statObject;
+  #[Route('/{kennel_abbreviation}/hashers/comparison/{hasher_id}/{hasher_id2}/', methods: ['GET'], requirements: ['kennel_abbreviation' => '%app.pattern.kennel_abbreviation%', 'hasher_id' => '%app.pattern.hasher_id%', 'hasher_id2' => '%app.pattern.hasher_id%'])]
+  public function twoPersonComparisonAction(string $kennel_abbreviation, int $hasher_id, int $hasher_id2) {
 
-  #Obtain the latest hash dates
-  $latestHashH1 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id1, $kennelKy));
-  $latestHashH2 = $this->fetchAssoc(SELECT_HASHERS_MOST_RECENT_HASH, array((int) $hasher_id2, $kennelKy));
-  $statObject = $this->createComparisonObjectWithStatsAsDates(
-    is_null($latestHashH1['EVENT_DATE_FORMATTED']) ? "": $latestHashH1['EVENT_DATE_FORMATTED'] ,
-    is_null($latestHashH2['EVENT_DATE_FORMATTED']) ? "": $latestHashH2['EVENT_DATE_FORMATTED'] ,
-    $hasher1['HASHER_NAME'],
-    $hasher2['HASHER_NAME'],
-    "Latest Hash",
-    TRUE,
-    is_null($latestHashH1['HASH_KY']) ? 0 : $latestHashH1['HASH_KY'] ,
-    is_null($latestHashH2['HASH_KY']) ? 0 : $latestHashH2['HASH_KY']);
-  $returnValue[] = $statObject;
+    $pageTitle = "Hasher Showdown";
 
-  #Return the return value
-  return $returnValue;
+    $sql = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
-}
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-public function twoPersonComparisonAction(Request $request, string $kennel_abbreviation, int $hasher_id, int $hasher_id2){
+    # Make a database call to obtain the hasher information
+    $hasher1 = $this->fetchAssoc($sql, [ $hasher_id ]);
+    $hasher2 = $this->fetchAssoc($sql, [ $hasher_id2 ]);
+    $pageSubtitle = $hasher1['HASHER_NAME'] . " VS " . $hasher2['HASHER_NAME'];
 
-  $pageTitle = "Hasher Showdown";
+    $listOfStats = $this->twoPersonComparisonDataFetch($kennelKy, $hasher_id, $hasher_id2);
 
-  # Declare the SQL used to retrieve this information
-  $sql = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  # Make a database call to obtain the hasher information
-  $hasher1 = $this->fetchAssoc($sql, array((int) $hasher_id));
-  $hasher2 = $this->fetchAssoc($sql, array((int) $hasher_id2));
-  $pageSubtitle = $hasher1['HASHER_NAME'] . " VS " . $hasher2['HASHER_NAME'];
-
-  $listOfStats = null;
-  $listOfStats= $this->twoPersonComparisonDataFetch($request, $kennelKy, $hasher_id, $hasher_id2);
-
-
-  #Establish the return value
-  $returnValue = $this->render('hasher_comparison_fluid_results.twig', array (
-    'pageTitle' => $pageTitle,
-    'pageSubTitle' => $pageSubtitle,
-    'pageHeader' => 'Why is this so complicated ?',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'hasherName1' => $hasher1['HASHER_NAME'],
-    'hasherName2' => $hasher2['HASHER_NAME'],
-    'tempList' => $listOfStats
-  ));
-
-  # Return the return value
-  return $returnValue;
-
-}
-
+    return $this->render('hasher_comparison_fluid_results.twig', [
+      'pageTitle' => $pageTitle,
+      'pageSubTitle' => $pageSubtitle,
+      'pageHeader' => 'Why is this so complicated ?',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hasherName1' => $hasher1['HASHER_NAME'],
+      'hasherName2' => $hasher2['HASHER_NAME'],
+      'tempList' => $listOfStats ]);
+  }
 }
