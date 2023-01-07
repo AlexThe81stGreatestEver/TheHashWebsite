@@ -1281,7 +1281,7 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/hares/overall/{hasher_id}',     'HashController::viewOverallHareChartsAction');
 #get('/{kennel_abbreviation}/hares/{hare_type}/{hasher_id}',        'HashController::viewHareChartsAction');
 
-get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController::viewKennelChartsAction');
+#get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController::viewKennelChartsAction');
 
 get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController::viewAttendanceChartsAction');
 
@@ -1381,8 +1381,8 @@ post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',        
 #post('/{kennel_abbreviation}/statistics/hasher/mostRecentHare',                      'ObscureStatisticsController::getHashersLatestHare');
 
 # Mappings for kennel specific statistics
-post('/{kennel_abbreviation}/statistics/kennel/firstHash',                           'ObscureStatisticsController::getKennelsVirginHash');
-post('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',                      'ObscureStatisticsController::getKennelsLatestHash');
+#post('/{kennel_abbreviation}/statistics/kennel/firstHash',                           'ObscureStatisticsController::getKennelsVirginHash');
+#post('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',                      'ObscureStatisticsController::getKennelsLatestHash');
 
 # Mappings for hasher hashes by (year/month/state/etc)
 post('/{kennel_abbreviation}/statistics/hasher/hashes/by/year',                      'ObscureStatisticsController::getHasherHashesByYear');
@@ -1393,9 +1393,9 @@ post('/{kennel_abbreviation}/statistics/hasher/hashes/by/state',                
 #post('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',                      'ObscureStatisticsController::getHasherHashesByCity');
 
 # Mappings for kennel hashes by (year/month/state/etc)
-post('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',                      'ObscureStatisticsController::getKennelHashesByCity');
-post('/{kennel_abbreviation}/statistics/kennel/hashes/by/county',                      'ObscureStatisticsController::getKennelHashesByCounty');
-post('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',                      'ObscureStatisticsController::getKennelHashesByPostalcode');
+#post('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',                      'ObscureStatisticsController::getKennelHashesByCity');
+#post('/{kennel_abbreviation}/statistics/kennel/hashes/by/county',                      'ObscureStatisticsController::getKennelHashesByCounty');
+#post('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',                      'ObscureStatisticsController::getKennelHashesByPostalcode');
 
 # Mappings for hasher harings by (year/month/state/etc)
 post('/{kennel_abbreviation}/statistics/hasher/all/harings/by/year',                      'ObscureStatisticsController::getHasherAllHaringsByYear');

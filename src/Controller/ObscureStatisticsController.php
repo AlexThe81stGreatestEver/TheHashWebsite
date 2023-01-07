@@ -17,10 +17,12 @@ use Wamania\Snowball\StemmerFactory;
 class ObscureStatisticsController extends BaseController {
 
   private SqlQueries $sqlQueries;
+  private Helper $helper;
 
-  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries, Helper $helper) {
     parent::__construct($doctrine);
     $this->sqlQueries = $sqlQueries;
+    $this->helper = $helper;
   }
 
   #[Route('/{kennel_abbreviation}/eventsHeatMap',
@@ -321,12 +323,12 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($hareCountList);
     }
 
-    #Obtain the first hash of a given hasher
   #[Route('/{kennel_abbreviation}/statistics/hasher/firstHash',
     methods: ['POST'],
     requirements: [
       'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
   )]
+  #Obtain the first hash of a given hasher
   public function getHashersVirginHash(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -364,19 +366,21 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirVirginHash);
   }
 
-    public function getKennelsVirginHash(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/kennel/firstHash',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getKennelsVirginHash(string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = SELECT_KENNELS_VIRGIN_HASH;
+    $theSql = $this->sqlQueries->getSelectKennelsVirginHash();
 
-      #Query the database
-      $theirVirginHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
+    $theirVirginHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
 
-      return new JsonResponse($theirVirginHash);
-    }
+    return new JsonResponse($theirVirginHash);
+  }
 
   #Obtain the latest hash of a given hasher
   #[Route('/{kennel_abbreviation}/statistics/hasher/mostRecentHash',
@@ -417,19 +421,21 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirLatestHash);
   }
 
-    public function getKennelsLatestHash(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/kennel/mostRecentHash',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getKennelsLatestHash(string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = SELECT_KENNELS_MOST_RECENT_HASH;
+    $theSql = $this->sqlQueries->getSelectKennelsMostRecentHash();
 
-      #Query the database
-      $theirLatestHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
+    $theirLatestHash = $this->fetchAssoc($theSql, array((int) $kennelKy));
 
-      return new JsonResponse($theirLatestHash);
-    }
+    return new JsonResponse($theirLatestHash);
+  }
 
 
     #Obtain the hasher hashes attended by year
@@ -524,12 +530,12 @@ class ObscureStatisticsController extends BaseController {
       return new JsonResponse($theResults);
     }
 
-  #Obtain the hasher hashes attended by city
   #[Route('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',
     methods: ['POST'],
     requirements: [
       'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
   )]
+  #Obtain the hasher hashes attended by city
   public function getHasherHashesByCity(string $kennel_abbreviation) {
 
     $theHasherKey = $_POST['hasher_id'];
@@ -543,47 +549,53 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-    public function getKennelHashesByCity(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/kennel/hashes/by/city',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getKennelHashesByCity(string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = KENNEL_HASH_COUNTS_BY_CITY;
+    $theSql = $this->sqlQueries->getKennelHashCountsByCity();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
-    public function getKennelHashesByCounty(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/kennel/hashes/by/county',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getKennelHashesByCounty(string $kennel_abbreviation){
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = KENNEL_HASH_COUNTS_BY_COUNTY;
+    $theSql = $this->sqlQueries->getKennelHashCountsByCounty();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
-    public function getKennelHashesByPostalcode(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/kennel/hashes/by/postalcode',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getKennelHashesByPostalcode(string $kennel_abbreviation){
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the sql statement to execute
-      $theSql = KENNEL_HASH_COUNTS_BY_POSTAL_CODE;
+    $theSql = $this->sqlQueries->getKennelHashCountsByPostalCode();
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
+    $theResults = $this->fetchAll($theSql, [ $kennelKy ]);
 
-      return new JsonResponse($theResults);
-    }
+    return new JsonResponse($theResults);
+  }
 
 
     public function getHasherAllHaringsByYear(Request $request, string $kennel_abbreviation){
@@ -2047,154 +2059,147 @@ class ObscureStatisticsController extends BaseController {
     return $stem;
   }
 
-    public function viewKennelChartsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/chartsAndDetails',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function viewKennelChartsAction(string $kennel_abbreviation) {
 
-        #Obtain the kennel key
-        $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-        $hareTypes = $this->getHareTypes($kennelKy);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-        #Obtain the kennel value
-        $kennelValueSql = "SELECT KENNELS.* FROM KENNELS WHERE KENNEL_KY = ?";
-        $kennelValue = $this->fetchAssoc($kennelValueSql, array((int) $kennelKy));
+    #Obtain the kennel value
+    $kennelValueSql = "SELECT KENNELS.* FROM KENNELS WHERE KENNEL_KY = ?";
+    $kennelValue = $this->fetchAssoc($kennelValueSql, [ $kennelKy ]);
 
-        # Obtain their hashes
-        $sqlTheHashes = "SELECT HASHES.* FROM HASHES
-        WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-        $theHashes = $this->fetchAll($sqlTheHashes, array((int) $kennelKy));
+    # Obtain their hashes
+    $sqlTheHashes = "
+      SELECT HASHES.*
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $kennelKy ]);
 
-        #Obtain the average lat
-        $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHINGS JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-        $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $kennelKy));
-        $avgLat = $theAverageLatLong['THE_LAT'];
-        $avgLng = $theAverageLatLong['THE_LNG'];
+    #Obtain the average lat
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHINGS
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $kennelKy ]);
+    $avgLat = $theAverageLatLong['THE_LAT'];
+    $avgLng = $theAverageLatLong['THE_LNG'];
 
-        #Obtain the number of hashes for this kennel
-        $sqlHashCountForKennel = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = ?";
-        $hashCountValueForKennel = $this->fetchAssoc($sqlHashCountForKennel, array((int) $kennelKy));
-        $hashCountForKennel = $hashCountValueForKennel['THE_COUNT'];
+    #Obtain the number of hashes for this kennel
+    $sqlHashCountForKennel = "SELECT COUNT(*) AS THE_COUNT FROM HASHES WHERE KENNEL_KY = ?";
+    $hashCountValueForKennel = $this->fetchAssoc($sqlHashCountForKennel, [ $kennelKy ]);
+    $hashCountForKennel = $hashCountValueForKennel['THE_COUNT'];
 
-        #Obtain the number of distinct hashers
-        $distinctHasherCountValueForKennel = $this->fetchAssoc(KENNEL_NUM_OF_DISTINCT_HASHERS, array((int) $kennelKy));
-        $distinctHasherCountForKennel = $distinctHasherCountValueForKennel['THE_COUNT'];
+    #Obtain the number of distinct hashers
+    $distinctHasherCountValueForKennel = $this->fetchAssoc($this->sqlQueries->getKennelNumOfDistinctHashers(), [ $kennelKy ]);
+    $distinctHasherCountForKennel = $distinctHasherCountValueForKennel['THE_COUNT'];
 
-        #Obtain the number of distinct overall hares
-        $distinctOverallHareCountValueForKennel = $this->fetchAssoc(KENNEL_NUM_OF_DISTINCT_OVERALL_HARES, array((int) $kennelKy));
-        $distinctOverallHareCountForKennel = $distinctOverallHareCountValueForKennel['THE_COUNT'];
+    #Obtain the number of distinct overall hares
+    $distinctOverallHareCountValueForKennel = $this->fetchAssoc($this->sqlQueries->getKennelNumOfDistinctOverallHares(), [ $kennelKy ]);
+    $distinctOverallHareCountForKennel = $distinctOverallHareCountValueForKennel['THE_COUNT'];
 
-        #Obtain the number of distinct hares by type
-        $distinctHareCounts = array();
-        foreach($hareTypes as &$hareType) {
-          $distinctHareCountValueForKennel = $this->fetchAssoc(KENNEL_NUM_OF_DISTINCT_HARES, array((int) $kennelKy, $hareType['HARE_TYPE']));
-          $distinctHareCounts[$hareType['HARE_TYPE_NAME']] = $distinctHareCountValueForKennel['THE_COUNT'];
-        }
-
-        # Obtain the number of hashings
-        #$hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, (int) $kennelKy));
-
-        # Obtain the hashes by month (name)
-        $theHashesByMonthNameList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_MONTH_NAME, array((int) $kennelKy));
-
-        # Obtain the hashes by quarter
-        $theHashesByQuarterList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_QUARTER, array((int) $kennelKy));
-
-        # Obtain the hashes by quarter
-        $theHashesByStateList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_STATE, array((int) $kennelKy));
-
-        # Obtain the hashes by county
-        $theHashesByCountyList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_COUNTY, array((int) $kennelKy));
-
-        # Obtain the hashes by postal code
-        $theHashesByPostalCodeList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_POSTAL_CODE, array((int) $kennelKy));
-
-        # Obtain the hashes by day name
-        $theHashesByDayNameList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_DAYNAME, array((int) $kennelKy));
-
-        #Obtain the hashes by year
-        $sqlHashesByYear = "SELECT YEAR(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
-         FROM
-        	HASHES
-          WHERE
-            HASHES.KENNEL_KY = ?
-        GROUP BY YEAR(EVENT_DATE)
-        ORDER BY YEAR(EVENT_DATE)";
-        $hashesByYearList = $this->fetchAll($sqlHashesByYear, array((int) $kennelKy));
-
-        #Query the database
-        $cityHashingsCountList = $this->fetchAll(KENNEL_HASH_COUNTS_BY_CITY, array((int) $kennelKy));
-
-        #Obtain largest entry from the list
-        $cityHashingsCountMax = 1;
-        if(isset($cityHashingsCountList[0]['THE_COUNT'])){
-          $cityHashingsCountMax = $cityHashingsCountList[0]['THE_COUNT'];
-        }
-
-
-        #0. Define the query for the state / county / city / neighborhood chart
-        $locationBreakdownSql = "SELECT
-          CASE
-            WHEN NEIGHBORHOOD =''
-            THEN
-                CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/','123BLANK123','/',THE_COUNT)
-            ELSE
-                CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/',NEIGHBORHOOD,'/',THE_COUNT)
-            END AS THE_VALUE,
-            THE_COUNT
-        FROM (
-        	SELECT
-        		EVENT_STATE, COUNTY, EVENT_CITY, NEIGHBORHOOD, COUNT(*) AS THE_COUNT
-        	FROM HASHES
-        	WHERE HASHES.KENNEL_KY = ?
-        	GROUP BY EVENT_STATE, COUNTY, EVENT_CITY,NEIGHBORHOOD
-        	ORDER BY EVENT_STATE, COUNTY, EVENT_CITY,NEIGHBORHOOD
-        ) TEMPTABLE
-        WHERE
-        	EVENT_STATE IS NOT NULL AND EVENT_STATE != '' AND
-        	COUNTY IS NOT NULL AND COUNTY != '' AND
-        	EVENT_CITY IS NOT NULL AND EVENT_CITY != ''
-        ORDER BY THE_COUNT DESC";
-
-        #1. Query the db
-        $locationBreakdownValues = $this->fetchAll($locationBreakdownSql, array((int) $kennelKy));
-        #4. Create the formatted data for the sunburst graph
-        $locationBreakdownFormattedData = convertToFormattedHiarchyV2($locationBreakdownValues);
-
-
-        # Establish and set the return value
-        $returnValue = $this->render('kennel_chart_details.twig',array(
-          'pageTitle' => 'Kennel Charts and Details',
-          'kennelName' => $kennelValue['KENNEL_NAME'],
-          'location_breakdown_formatted_data' => $locationBreakdownFormattedData,
-          #'hasherValue' => $hasher,
-          #'hashCount' => $hashCountValue['THE_COUNT'],
-          #'hareCount' => $hareCountValue['THE_COUNT'],
-          'kennel_abbreviation' => $kennel_abbreviation,
-          'hashes_by_year_list' => $hashesByYearList,
-          #'harings_by_year_list' => $haringsByYearList,
-          'hashes_by_month_name_list' => $theHashesByMonthNameList,
-          'hashes_by_quarter_list' => $theHashesByQuarterList,
-          'hashes_by_state_list' => $theHashesByStateList,
-          'hashes_by_county_list' => $theHashesByCountyList,
-          'hashes_by_postal_code_list' => $theHashesByPostalCodeList,
-          'hashes_by_day_name_list' => $theHashesByDayNameList,
-          'city_hashings_count_list' => $cityHashingsCountList,
-          'city_hashings_max_value' => $cityHashingsCountMax,
-          'the_hashes' => $theHashes,
-          'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
-          'avg_lat' => $avgLat,
-          'avg_lng' => $avgLng,
-          'hash_count' => $hashCountForKennel,
-          'distinct_hasher_count' => $distinctHasherCountForKennel,
-          'distinct_hare_counts' => $distinctHareCounts,
-          'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel,
-          'hareTypes' => count($hareTypes) > 1 ? $hareTypes : array(),
-          'overall' => count($hareTypes) > 1 ? "Overall " : ""
-        ));
-
-        # Return the return value
-        return $returnValue;
+    #Obtain the number of distinct hares by type
+    $distinctHareCounts = [];
+    foreach($hareTypes as &$hareType) {
+      $distinctHareCountValueForKennel = $this->fetchAssoc($this->sqlQueries->getKennelNumOfDistinctHares(), [ $kennelKy, $hareType['HARE_TYPE'] ]);
+      $distinctHareCounts[$hareType['HARE_TYPE_NAME']] = $distinctHareCountValueForKennel['THE_COUNT'];
     }
+
+    # Obtain the hashes by month (name)
+    $theHashesByMonthNameList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByMonthName(), [ $kennelKy ]);
+
+    # Obtain the hashes by quarter
+    $theHashesByQuarterList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByQuarter(), [ $kennelKy ]);
+
+    # Obtain the hashes by quarter
+    $theHashesByStateList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByState(), [ $kennelKy ]);
+
+    # Obtain the hashes by county
+    $theHashesByCountyList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByCounty(), [ $kennelKy ]);
+
+    # Obtain the hashes by postal code
+    $theHashesByPostalCodeList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByPostalCode(), [ $kennelKy ]);
+
+    # Obtain the hashes by day name
+    $theHashesByDayNameList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByDayname(), [ $kennelKy ]);
+
+    #Obtain the hashes by year
+    $sqlHashesByYear = "
+      SELECT YEAR(EVENT_DATE) AS THE_VALUE, COUNT(*) AS THE_COUNT
+        FROM HASHES
+       WHERE HASHES.KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE)";
+    $hashesByYearList = $this->fetchAll($sqlHashesByYear, [ $kennelKy ]);
+
+    #Query the database
+    $cityHashingsCountList = $this->fetchAll($this->sqlQueries->getKennelHashCountsByCity(), [ $kennelKy ]);
+
+    #Obtain largest entry from the list
+    $cityHashingsCountMax = 1;
+    if(isset($cityHashingsCountList[0]['THE_COUNT'])){
+      $cityHashingsCountMax = $cityHashingsCountList[0]['THE_COUNT'];
+    }
+
+    #0. Define the query for the state / county / city / neighborhood chart
+    $locationBreakdownSql = "
+      SELECT CASE WHEN NEIGHBORHOOD ='' THEN CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/','123BLANK123','/',THE_COUNT)
+                  ELSE CONCAT(EVENT_STATE,'/',COUNTY,'/',EVENT_CITY,'/',NEIGHBORHOOD,'/',THE_COUNT)
+              END AS THE_VALUE, THE_COUNT
+        FROM (SELECT EVENT_STATE, COUNTY, EVENT_CITY, NEIGHBORHOOD, COUNT(*) AS THE_COUNT
+                FROM HASHES
+               WHERE HASHES.KENNEL_KY = ?
+               GROUP BY EVENT_STATE, COUNTY, EVENT_CITY,NEIGHBORHOOD
+               ORDER BY EVENT_STATE, COUNTY, EVENT_CITY,NEIGHBORHOOD) TEMPTABLE
+       WHERE EVENT_STATE IS NOT NULL
+         AND EVENT_STATE != ''
+         AND COUNTY IS NOT NULL
+         AND COUNTY != ''
+         AND EVENT_CITY IS NOT NULL
+         AND EVENT_CITY != ''
+       ORDER BY THE_COUNT DESC";
+
+    #1. Query the db
+    $locationBreakdownValues = $this->fetchAll($locationBreakdownSql, [ $kennelKy ]);
+    #4. Create the formatted data for the sunburst graph
+    $locationBreakdownFormattedData = $this->helper->convertToFormattedHiarchyV2($locationBreakdownValues);
+
+    return $this->render('kennel_chart_details.twig', [
+      'pageTitle' => 'Kennel Charts and Details',
+      'kennelName' => $kennelValue['KENNEL_NAME'],
+      'location_breakdown_formatted_data' => $locationBreakdownFormattedData,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hashes_by_year_list' => $hashesByYearList,
+      'hashes_by_month_name_list' => $theHashesByMonthNameList,
+      'hashes_by_quarter_list' => $theHashesByQuarterList,
+      'hashes_by_state_list' => $theHashesByStateList,
+      'hashes_by_county_list' => $theHashesByCountyList,
+      'hashes_by_postal_code_list' => $theHashesByPostalCodeList,
+      'hashes_by_day_name_list' => $theHashesByDayNameList,
+      'city_hashings_count_list' => $cityHashingsCountList,
+      'city_hashings_max_value' => $cityHashingsCountMax,
+      'the_hashes' => $theHashes,
+      'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
+      'avg_lat' => $avgLat,
+      'avg_lng' => $avgLng,
+      'hash_count' => $hashCountForKennel,
+      'distinct_hasher_count' => $distinctHasherCountForKennel,
+      'distinct_hare_counts' => $distinctHareCounts,
+      'distinct_overall_hare_count' =>$distinctOverallHareCountForKennel,
+      'hareTypes' => count($hareTypes) > 1 ? $hareTypes : [],
+      'overall' => count($hareTypes) > 1 ? "Overall " : "" ]);
+  }
 
   #[Route('/{kennel_abbreviation}/hasherNameAnalysis2',
     methods: ['GET'],
