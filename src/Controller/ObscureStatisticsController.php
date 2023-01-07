@@ -1496,46 +1496,44 @@ class ObscureStatisticsController extends BaseController {
       'Tot_Evt_Participation_By_Hasher_List' => $totEvtParticipationByHasher ]);
   }
 
+  #[Route('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'min_hash_count' => '%app.pattern.min_hash_count%']
+  )]
+  public function viewFirstTimersChartsAction(string $kennel_abbreviation, int $min_hash_count) {
 
-    public function viewFirstTimersChartsAction(Request $request, string $kennel_abbreviation, int $min_hash_count){
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    # Obtain the average event attendance per year
+    $sqlNewComersByYear = $this->sqlQueries->getNewcomersByYear();
+    $newComersByYear = $this->fetchAll($sqlNewComersByYear, [ $kennelKy, $kennelKy, $kennelKy, $min_hash_count ]);
 
-      # Obtain the average event attendance per year
-      $sqlNewComersByYear = NEWCOMERS_BY_YEAR;
-      $newComersByYear = $this->fetchAll($sqlNewComersByYear, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy, $min_hash_count));
+    # Obtain the average event attendance per (year/month)
+    $sqlNewComersByYearQuarter = $this->sqlQueries->getNewcomersByYearQuarter();
+    $newComersByYearQuarter = $this->fetchAll($sqlNewComersByYearQuarter, [ $kennelKy, $kennelKy, $min_hash_count ]);
 
-      # Obtain the average event attendance per (year/month)
-      $sqlNewComersByYearQuarter = NEWCOMERS_BY_YEAR_QUARTER;
-      $newComersByYearQuarter = $this->fetchAll($sqlNewComersByYearQuarter, array((int) $kennelKy, (int) $kennelKy, $min_hash_count));
+    # Obtain the average event attendance per (year/quarter)
+    $sqlNewComersByYearMonth = $this->sqlQueries->getNewcomersByYearMonth();
+    $newComersByYearMonth = $this->fetchAll($sqlNewComersByYearMonth, [ $kennelKy, (int) $kennelKy, $min_hash_count ]);
 
-      # Obtain the average event attendance per (year/quarter)
-      $sqlNewComersByYearMonth = NEWCOMERS_BY_YEAR_MONTH;
-      $newComersByYearMonth = $this->fetchAll($sqlNewComersByYearMonth, array((int) $kennelKy, (int) $kennelKy, $min_hash_count));
+    # Obtain the average event attendance per (year/month)
+    $sqlNewComersByMonth = $this->sqlQueries->getNewcomersByMonth();
+    $newComersByMonth = $this->fetchAll($sqlNewComersByMonth, [ $kennelKy, $kennelKy, $min_hash_count ]);
 
-
-      # Obtain the average event attendance per (year/month)
-      $sqlNewComersByMonth = NEWCOMERS_BY_MONTH;
-      $newComersByMonth = $this->fetchAll($sqlNewComersByMonth, array((int) $kennelKy,(int) $kennelKy, $min_hash_count));
-
-      # Establish and set the return value
-      $returnValue = $this->render('newcomers_charts.twig',array(
-        'pageTitle' => 'First Timers / New Comers Statistics',
-        'firstHeader' => 'FIRST HEADER',
-        'secondHeader' => 'SECOND HEADER',
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'New_Comers_By_Year_List' => $newComersByYear,
-        'New_Comers_By_YearMonth_List' => $newComersByYearMonth,
-        'New_Comers_By_YearQuarter_List' => $newComersByYearQuarter,
-        'New_Comers_By_Month_List' => $newComersByMonth,
-        'Min_Hash_Count' => $min_hash_count
-      ));
-
-      # Return the return value
-      return $returnValue;
-
-    }
+    # Establish and set the return value
+    return $this->render('newcomers_charts.twig', [
+      'pageTitle' => 'First Timers / New Comers Statistics',
+      'firstHeader' => 'FIRST HEADER',
+      'secondHeader' => 'SECOND HEADER',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'New_Comers_By_Year_List' => $newComersByYear,
+      'New_Comers_By_YearMonth_List' => $newComersByYearMonth,
+      'New_Comers_By_YearQuarter_List' => $newComersByYearQuarter,
+      'New_Comers_By_Month_List' => $newComersByMonth,
+      'Min_Hash_Count' => $min_hash_count ]);
+  }
 
 
 
@@ -1682,48 +1680,47 @@ class ObscureStatisticsController extends BaseController {
 
         }
 
+  #[Route('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'min_hash_count' => '%app.pattern.min_hash_count%',
+      'month_count' => '%app.pattern.month_count%']
+  )]
+  public function viewLastTimersChartsAction(string $kennel_abbreviation, int $min_hash_count, int $month_count) {
 
-    public function viewLastTimersChartsAction(Request $request, string $kennel_abbreviation, int $min_hash_count, int $month_count){
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    # Obtain the average event attendance per year
+    $sqlLastComersByYear = $this->sqlQueries->getDepartersByYear();
+    $lastComersByYear = $this->fetchAll($sqlLastComersByYear, [ $kennelKy, $kennelKy, $min_hash_count, $month_count ]);
 
-      # Obtain the average event attendance per year
-      $sqlLastComersByYear = DEPARTERS_BY_YEAR;
-      $lastComersByYear = $this->fetchAll($sqlLastComersByYear, array((int) $kennelKy,(int) $kennelKy, $min_hash_count, $month_count));
+    # Obtain the average event attendance per (year/month)
+    $sqlLastComersByYearQuarter = $this->sqlQueries->getDepartersByYearQuarter();
+    $lastComersByYearQuarter = $this->fetchAll($sqlLastComersByYearQuarter, [ $kennelKy, $kennelKy, $min_hash_count, $month_count ]);
 
-      # Obtain the average event attendance per (year/month)
-      $sqlLastComersByYearQuarter = DEPARTERS_BY_YEAR_QUARTER;
-      $lastComersByYearQuarter = $this->fetchAll($sqlLastComersByYearQuarter, array((int) $kennelKy, (int) $kennelKy, $min_hash_count, $month_count));
+    # Obtain the average event attendance per (year/quarter)
+    $sqlLastComersByYearMonth = $this->sqlQueries->getDepartersByYearMonth();
+    $lastComersByYearMonth = $this->fetchAll($sqlLastComersByYearMonth, [ $kennelKy, $kennelKy, $min_hash_count, $month_count ]);
 
-      # Obtain the average event attendance per (year/quarter)
-      $sqlLastComersByYearMonth = DEPARTERS_BY_YEAR_MONTH;
-      $lastComersByYearMonth = $this->fetchAll($sqlLastComersByYearMonth, array((int) $kennelKy, (int) $kennelKy, $min_hash_count, $month_count));
+    # Obtain the average event attendance per (year/month)
+    $sqlLastComersByMonth = $this->sqlQueries->getDepartersByMonth();
+    $lastComersByMonth = $this->fetchAll($sqlLastComersByMonth, [ $kennelKy, $kennelKy, $min_hash_count, $month_count ]);
 
-
-      # Obtain the average event attendance per (year/month)
-      $sqlLastComersByMonth = DEPARTERS_BY_MONTH;
-      $lastComersByMonth = $this->fetchAll($sqlLastComersByMonth, array((int) $kennelKy,(int) $kennelKy, $min_hash_count, $month_count));
-
-      # Establish and set the return value
-      $returnValue = $this->render('lastcomers_charts.twig',array(
-        'pageTitle' => 'Last Comers Statistics',
-        'firstHeader' => 'FIRST HEADER',
-        'secondHeader' => 'SECOND HEADER',
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'Last_Comers_By_Year_List' => $lastComersByYear,
-        'Last_Comers_By_YearMonth_List' => $lastComersByYearMonth,
-        'Last_Comers_By_YearQuarter_List' => $lastComersByYearQuarter,
-        'Last_Comers_By_Month_List' => $lastComersByMonth,
-        'Min_Hash_Count' => $min_hash_count,
-        'Month_Count' => $month_count
-      ));
-
-      # Return the return value
-      return $returnValue;
-
-    }
-
+    # Establish and set the return value
+    return $this->render('lastcomers_charts.twig', [
+      'pageTitle' => 'Last Comers Statistics',
+      'firstHeader' => 'FIRST HEADER',
+      'secondHeader' => 'SECOND HEADER',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'Last_Comers_By_Year_List' => $lastComersByYear,
+      'Last_Comers_By_YearMonth_List' => $lastComersByYearMonth,
+      'Last_Comers_By_YearQuarter_List' => $lastComersByYearQuarter,
+      'Last_Comers_By_Month_List' => $lastComersByMonth,
+      'Min_Hash_Count' => $min_hash_count,
+      'Month_Count' => $month_count ]);
+  }
 
   #[Route('/{kennel_abbreviation}/trendingHashers/{day_count}',
     methods: ['GET'],

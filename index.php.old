@@ -1286,8 +1286,8 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController::viewAttendanceChartsAction');
 
 #First timers / last timers
-get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',              'ObscureStatisticsController::viewFirstTimersChartsAction');
-get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'ObscureStatisticsController::viewLastTimersChartsAction');
+#get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',              'ObscureStatisticsController::viewFirstTimersChartsAction');
+#get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'ObscureStatisticsController::viewLastTimersChartsAction');
 
 #Virgin harings charts
 get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController::virginHaringsChartsAction');
