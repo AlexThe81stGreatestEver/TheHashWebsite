@@ -1293,9 +1293,8 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController::virginHaringsChartsAction');
 
 #Distinct Hasher hashings charts
-get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStatisticsController::distinctHasherChartsAction');
-
-get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'ObscureStatisticsController::distinctHaresChartsAction');
+#get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStatisticsController::distinctHasherChartsAction');
+#get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'ObscureStatisticsController::distinctHaresChartsAction');
 
 #get('/{kennel_abbreviation}/hashes/{hash_id}',                                    'HashController::viewHashAction');
 #get('/{kennel_abbreviation}/hasherCountsForEvent/{hash_id}',               'HashController::hasherCountsForEventAction');
