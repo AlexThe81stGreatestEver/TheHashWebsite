@@ -1257,8 +1257,8 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/allCohareCounts',                                      'HashController::allCohareCountsPreActionJson');
 #post('/{kennel_abbreviation}/cohareCounts',                                        'HashController::getCohareCountsJson');
 
-get('/{kennel_abbreviation}/locationCounts',                                       'HashController::listLocationCountsPreActionJson');
-post('/{kennel_abbreviation}/locationCounts',                                      'HashController::getLocationCountsJson');
+#get('/{kennel_abbreviation}/locationCounts',                                       'HashController::listLocationCountsPreActionJson');
+#post('/{kennel_abbreviation}/locationCounts',                                      'HashController::getLocationCountsJson');
 
 #get('/{kennel_abbreviation}/listhashes2',                                         'HashEventController::listHashesPreActionJson');
 #post('/{kennel_abbreviation}/listhashes2',                                        'HashEventController::listHashesPostActionJson');
