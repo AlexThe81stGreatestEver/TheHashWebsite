@@ -1349,9 +1349,9 @@ get('/{kennel_abbreviation}/longestStreaks',                                    
 #get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController::aboutContactAction');
 
 # Hash name (substring) analysis
-get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController::hasherNameAnalysisAction');
-get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsController::hasherNameAnalysisAction2');
-get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController::hasherNameAnalysisWordCloudAction');
+#get('/{kennel_abbreviation}/hasherNameAnalysis',            'ObscureStatisticsController::hasherNameAnalysisAction');
+#get('/{kennel_abbreviation}/hasherNameAnalysis2',            'ObscureStatisticsController::hasherNameAnalysisAction2');
+#get('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',            'ObscureStatisticsController::hasherNameAnalysisWordCloudAction');
 
 # View the jumbo counts table
 #get('/{kennel_abbreviation}/jumboCountsTable',                 'HashController::jumboCountsTablePreActionJson');

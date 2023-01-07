@@ -1952,126 +1952,109 @@ class ObscureStatisticsController extends BaseController {
       'adminEmail' => str_rot13($this->getAdministratorEmail()) ]);
   }
 
-    #Landing screen for year in review
-    public function hasherNameAnalysisAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hasherNameAnalysis',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hasherNameAnalysisAction(string $kennel_abbreviation) {
 
-      #Establish the page title
-      $pageTitle = "Hasher Nickname Substring Frequency Analsis";
-      $pageSubTitle = "sub title";
-      $pageTableCaption = "page table caption";
+    #Establish the page title
+    $pageTitle = "Hasher Nickname Substring Frequency Analysis";
+    $pageSubTitle = "sub title";
+    $pageTableCaption = "page table caption";
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the SQL to execute
-      $SQL = "
-        SELECT HASHER_NAME, HASHER_KY
-          FROM HASHERS
-         WHERE HASHER_KY IN (
-               SELECT HASHER_KY
-                 FROM HASHINGS
-       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
+    #Define the SQL to execute
+    $SQL = "
+      SELECT HASHER_NAME, HASHER_KY
+        FROM HASHERS
+       WHERE HASHER_KY IN (SELECT HASHER_KY
+                            FROM HASHINGS
+       	                    JOIN HASHES
+                              ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                           WHERE KENNEL_KY = ?
+                             AND HASHER_NAME NOT LIKE '%NHN%'
+                             AND HASHER_NAME NOT LIKE 'JUST %')";
 
-      #Obtain the hare list
-      $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
-      $tokenizerString = " -\'&,!?().";
+    #Obtain the hare list
+    $hasherNameList = $this->fetchAll($SQL, [ $kennelKy ]);
+    $tokenizerString = " -\'&,!?().";
 
-      #Create an array that will be used to store the sub strings
-      $theArrayOfSubstrings = array();
+    #Create an array that will be used to store the sub strings
+    $theArrayOfSubstrings = [];
 
-      #Iterate through the hasher name list
-      foreach($hasherNameList as $hasherName){
-        $tempName = $hasherName['HASHER_NAME'];
-        $tempKey = $hasherName['HASHER_KY'];
-        #$this->container->get('monolog')->addDebug("Item = $temp");
-        $token = strtok($tempName, $tokenizerString);
-        while($token !== false){
+    #Iterate through the hasher name list
+    foreach($hasherNameList as $hasherName) {
+      $tempName = $hasherName['HASHER_NAME'];
+      $tempKey = $hasherName['HASHER_KY'];
+      $token = strtok($tempName, $tokenizerString);
+      while($token !== false){
 
-          #Log the substring
-          $lowerToken = strtolower($token);
+        #Log the substring
+        $lowerToken = strtolower($token);
 
-          #Create a hasher name and hasher key pair
-          $tempNameKey = array('NAME'=> $tempName, 'KEY' => $tempKey);
+        #Create a hasher name and hasher key pair
+        $tempNameKey = [ 'NAME'=> $tempName, 'KEY' => $tempKey ];
 
-          #Check if substring exists in the substring array
-          if(array_key_exists($lowerToken,$theArrayOfSubstrings)){
+        #Check if substring exists in the substring array
+        if(array_key_exists($lowerToken,$theArrayOfSubstrings)) {
 
-            #Grab the entry corresponding to this key (substring)
-            $tempEntry = $theArrayOfSubstrings[$lowerToken];
+          #Grab the entry corresponding to this key (substring)
+          $tempEntry = $theArrayOfSubstrings[$lowerToken];
 
-            #Push the entry onto the array
-            array_push($tempEntry, $tempNameKey);
+          #Push the entry onto the array
+          array_push($tempEntry, $tempNameKey);
 
-            #Replace the old value with the new value
-            $theArrayOfSubstrings[$lowerToken] = $tempEntry;
+          #Replace the old value with the new value
+          $theArrayOfSubstrings[$lowerToken] = $tempEntry;
 
-          }else{
-            $theArrayOfSubstrings[$lowerToken] = array($tempNameKey);
-          }
-
-
-          #Grab the next substring
-          $token = strtok($tokenizerString);
+        } else {
+          $theArrayOfSubstrings[$lowerToken] = [ $tempNameKey ];
         }
+
+        #Grab the next substring
+        $token = strtok($tokenizerString);
       }
-
-      #ksort($theArrayOfSubstrings);
-      uasort($theArrayOfSubstrings, function ($a, $b){
-        $a = count($a);
-        $b = count($b);
-        return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
-      });
-
-
-      #foreach($theArrayOfSubstrings as $key => $value){
-      #  $this->container->get('monolog')->addDebug("key:$key");
-      #  foreach($value as $individualEntry){
-      #    $this->container->get('monolog')->addDebug("   entry:$individualEntry");
-      #  }
-      #}
-
-      #Establish the return value
-      $returnValue = $this->render('hasher_name_substring_analysis.twig', array (
-        'pageTitle' => $pageTitle,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        #'theList' => $hasherNameList,
-        'subStringArray' => $theArrayOfSubstrings,
-        'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
-        'tableCaption1' => "Hashername sub-word",
-        'tableCaption2' => "All names containing the sub-word"
-      ));
-
-      #Return the return value
-      return $returnValue;
-
     }
 
-    private function extractRootWordFromToken($tokenValue){
+    uasort($theArrayOfSubstrings, function ($a, $b) {
+      $a = count($a);
+      $b = count($b);
+      return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
+    });
 
-      #establish the return value
-      $returnValue = null;
+    return $this->render('hasher_name_substring_analysis.twig', [
+      'pageTitle' => $pageTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'subStringArray' => $theArrayOfSubstrings,
+      'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
+      'tableCaption1' => "Hashername sub-word",
+      'tableCaption2' => "All names containing the sub-word" ]);
+  }
 
-      #Define the list of root words and their exceptions
-      #$rootArray = array (
-      #  "shit" => null,
-      #  "dick" => null,
-      #  "cum" => array("scum"),
-      #  "pussy" => null
-      #);
+  private function extractRootWordFromToken($tokenValue) {
 
-      #Iterate through the list of exceptions; see if there is a match; see if there is an exception match
+    #establish the return value
+    $returnValue = null;
 
-      $stemmer = StemmerFactory::create("en");
-      $stem = $stemmer->stem($tokenValue);
+    #Define the list of root words and their exceptions
+    #$rootArray = array (
+    #  "shit" => null,
+    #  "dick" => null,
+    #  "cum" => array("scum"),
+    #  "pussy" => null
+    #);
 
+    #Iterate through the list of exceptions; see if there is a match; see if there is an exception match
 
-      #Set the return value
-      $returnValue = $stem;
+    $stemmer = StemmerFactory::create("en");
+    $stem = $stemmer->stem($tokenValue);
 
-      #return the return value
-      return $returnValue;
-    }
+    return $stem;
+  }
 
     public function viewKennelChartsAction(Request $request, string $kennel_abbreviation){
 
@@ -2222,209 +2205,187 @@ class ObscureStatisticsController extends BaseController {
         return $returnValue;
     }
 
-    #Landing screen for year in review
-    public function hasherNameAnalysisAction2(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hasherNameAnalysis2',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hasherNameAnalysisAction2(string $kennel_abbreviation) {
 
-      #Establish the page title
-      $pageTitle = "Hasher Nickname Stemmed Substring Frequency Analysis";
-      $pageSubTitle = "sub title";
-      $pageTableCaption = "page table caption";
+    #Establish the page title
+    $pageTitle = "Hasher Nickname Stemmed Substring Frequency Analysis";
+    $pageSubTitle = "sub title";
+    $pageTableCaption = "page table caption";
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the SQL to execute
-      $SQL = "
-        SELECT HASHER_NAME, HASHER_KY
-          FROM HASHERS
-         WHERE HASHER_KY IN (
-               SELECT HASHER_KY
-                 FROM HASHINGS
-       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
+    #Define the SQL to execute
+    $SQL = "
+      SELECT HASHER_NAME, HASHER_KY
+        FROM HASHERS
+       WHERE HASHER_KY IN (SELECT HASHER_KY
+                             FROM HASHINGS
+                             JOIN HASHES
+                               ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                            WHERE KENNEL_KY = ?
+                              AND HASHER_NAME NOT LIKE '%NHN%'
+                              AND HASHER_NAME NOT LIKE 'JUST %')";
 
-      #Obtain the hare list
-      $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
-      $tokenizerString = " -\'&,!?().";
+    #Obtain the hare list
+    $hasherNameList = $this->fetchAll($SQL, [ $kennelKy ]);
+    $tokenizerString = " -\'&,!?().";
 
-      #Create an array that will be used to store the sub strings
-      $theArrayOfSubstrings = array();
+    #Create an array that will be used to store the sub strings
+    $theArrayOfSubstrings = [];
 
-      #Iterate through the hasher name list
-      foreach($hasherNameList as $hasherName){
-        $tempName = $hasherName['HASHER_NAME'];
-        $tempKey = $hasherName['HASHER_KY'];
-        #$this->container->get('monolog')->addDebug("Item = $temp");
-        $token = strtok($tempName, $tokenizerString);
-        while($token !== false){
+    #Iterate through the hasher name list
+    foreach($hasherNameList as $hasherName) {
+      $tempName = $hasherName['HASHER_NAME'];
+      $tempKey = $hasherName['HASHER_KY'];
+      $token = strtok($tempName, $tokenizerString);
+      while($token !== false) {
 
-          #Log the substring
-          $lowerToken = strtolower($token);
+        #Log the substring
+        $lowerToken = strtolower($token);
 
-          #test function call to stemmer function
-          $stemmedLowerToken = $this->extractRootWordFromToken($lowerToken);
-          #$this->container->get('monolog')->addDebug("tokenValue:$token|stem:$stemmedLowerToken");
-          $lowerToken = $stemmedLowerToken;
+        #test function call to stemmer function
+        $stemmedLowerToken = $this->extractRootWordFromToken($lowerToken);
+        $lowerToken = $stemmedLowerToken;
 
-          #Create a hasher name and hasher key pair
-          $tempNameKey = array('NAME'=> $tempName, 'KEY' => $tempKey);
+        #Create a hasher name and hasher key pair
+        $tempNameKey = [ 'NAME'=> $tempName, 'KEY' => $tempKey ];
 
-          #Check if substring exists in the substring array
-          if(array_key_exists($lowerToken,$theArrayOfSubstrings)){
+        #Check if substring exists in the substring array
+        if(array_key_exists($lowerToken, $theArrayOfSubstrings)) {
 
-            #Grab the entry corresponding to this key (substring)
-            $tempEntry = $theArrayOfSubstrings[$lowerToken];
+          #Grab the entry corresponding to this key (substring)
+          $tempEntry = $theArrayOfSubstrings[$lowerToken];
 
-            #Push the entry onto the array
-            array_push($tempEntry, $tempNameKey);
+          #Push the entry onto the array
+          array_push($tempEntry, $tempNameKey);
 
-            #Replace the old value with the new value
-            $theArrayOfSubstrings[$lowerToken] = $tempEntry;
+          #Replace the old value with the new value
+          $theArrayOfSubstrings[$lowerToken] = $tempEntry;
 
-          }else{
-            $theArrayOfSubstrings[$lowerToken] = array($tempNameKey);
-          }
-
-
-          #Grab the next substring
-          $token = strtok($tokenizerString);
+        } else {
+          $theArrayOfSubstrings[$lowerToken] = [ $tempNameKey ];
         }
+
+        #Grab the next substring
+        $token = strtok($tokenizerString);
       }
-
-      #ksort($theArrayOfSubstrings);
-      uasort($theArrayOfSubstrings, function ($a, $b){
-        $a = count($a);
-        $b = count($b);
-        return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
-      });
-
-
-      #foreach($theArrayOfSubstrings as $key => $value){
-      #  $this->container->get('monolog')->addDebug("key:$key");
-      #  foreach($value as $individualEntry){
-      #    $this->container->get('monolog')->addDebug("   entry:$individualEntry");
-      #  }
-      #}
-
-
-
-
-      #Establish the return value
-      $returnValue = $this->render('hasher_name_substring_analysis2.twig', array (
-        'pageTitle' => $pageTitle,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        #'theList' => $hasherNameList,
-        'subStringArray' => $theArrayOfSubstrings,
-        'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
-        'tableCaption1' => "Hashername sub-word",
-        'tableCaption2' => "All names containing the sub-word"
-      ));
-
-      #Return the return value
-      return $returnValue;
-
     }
 
+    uasort($theArrayOfSubstrings, function ($a, $b) {
+      $a = count($a);
+      $b = count($b);
+      return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
+    });
 
-    #Landing screen for year in review
-    public function hasherNameAnalysisWordCloudAction(Request $request, string $kennel_abbreviation){
-
-      #Establish the page title
-      $pageTitle = "Hasher Nickname Stemmed Substring Frequency Analysis";
-      $pageSubTitle = "sub title";
-      $pageTableCaption = "page table caption";
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the SQL to execute
-      $SQL = "
-        SELECT HASHER_NAME, HASHER_KY
-          FROM HASHERS
-         WHERE HASHER_KY IN (
-               SELECT HASHER_KY
-                 FROM HASHINGS
-       	         JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-                WHERE KENNEL_KY = ? AND HASHER_NAME NOT LIKE '%NHN%' AND HASHER_NAME NOT LIKE 'JUST %')";
-
-      #Obtain the hare list
-      $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
-      $tokenizerString = " -\'&,!?().";
-
-      #Create an array that will be used to store the sub strings
-      $theArrayOfSubstrings = array();
-
-      #Iterate through the hasher name list
-      foreach($hasherNameList as $hasherName){
-        $tempName = $hasherName['HASHER_NAME'];
-        $tempKey = $hasherName['HASHER_KY'];
-        #$this->container->get('monolog')->addDebug("Item = $temp");
-        $token = strtok($tempName, $tokenizerString);
-        while($token !== false){
-
-          #Log the substring
-          $lowerToken = strtolower($token);
-
-          #test function call to stemmer function
-          $stemmedLowerToken = $this->extractRootWordFromToken($lowerToken);
-          $lowerToken = $stemmedLowerToken;
-
-          #Create a hasher name and hasher key pair
-          $tempNameKey = array('NAME'=> $tempName, 'KEY' => $tempKey);
-
-          #Check if substring exists in the substring array
-          if(array_key_exists($lowerToken,$theArrayOfSubstrings)){
-
-            #Grab the entry corresponding to this key (substring)
-            $tempEntry = $theArrayOfSubstrings[$lowerToken];
-
-            #Push the entry onto the array
-            array_push($tempEntry, $tempNameKey);
-
-            #Replace the old value with the new value
-            $theArrayOfSubstrings[$lowerToken] = $tempEntry;
-
-          }else{
-            $theArrayOfSubstrings[$lowerToken] = array($tempNameKey);
-          }
+    #Establish the return value
+    return $this->render('hasher_name_substring_analysis2.twig', [
+      'pageTitle' => $pageTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'subStringArray' => $theArrayOfSubstrings,
+      'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
+      'tableCaption1' => "Hashername sub-word",
+      'tableCaption2' => "All names containing the sub-word" ]);
+  }
 
 
-          #Grab the next substring
-          $token = strtok($tokenizerString);
+  #[Route('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hasherNameAnalysisWordCloudAction(string $kennel_abbreviation) {
+
+    #Establish the page title
+    $pageTitle = "Hasher Nickname Stemmed Substring Frequency Analysis";
+    $pageSubTitle = "sub title";
+    $pageTableCaption = "page table caption";
+
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Define the SQL to execute
+    $SQL = "
+      SELECT HASHER_NAME, HASHER_KY
+        FROM HASHERS
+       WHERE HASHER_KY IN (SELECT HASHER_KY
+                             FROM HASHINGS
+                             JOIN HASHES
+                               ON HASHINGS.HASH_KY = HASHES.HASH_KY
+                            WHERE KENNEL_KY = ?
+                              AND HASHER_NAME NOT LIKE '%NHN%'
+                              AND HASHER_NAME NOT LIKE 'JUST %')";
+
+    #Obtain the hare list
+    $hasherNameList = $this->fetchAll($SQL,array((int) $kennelKy));
+    $tokenizerString = " -\'&,!?().";
+
+    #Create an array that will be used to store the sub strings
+    $theArrayOfSubstrings = [];
+
+    #Iterate through the hasher name list
+    foreach($hasherNameList as $hasherName) {
+      $tempName = $hasherName['HASHER_NAME'];
+      $tempKey = $hasherName['HASHER_KY'];
+      $token = strtok($tempName, $tokenizerString);
+      while($token !== false) {
+
+        #Log the substring
+        $lowerToken = strtolower($token);
+
+        #test function call to stemmer function
+        $stemmedLowerToken = $this->extractRootWordFromToken($lowerToken);
+        $lowerToken = $stemmedLowerToken;
+
+        #Create a hasher name and hasher key pair
+        $tempNameKey = [ 'NAME'=> $tempName, 'KEY' => $tempKey ];
+
+        #Check if substring exists in the substring array
+        if(array_key_exists($lowerToken, $theArrayOfSubstrings)){
+
+          #Grab the entry corresponding to this key (substring)
+          $tempEntry = $theArrayOfSubstrings[$lowerToken];
+
+          #Push the entry onto the array
+          array_push($tempEntry, $tempNameKey);
+
+          #Replace the old value with the new value
+          $theArrayOfSubstrings[$lowerToken] = $tempEntry;
+
+        } else {
+          $theArrayOfSubstrings[$lowerToken] = [ $tempNameKey ];
         }
+
+        #Grab the next substring
+        $token = strtok($tokenizerString);
       }
-
-      #ksort($theArrayOfSubstrings);
-      uasort($theArrayOfSubstrings, function ($a, $b){
-        $a = count($a);
-        $b = count($b);
-        return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
-      });
-
-      #Count up the names tied to each substring
-      $subStringCounts = array();
-      foreach($theArrayOfSubstrings as $keyValue => $valueValue){
-        $tempCount = count($valueValue);
-        $temp = array("THE_VALUE" => $keyValue, "THE_COUNT" => $tempCount);
-        array_push($subStringCounts,$temp);
-      }
-
-
-      #Establish the return value
-      $returnValue = $this->render('wordcloud_hashername_analysis.twig', array (
-        'pageTitle' => $pageTitle,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'subStringArray' => $subStringCounts,
-        'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
-        'tableCaption1' => "Hashername sub-word",
-        'tableCaption2' => "All names containing the sub-word"
-      ));
-
-      #Return the return value
-      return $returnValue;
-
     }
 
+    uasort($theArrayOfSubstrings, function ($a, $b) {
+      $a = count($a);
+      $b = count($b);
+      return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
+    });
 
+    #Count up the names tied to each substring
+    $subStringCounts = [];
+    foreach($theArrayOfSubstrings as $keyValue => $valueValue) {
+      $tempCount = count($valueValue);
+      $temp = [ "THE_VALUE" => $keyValue, "THE_COUNT" => $tempCount ];
+      array_push($subStringCounts,$temp);
+    }
 
+    return $this->render('wordcloud_hashername_analysis.twig', [
+      'pageTitle' => $pageTitle,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'subStringArray' => $subStringCounts,
+      'pageSubTitle' => "The individual words in the hashernames, from most common to least common",
+      'tableCaption1' => "Hashername sub-word",
+      'tableCaption2' => "All names containing the sub-word" ]);
+  }
 }
