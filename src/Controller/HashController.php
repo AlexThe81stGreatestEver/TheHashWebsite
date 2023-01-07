@@ -3082,86 +3082,85 @@ function addHasherStatusToQuery(string $query) {
     return $returnValue;
   }
 
-  public function hashAttendanceByHareLowestAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashattendance/byhare/lowest',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashAttendanceByHareLowestAction(string $kennel_abbreviation) {
 
     #Define the SQL to execute
-    $sql = LOWEST_HASH_ATTENDANCE_BY_HARE;
+    $sql = $this->sqlQueries->getLowestHashAttendanceByHare();
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array($kennelKy));
+    $hashList = $this->fetchAll($sql, [$kennelKy] );
 
     # Establish and set the return value
-    $returnValue = $this->render('name_number_list.twig',array(
+    return $this->render('name_number_list.twig', [
       'pageTitle' => 'Lowest hash attendance by hare',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hasher Count',
       'tableCaption' => 'The lowest hash attendance for each hare.',
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'LowestHashAttendanceByHare'
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'pageTracking' => 'LowestHashAttendanceByHare' ]);
   }
 
-
-public function hashAttendanceByHareHighestAction(Request $request, string $kennel_abbreviation){
-
-  #Define the SQL to execute
-  $sql = HIGHEST_HASH_ATTENDANCE_BY_HARE;
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array($kennelKy));
-
-  # Establish and set the return value
-  $returnValue = $this->render('name_number_list.twig',array(
-    'pageTitle' => 'Highest attended hashes by hare',
-    'columnOneName' => 'Hare Name',
-    'columnTwoName' => 'Hasher Count',
-    'tableCaption' => 'The highest attended hashes for each hare.',
-    'theList' => $hashList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'HighestHashAttendanceByHare'
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
-
-
-
-  public function hashAttendanceByHareAverageAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashattendance/byhare/highest',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashAttendanceByHareHighestAction(string $kennel_abbreviation) {
 
     #Define the SQL to execute
-    $sql = AVERAGE_HASH_ATTENDANCE_BY_HARE;
+    $sql = $this->sqlQueries->getHighestHashAttendanceByHare();
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array($kennelKy));
+    $hashList = $this->fetchAll($sql, [ $kennelKy ]);
 
     # Establish and set the return value
-    $returnValue = $this->render('name_number_list.twig',array(
+    return $this->render('name_number_list.twig', [
+      'pageTitle' => 'Highest attended hashes by hare',
+      'columnOneName' => 'Hare Name',
+      'columnTwoName' => 'Hasher Count',
+      'tableCaption' => 'The highest attended hashes for each hare.',
+      'theList' => $hashList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'HighestHashAttendanceByHare' ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/hashattendance/byhare/average',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashAttendanceByHareAverageAction(string $kennel_abbreviation) {
+
+    #Define the SQL to execute
+    $sql = $this->sqlQueries->getAverageHashAttendanceByHare();
+
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Execute the SQL statement; create an array of rows
+    $hashList = $this->fetchAll($sql, [ $kennelKy ]);
+
+    # Establish and set the return value
+    return $this->render('name_number_list.twig', [
       'pageTitle' => 'Average hash attendance by hare',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hasher Count',
       'tableCaption' => 'The average hash attendance for each hare.',
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'AverageHashAttendanceByHare'
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'pageTracking' => 'AverageHashAttendanceByHare' ]);
   }
 
 

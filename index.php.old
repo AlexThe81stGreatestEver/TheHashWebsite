@@ -1333,9 +1333,9 @@ get('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',           
 get('/{kennel_abbreviation}/coharelist/byhare/{hare_type}/{hasher_id}',           'HashController::coharelistByHareAction');
 get('/{kennel_abbreviation}/coharecount/byhare/allhashes/{hasher_id}',            'HashController::cohareCountByHareAllHashesAction');
 get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',          'HashController::cohareCountByHareAction');
-get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HashController::hashAttendanceByHareLowestAction');
-get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HashController::hashAttendanceByHareHighestAction');
-get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HashController::hashAttendanceByHareAverageAction');
+#get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HashController::hashAttendanceByHareLowestAction');
+#get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HashController::hashAttendanceByHareHighestAction');
+#get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HashController::hashAttendanceByHareAverageAction');
 get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController::hashAttendanceByHareGrandTotalNonDistinctHashersAction');
 get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController::hashAttendanceByHareGrandTotalDistinctHashersAction');
 get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController::hasherCountsByHareAction');
