@@ -1436,8 +1436,8 @@ get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/date', 'Obscu
 get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController::longestCareerAction');
 get('/{kennel_abbreviation}/highest/averageDaysBetweenHashes','ObscureStatisticsController::highestAverageDaysBetweenHashesAction');
 get('/{kennel_abbreviation}/lowest/averageDaysBetweenHashes','ObscureStatisticsController::lowestAverageDaysBetweenHashesAction');
-get('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}','ObscureStatisticsController::everyonesLatestHashesAction');
-get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','ObscureStatisticsController::everyonesFirstHashesAction');
+#get('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}','ObscureStatisticsController::everyonesLatestHashesAction');
+#get('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}','ObscureStatisticsController::everyonesFirstHashesAction');
 
 get('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings','ObscureStatisticsController::highestAverageDaysBetweenAllHaringsAction');
 get('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings','ObscureStatisticsController::lowestAverageDaysBetweenAllHaringsAction');

@@ -1053,101 +1053,72 @@ class ObscureStatisticsController extends BaseController {
 
     }
 
+  #[Route('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'min_hash_count' => '%app.pattern.min_hash_count%']
+  )]
+  public function everyonesLatestHashesAction(string $kennel_abbreviation, int $min_hash_count) {
 
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    public function everyonesLatestHashesAction(Request $request, string $kennel_abbreviation, int $min_hash_count){
+    #Define the sql
+    $theSql = $this->sqlQueries->getLongestHashingCareerInDays();
+    $theSql = str_replace("XORDERCOLUMNX", "LATEST_HASH_DATE", $theSql);
+    $theSql = str_replace("XUPORDOWNX", "DESC", $theSql);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $min_hash_count ]);
 
-      #Define the sql
-      $theSql = LONGEST_HASHING_CAREER_IN_DAYS;
-      $theSql = str_replace("XORDERCOLUMNX","LATEST_HASH_DATE",LONGEST_HASHING_CAREER_IN_DAYS);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
+    #Define the page sub title
+    $pageSubTitle = "Everyone's latest hash, sorted by date";
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $min_hash_count
-      ));
+    #Define the table caption
+    $tableCaption = "Minimum hashing count: $min_hash_count";
 
-      #Define the page sub title
-      $pageSubTitle = "Everyone's latest hash, sorted by date";
+    #Add the results into the twig template
+    return $this->render('career_length_by_day.twig', [
+      'pageTitle' => $pageSubTitle,
+      'pageSubTitle' => "",
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-      #Define the table caption
-      $tableCaption = "Minimum hashing count: $min_hash_count";
+  #[Route('/{kennel_abbreviation}/everyones/first/hashes/{min_hash_count}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'min_hash_count' => '%app.pattern.min_hash_count%']
+  )]
+  public function everyonesFirstHashesAction(string $kennel_abbreviation, int $min_hash_count) {
 
-      #Add the results into the twig template
-      $returnValue = $this->render('career_length_by_day.twig',array(
-        'pageTitle' => $pageSubTitle,
-        'pageSubTitle' => "",
-        'tableCaption' => $tableCaption,
-        #'pageCaption' => $pageCaption,
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        #'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Return the return value
-      return $returnValue;
+    #Define the sql
+    $theSql = $this->sqlQueries->getLongestHashingCareerInDays();
+    $theSql = str_replace("XORDERCOLUMNX", "FIRST_HASH_DATE", $theSql);
+    $theSql = str_replace("XUPORDOWNX", "DESC", $theSql);
 
-    }
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $min_hash_count ]);
 
-    public function everyonesFirstHashesAction(Request $request, string $kennel_abbreviation, int $min_hash_count){
+    #Define the page sub title
+    $pageSubTitle = "Everyone's first hash, sorted by date";
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Define the table caption
+    $tableCaption = "Minimum hashing count: $min_hash_count";
 
-      #Define the sql
-      $theSql = LONGEST_HASHING_CAREER_IN_DAYS;
-      $theSql = str_replace("XORDERCOLUMNX","FIRST_HASH_DATE",LONGEST_HASHING_CAREER_IN_DAYS);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int)$min_hash_count
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Everyone's first hash, sorted by date";
-
-      #Define the table caption
-      $tableCaption = "Minimum hashing count: $min_hash_count";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('career_length_by_day.twig',array(
-        'pageTitle' => $pageSubTitle,
-        'pageSubTitle' => "",
-        'tableCaption' => $tableCaption,
-        #'pageCaption' => $pageCaption,
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        #'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
+    #Add the results into the twig template
+    return $this->render('career_length_by_day.twig', [
+      'pageTitle' => $pageSubTitle,
+      'pageSubTitle' => "",
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
     public function highestAverageDaysBetweenHashesAction(Request $request, string $kennel_abbreviation){
 
