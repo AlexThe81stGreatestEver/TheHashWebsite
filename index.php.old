@@ -1247,8 +1247,8 @@ get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 
 #post('/{kennel_abbreviation}/listhashers2',                                       'HashController::getHasherListJson');
 
-get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController::listVirginHaringsPreActionJson');
-post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController::getVirginHaringsListJson');
+#get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController::listVirginHaringsPreActionJson');
+#post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController::getVirginHaringsListJson');
 
 get('/{kennel_abbreviation}/attendancePercentages',                                'HashController::attendancePercentagesPreActionJson');
 post('/{kennel_abbreviation}/attendancePercentages',                               'HashController::attendancePercentagesPostActionJson');
@@ -1290,7 +1290,7 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/lastTimersStatistics/{min_hash_count}/{month_count}', 'ObscureStatisticsController::viewLastTimersChartsAction');
 
 #Virgin harings charts
-get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController::virginHaringsChartsAction');
+#get('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',  'ObscureStatisticsController::virginHaringsChartsAction');
 
 #Distinct Hasher hashings charts
 get('/{kennel_abbreviation}/distinctHasherStatistics',              'ObscureStatisticsController::distinctHasherChartsAction');

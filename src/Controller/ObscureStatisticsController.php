@@ -1538,51 +1538,51 @@ class ObscureStatisticsController extends BaseController {
 
 
 
-        public function virginHaringsChartsAction(Request $request, int $hare_type, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function virginHaringsChartsAction(int $hare_type, string $kennel_abbreviation) {
 
-          #Obtain the kennel key
-          $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-          $hareTypeName = $this->getHareTypeName($hare_type);
+    $hareTypeName = $this->getHareTypeName($hare_type);
 
-          # Obtain the average event attendance per year
-          $sqlByYear = VIRGIN_HARINGS_BY_YEAR;
-          $listByYear = $this->fetchAll($sqlByYear, array((int) $kennelKy, (int) $kennelKy,$hare_type));
+    # Obtain the average event attendance per year
+    $sqlByYear = $this->sqlQueries->getVirginHaringsByYear();
+    $listByYear = $this->fetchAll($sqlByYear, [ $kennelKy, $kennelKy, $hare_type ]);
 
-          # Obtain the average event attendance per (year/month)
-          $sqlByYearQuarter = VIRGIN_HARINGS_BY_YEAR_QUARTER;
-          $listByYearQuarter = $this->fetchAll($sqlByYearQuarter, array((int) $kennelKy,$hare_type));
+    # Obtain the average event attendance per (year/month)
+    $sqlByYearQuarter = $this->sqlQueries->getVirginHaringsByYearQuarter();
+    $listByYearQuarter = $this->fetchAll($sqlByYearQuarter, [ $kennelKy, $hare_type ]);
 
-          # Obtain the average event attendance per (year/quarter)
-          $sqlByYearMonth = VIRGIN_HARINGS_BY_YEAR_MONTH;
-          $listByYearMonth = $this->fetchAll($sqlByYearMonth, array((int) $kennelKy,$hare_type));
+    # Obtain the average event attendance per (year/quarter)
+    $sqlByYearMonth = $this->sqlQueries->getVirginHaringsByYearMonth();
+    $listByYearMonth = $this->fetchAll($sqlByYearMonth, [ $kennelKy, $hare_type ]);
 
-          # Obtain the average event attendance per (year/month)
-          $sqlByMonth = VIRGIN_HARINGS_BY_MONTH;
-          $listByMonth = $this->fetchAll($sqlByMonth, array((int) $kennelKy,$hare_type));
+    # Obtain the average event attendance per (year/month)
+    $sqlByMonth = $this->sqlQueries->getVirginHaringsByMonth();
+    $listByMonth = $this->fetchAll($sqlByMonth, [ $kennelKy, $hare_type ]);
 
-          # Establish and set the return value
-          $returnValue = $this->render('generic_charts_template.twig',array(
-            'pageTitle' => 'Virgin ('.$hareTypeName.') Harings Statistics',
-            'kennel_abbreviation' => $kennel_abbreviation,
-            'List_By_Year_List' => $listByYear,
-            'List_By_YearMonth_List' => $listByYearMonth,
-            'List_By_YearQuarter_List' => $listByYearQuarter,
-            'List_By_Month_List' => $listByMonth,
-            'BY_YEAR_BAR_LABEL' => 'Total Number of Virgin Harings',
-            'BY_YEAR_TITLE' => 'Virgin Harings Per Year',
-            'BY_MONTH_BAR_LABEL' => 'Total Virgin Harings By Month',
-            'BY_MONTH_TITLE' => 'Virgin Harings Per Month',
-            'BY_YEAR_QUARTER_BAR_LABEL' => 'Total Virgin Harings By Year/Quarter',
-            'BY_YEAR_QUARTER_TITLE' => 'Virgin Harings Per Year/Quarter',
-            'BY_YEAR_MONTH_BAR_LABEL' => 'Total Virgin Harings By Year/Month',
-            'BY_YEAR_MONTH_TITLE' => 'Virgin Harings Per Year/Month',
-          ));
-
-          # Return the return value
-          return $returnValue;
-
-        }
+    # Establish and set the return value
+    return $this->render('generic_charts_template.twig', [
+      'pageTitle' => 'Virgin ('.$hareTypeName.') Harings Statistics',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'List_By_Year_List' => $listByYear,
+      'List_By_YearMonth_List' => $listByYearMonth,
+      'List_By_YearQuarter_List' => $listByYearQuarter,
+      'List_By_Month_List' => $listByMonth,
+      'BY_YEAR_BAR_LABEL' => 'Total Number of Virgin Harings',
+      'BY_YEAR_TITLE' => 'Virgin Harings Per Year',
+      'BY_MONTH_BAR_LABEL' => 'Total Virgin Harings By Month',
+      'BY_MONTH_TITLE' => 'Virgin Harings Per Month',
+      'BY_YEAR_QUARTER_BAR_LABEL' => 'Total Virgin Harings By Year/Quarter',
+      'BY_YEAR_QUARTER_TITLE' => 'Virgin Harings Per Year/Quarter',
+      'BY_YEAR_MONTH_BAR_LABEL' => 'Total Virgin Harings By Year/Month',
+      'BY_YEAR_MONTH_TITLE' => 'Virgin Harings Per Year/Month' ]);
+  }
 
 
 

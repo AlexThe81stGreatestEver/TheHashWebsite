@@ -272,23 +272,24 @@ class HashController extends BaseController
     ]);
   }
 
-  public function listVirginHaringsPreActionJson(Request $request, int $hare_type, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/listvirginharings/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function listVirginHaringsPreActionJson(int $hare_type, string $kennel_abbreviation) {
 
     $hareTypeName = $this->getHareTypeName($hare_type);
 
     # Establish and set the return value
-    $returnValue = $this->render('virgin_haring_list_json.twig',array(
+    return $this->render('virgin_haring_list_json.twig', [
       'pageTitle' => 'The List of Virgin ('.$hareTypeName.') Harings',
       'pageSubTitle' => '',
       'kennel_abbreviation' => $kennel_abbreviation,
       'pageCaption' => "",
       'tableCaption' => "",
-      'hare_type' => $hare_type
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'hare_type' => $hare_type ]);
   }
 
   #[Route('/{kennel_abbreviation}/CohareCounts/{hare_type}',
@@ -798,14 +799,17 @@ class HashController extends BaseController
   }
 
 
-  public function getVirginHaringsListJson(Request $request, int $hare_type, string $kennel_abbreviation) {
-
-    #$this->container->get('monolog')->addDebug("Entering the function------------------------");
+  #[Route('/{kennel_abbreviation}/listvirginharings/{hare_type}',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function getVirginHaringsListJson(int $hare_type, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Obtain the post parameters
-    #$inputDraw = $_POST['draw'] ;
     $inputStart = $_POST['start'] ;
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
@@ -813,29 +817,25 @@ class HashController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
-      #$this->container->get('monolog')->addDebug("input start is not numeric: $inputStart");
       $inputStart = 0;
     }
 
     #Validate input length
     if(!is_numeric($inputLength)){
-      #$this->container->get('monolog')->addDebug("input length is not numeric");
       $inputStart = "0";
       $inputLength = "50";
     } else if($inputLength == "-1"){
-      #$this->container->get('monolog')->addDebug("input length is negative one (all rows selected)");
       $inputStart = "0";
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -845,47 +845,41 @@ class HashController extends BaseController
     $inputOrderColumnIncremented = "2";
     $inputOrderDirectionExtracted = "asc";
     if(!is_null($inputOrderRaw)){
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw not null");
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-    }else{
-      #$this->container->get('monolog')->addDebug("inside inputOrderRaw is null");
     }
 
     #-------------- End: Modify the input parameters  --------------------------
 
-
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT HASHERS.HASHER_NAME AS HASHER_NAME,
-                   FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
-                   HASHERS.HASHER_KY AS HASHER_KY,
-                   (SELECT HASH_KY FROM HASHES
-                     WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
-                       AND HASHES.KENNEL_KY = ?)
-                        AS FIRST_HARING_KEY
-          FROM HASHERS
-          JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                       MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
-                 FROM HARINGS
-                 JOIN HASHES
-                   ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-                WHERE HASHES.KENNEL_KY = ?
-                  AND HARINGS.HARE_TYPE & ? != 0
-                GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
-            ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
-         WHERE HASHERS.HASHER_NAME LIKE ?
-         ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-         LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT HASHERS.HASHER_NAME AS HASHER_NAME, FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE AS FIRST_HARING_DATE,
+             HASHERS.HASHER_KY AS HASHER_KY,
+             (SELECT HASH_KY
+                FROM HASHES
+               WHERE EVENT_DATE=FIRST_HARING_EVENT_TABLE.FIRST_HASH_DATE
+                 AND HASHES.KENNEL_KY = ?) AS FIRST_HARING_KEY
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY, MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+                FROM HARINGS
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+                 AND HARINGS.HARE_TYPE & ? != 0
+               GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
+          ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY
+       WHERE HASHERS.HASHER_NAME LIKE ?
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
     $sqlFilteredCount = "
       SELECT COUNT(*) AS THE_COUNT
         FROM HASHERS
-        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY, MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
                FROM HARINGS
                JOIN HASHES
                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
@@ -899,35 +893,35 @@ class HashController extends BaseController
     $sqlUnfilteredCount = "
       SELECT COUNT(*) AS THE_COUNT
         FROM HASHERS
-        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY,
-                     MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HASHER_KY, MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE
                 FROM HARINGS
                 JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
                WHERE HASHES.KENNEL_KY = ?
                  AND HARINGS.HARE_TYPE & ? != 0
                GROUP BY HARINGS.HARINGS_HASHER_KY) FIRST_HARING_EVENT_TABLE
-          ON ((HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY))";
+          ON HASHERS.HASHER_KY = FIRST_HARING_EVENT_TABLE.HASHER_KY";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array($kennelKy, $kennelKy, $hare_type, (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $hare_type, (string) $inputSearchValueModified ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy, $hare_type)))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy, $hare_type ]))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy, $hare_type, (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $kennelKy, $hare_type, $inputSearchValueModified ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
