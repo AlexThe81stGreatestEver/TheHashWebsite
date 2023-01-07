@@ -1263,9 +1263,9 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/listhashes2',                                         'HashEventController::listHashesPreActionJson');
 #post('/{kennel_abbreviation}/listhashes2',                                        'HashEventController::listHashesPostActionJson');
 
-get('/{kennel_abbreviation}/eventsHeatMap',                                        'ObscureStatisticsController::kennelEventsHeatMap');
-get('/{kennel_abbreviation}/eventsClusterMap',                                        'ObscureStatisticsController::kennelEventsClusterMap');
-get('/{kennel_abbreviation}/eventsMarkerMap',                                        'ObscureStatisticsController::kennelEventsMarkerMap');
+#get('/{kennel_abbreviation}/eventsHeatMap',                                        'ObscureStatisticsController::kennelEventsHeatMap');
+#get('/{kennel_abbreviation}/eventsClusterMap',                                        'ObscureStatisticsController::kennelEventsClusterMap');
+#get('/{kennel_abbreviation}/eventsMarkerMap',                                        'ObscureStatisticsController::kennelEventsMarkerMap');
 
 #get('/{kennel_abbreviation}/listStreakers/byhash/{hash_id}',              'HashController::listStreakersByHashAction');
 

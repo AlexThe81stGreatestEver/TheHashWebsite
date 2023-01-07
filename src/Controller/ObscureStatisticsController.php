@@ -23,106 +23,126 @@ class ObscureStatisticsController extends BaseController {
     $this->sqlQueries = $sqlQueries;
   }
 
-  public function kennelEventsHeatMap(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/eventsHeatMap',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function kennelEventsHeatMap(string $kennel_abbreviation){
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     # Obtain the hashes
-    $sqlTheHashes = "SELECT HASHES.* FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
+    $sqlTheHashes = "
+      SELECT HASHES.*
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $kennelKy ]);
 
     #Obtain the average lat
-    $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $kennelKy ]);
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
     # Establish and set the return value
-    $returnValue = $this->render('generic_heat_map_page.twig',array(
+    return $this->render('generic_heat_map_page.twig', [
       'pageTitle' => 'The Kennel Heat Map',
       'pageSubTitle' => 'Location of all the hashes',
       'kennel_abbreviation' => $kennel_abbreviation,
       'the_hashes' => $theHashes,
       'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
       'avg_lat' => $avgLat,
-      'avg_lng' => $avgLng
-    ));
-
-    # Return the return value
-    return $returnValue;
-
-
+      'avg_lng' => $avgLng ]);
   }
 
-  public function kennelEventsClusterMap(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/eventsClusterMap',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function kennelEventsClusterMap(string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     # Obtain the hashes
-    $sqlTheHashes = "SELECT HASHES.* FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
+    $sqlTheHashes = "
+      SELECT HASHES.*
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $kennelKy ]);
 
     #Obtain the average lat
-    $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $kennelKy ]);
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
     # Establish and set the return value
-    $returnValue = $this->render('generic_cluster_map_page.twig',array(
+    return $this->render('generic_cluster_map_page.twig', [
       'pageTitle' => 'The Kennel Cluster Map',
       'pageSubTitle' => 'Location of all the hashes',
       'kennel_abbreviation' => $kennel_abbreviation,
       'the_hashes' => $theHashes,
       'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
       'avg_lat' => $avgLat,
-      'avg_lng' => $avgLng
-    ));
-
-    # Return the return value
-    return $returnValue;
-
-
+      'avg_lng' => $avgLng ]);
   }
 
-  public function kennelEventsMarkerMap(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/eventsMarkerMap',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function kennelEventsMarkerMap(string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     # Obtain the hashes
-    $sqlTheHashes = "SELECT HASHES.* FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theHashes = $this->fetchAll($sqlTheHashes, array($kennelKy));
+    $sqlTheHashes = "
+      SELECT HASHES.*
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $kennelKy ]);
 
     #Obtain the average lat
-    $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM HASHES
-    WHERE KENNEL_KY = ? and LAT is not null and LNG is not null";
-    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array($kennelKy));
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+         AND LAT IS NOT NULL
+         AND LNG IS NOT NULL";
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $kennelKy ]);
     $avgLat = $theAverageLatLong['THE_LAT'];
     $avgLng = $theAverageLatLong['THE_LNG'];
 
     # Establish and set the return value
-    $returnValue = $this->render('generic_marker_map_page.twig',array(
+    return $this->render('generic_marker_map_page.twig', [
       'pageTitle' => 'The Kennel Marker Map',
       'pageSubTitle' => 'Location of all the hashes',
       'kennel_abbreviation' => $kennel_abbreviation,
       'the_hashes' => $theHashes,
       'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
       'avg_lat' => $avgLat,
-      'avg_lng' => $avgLng
-    ));
-
-    # Return the return value
-    return $returnValue;
-
-
+      'avg_lng' => $avgLng ]);
   }
 
     #Landing screen for year in review
