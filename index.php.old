@@ -1313,12 +1313,12 @@ get('/{kennel_abbreviation}/distinctHareStatistics/{hare_type}',        'Obscure
 
 #get('/{kennel_abbreviation}/consolidatedEventAnalversaries/{hash_id}',            'HashController::consolidatedEventAnalversariesAction');
 
-get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'ObscureStatisticsController::trendingHashersAction');
-get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'ObscureStatisticsController::trendingHaresAction');
+#get('/{kennel_abbreviation}/trendingHashers/{day_count}',                         'ObscureStatisticsController::trendingHashersAction');
+#get('/{kennel_abbreviation}/trendingHares/{hare_type}/{day_count}',               'ObscureStatisticsController::trendingHaresAction');
 
 #Ajax version of untrending hares graphs
-get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController::unTrendingHaresJsonPreAction');
-get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController::unTrendingHaresJsonPostAction');
+#get('/{kennel_abbreviation}/unTrendingHaresJsonPre/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController::unTrendingHaresJsonPreAction');
+#get('/{kennel_abbreviation}/unTrendingHaresJsonPost/{hare_type}/{day_count}/{min_hash_count}/{max_percentage}/{row_limit}',                       'ObscureStatisticsController::unTrendingHaresJsonPostAction');
 
 get('/{kennel_abbreviation}/pendingHasherAnalversaries',                          'HashController::pendingHasherAnalversariesAction');
 get('/{kennel_abbreviation}/predictedHasherAnalversaries',                        'HashController::predictedHasherAnalversariesAction');
