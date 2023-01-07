@@ -1441,110 +1441,89 @@ class ObscureStatisticsController extends BaseController {
 
 
 
+  #[Route('/{kennel_abbreviation}/attendanceStatistics',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function viewAttendanceChartsAction(string $kennel_abbreviation) {
 
-    public function viewAttendanceChartsAction(Request $request, string $kennel_abbreviation){
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    # Obtain the average and total event attendance per year
+    $sqlAvgTotalEvtParticipationByYear = "
+      SELECT YEAR(THE_DATE) AS THE_VALUE, SUM(THE_COUNT) AS TOT_COUNT, AVG(THE_COUNT) AS AVG_COUNT
+        FROM (SELECT HASHES.HASH_KY AS THE_KEY, HASHES.EVENT_DATE AS THE_DATE, COUNT(*) AS THE_COUNT
+                FROM HASHES
+                JOIN HASHINGS
+                  ON HASHES.HASH_KY = HASHINGS.HASH_KY
+               WHERE KENNEL_KY = ?
+               GROUP BY HASHES.HASH_KY) TEMPORARY_TABLE
+       GROUP BY YEAR(THE_DATE)";
+    $avgTotalEvtParticipationByYear = $this->fetchAll($sqlAvgTotalEvtParticipationByYear, [ $kennelKy ]);
 
-      # Obtain the average and total event attendance per year
-      $sqlAvgTotalEvtParticipationByYear = "SELECT
-            YEAR(THE_DATE) AS THE_VALUE,
-            SUM(THE_COUNT) AS TOT_COUNT,
-            AVG(THE_COUNT) AS AVG_COUNT
-        FROM (
-        		SELECT
-        			HASHES.HASH_KY AS THE_KEY,
-        			HASHES.EVENT_DATE AS THE_DATE,
-        			COUNT(*) AS THE_COUNT
-        		FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-        		WHERE KENNEL_KY = ?
-        		GROUP BY HASHES.HASH_KY
-            ) TEMPORARY_TABLE
-        GROUP BY YEAR(THE_DATE)";
-      $avgTotalEvtParticipationByYear = $this->fetchAll($sqlAvgTotalEvtParticipationByYear, array((int) $kennelKy));
+    # Obtain the average event attendance per (year/month)
+    $sqlAvgEvtParticipationByYearMonth = "
+      SELECT DATE_FORMAT(THE_DATE,'%Y/%m') AS THE_VALUE, AVG(THE_COUNT) AS THE_COUNT
+        FROM (SELECT HASHES.HASH_KY AS THE_KEY, HASHES.EVENT_DATE AS THE_DATE, COUNT(*) AS THE_COUNT
+                FROM HASHES
+                JOIN HASHINGS
+                  ON HASHES.HASH_KY = HASHINGS.HASH_KY
+               WHERE KENNEL_KY = ?
+               GROUP BY HASHES.HASH_KY) TEMPORARY_TABLE
+       GROUP BY DATE_FORMAT(THE_DATE,'%Y/%m')";
+    $avgEvtParticipationByYearMonth = $this->fetchAll($sqlAvgEvtParticipationByYearMonth, [ $kennelKy ]);
 
-      # Obtain the average event attendance per (year/month)
-      $sqlAvgEvtParticipationByYearMonth = "SELECT
-            DATE_FORMAT(THE_DATE,'%Y/%m') AS THE_VALUE,
-            AVG(THE_COUNT) AS THE_COUNT
-        FROM (
-            SELECT
-              HASHES.HASH_KY AS THE_KEY,
-              HASHES.EVENT_DATE AS THE_DATE,
-              COUNT(*) AS THE_COUNT
-            FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-            WHERE KENNEL_KY = ?
-            GROUP BY HASHES.HASH_KY
-            ) TEMPORARY_TABLE
-        GROUP BY DATE_FORMAT(THE_DATE,'%Y/%m')";
-      $avgEvtParticipationByYearMonth = $this->fetchAll($sqlAvgEvtParticipationByYearMonth, array((int) $kennelKy));
+    # Obtain the average event attendance per (year/quarter)
+    $sqlAvgEvtParticipationByYearQuarter = "
+      SELECT CONCAT_WS('/',YEAR(THE_DATE),QUARTER(THE_DATE)) AS THE_VALUE, AVG(THE_COUNT) AS THE_COUNT
+        FROM (SELECT HASHES.HASH_KY AS THE_KEY, HASHES.EVENT_DATE AS THE_DATE, COUNT(*) AS THE_COUNT
+                FROM HASHES
+                JOIN HASHINGS
+                  ON HASHES.HASH_KY = HASHINGS.HASH_KY
+               WHERE KENNEL_KY = ?
+               GROUP BY HASHES.HASH_KY) TEMPORARY_TABLE
+       GROUP BY CONCAT_WS('/',YEAR(THE_DATE),QUARTER(THE_DATE))";
+    $avgEvtParticipationByYearQuarter = $this->fetchAll($sqlAvgEvtParticipationByYearQuarter, [ $kennelKy ]);
 
-      # Obtain the average event attendance per (year/quarter)
-      $sqlAvgEvtParticipationByYearQuarter = "SELECT
-            CONCAT_WS('/',YEAR(THE_DATE),QUARTER(THE_DATE)) AS THE_VALUE,
-            AVG(THE_COUNT) AS THE_COUNT
-        FROM (
-            SELECT
-              HASHES.HASH_KY AS THE_KEY,
-              HASHES.EVENT_DATE AS THE_DATE,
-              COUNT(*) AS THE_COUNT
-            FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-            WHERE KENNEL_KY = ?
-            GROUP BY HASHES.HASH_KY
-            ) TEMPORARY_TABLE
-        GROUP BY CONCAT_WS('/',YEAR(THE_DATE),QUARTER(THE_DATE))";
-      $avgEvtParticipationByYearQuarter = $this->fetchAll($sqlAvgEvtParticipationByYearQuarter, array((int) $kennelKy));
+    # Obtain the average event attendance per (year/month)
+    $sqlAvgEvtParticipationByMonth = "
+      SELECT DATE_FORMAT(THE_DATE,'%m') AS THE_VALUE, AVG(THE_COUNT) AS THE_COUNT
+        FROM (SELECT HASHES.HASH_KY AS THE_KEY, HASHES.EVENT_DATE AS THE_DATE, COUNT(*) AS THE_COUNT
+                FROM HASHES
+                JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
+               WHERE KENNEL_KY = ?
+               GROUP BY HASHES.HASH_KY) TEMPORARY_TABLE
+       GROUP BY DATE_FORMAT(THE_DATE,'%m')";
+    $avgEvtParticipationByMonth = $this->fetchAll($sqlAvgEvtParticipationByMonth, [ $kennelKy ]);
 
+    # Obtain the total event attendance by hasher
+    $sqlTotEvtParticipationByHasher =
+      "SELECT *
+         FROM (SELECT HASHERS.HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
+                 FROM HASHES
+                 JOIN HASHINGS
+                   ON HASHES.HASH_KY = HASHINGS.HASH_KY
+                 JOIN HASHERS
+                   ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+                WHERE KENNEL_KY = ?
+                GROUP BY HASHERS.HASHER_NAME
+                ORDER BY 2 DESC, 1) X
+        LIMIT 100";
+    $totEvtParticipationByHasher = $this->fetchAll($sqlTotEvtParticipationByHasher, [ $kennelKy ]);
 
-      # Obtain the average event attendance per (year/month)
-      $sqlAvgEvtParticipationByMonth = "SELECT
-            DATE_FORMAT(THE_DATE,'%m') AS THE_VALUE,
-            AVG(THE_COUNT) AS THE_COUNT
-        FROM (
-            SELECT
-              HASHES.HASH_KY AS THE_KEY,
-              HASHES.EVENT_DATE AS THE_DATE,
-              COUNT(*) AS THE_COUNT
-            FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-            WHERE KENNEL_KY = ?
-            GROUP BY HASHES.HASH_KY
-            ) TEMPORARY_TABLE
-        GROUP BY DATE_FORMAT(THE_DATE,'%m')";
-      $avgEvtParticipationByMonth = $this->fetchAll($sqlAvgEvtParticipationByMonth, array((int) $kennelKy));
-
-      # Obtain the total event attendance by hasher
-      $sqlTotEvtParticipationByHasher =
-        "SELECT *
-          FROM (
-         SELECT
-            HASHERS.HASHER_NAME AS THE_VALUE,
-            COUNT(*) AS THE_COUNT
-            FROM HASHES JOIN HASHINGS ON HASHES.HASH_KY = HASHINGS.HASH_KY
-            JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-            WHERE KENNEL_KY = ?
-            GROUP BY HASHERS.HASHER_NAME
-            ORDER BY 2 DESC, 1) X
-         LIMIT 100";
-      $totEvtParticipationByHasher = $this->fetchAll($sqlTotEvtParticipationByHasher, array((int) $kennelKy));
-
-      # Establish and set the return value
-      $returnValue = $this->render('event_participation_charts.twig',array(
-        'pageTitle' => 'Event Participation Statistics',
-        'firstHeader' => 'FIRST HEADER',
-        'secondHeader' => 'SECOND HEADER',
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'AvgTotal_Evt_Participation_By_Year_List' => $avgTotalEvtParticipationByYear,
-        'Avg_Evt_Participation_By_YearMonth_List' => $avgEvtParticipationByYearMonth,
-        'Avg_Evt_Participation_By_YearQuarter_List' => $avgEvtParticipationByYearQuarter,
-        'Avg_Evt_Participation_By_Month_List' => $avgEvtParticipationByMonth,
-        'Tot_Evt_Participation_By_Hasher_List' => $totEvtParticipationByHasher
-      ));
-
-      # Return the return value
-      return $returnValue;
-
-    }
+    # Establish and set the return value
+    return $this->render('event_participation_charts.twig', [
+      'pageTitle' => 'Event Participation Statistics',
+      'firstHeader' => 'FIRST HEADER',
+      'secondHeader' => 'SECOND HEADER',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'AvgTotal_Evt_Participation_By_Year_List' => $avgTotalEvtParticipationByYear,
+      'Avg_Evt_Participation_By_YearMonth_List' => $avgEvtParticipationByYearMonth,
+      'Avg_Evt_Participation_By_YearQuarter_List' => $avgEvtParticipationByYearQuarter,
+      'Avg_Evt_Participation_By_Month_List' => $avgEvtParticipationByMonth,
+      'Tot_Evt_Participation_By_Hasher_List' => $totEvtParticipationByHasher ]);
+  }
 
 
     public function viewFirstTimersChartsAction(Request $request, string $kennel_abbreviation, int $min_hash_count){

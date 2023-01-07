@@ -1283,7 +1283,7 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 
 #get('/{kennel_abbreviation}/chartsAndDetails',                                 'ObscureStatisticsController::viewKennelChartsAction');
 
-get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController::viewAttendanceChartsAction');
+#get('/{kennel_abbreviation}/attendanceStatistics',                                'ObscureStatisticsController::viewAttendanceChartsAction');
 
 #First timers / last timers
 get('/{kennel_abbreviation}/firstTimersStatistics/{min_hash_count}',              'ObscureStatisticsController::viewFirstTimersChartsAction');
