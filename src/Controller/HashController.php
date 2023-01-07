@@ -45,8 +45,12 @@ class HashController extends BaseController
     return $returnValue;
   }
 
-  #Define the action
-  public function rssAction(Request $request, string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/rss',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function rssAction(string $kennel_abbreviation) {
     $args = $this->getSlashTwigArgs($kennel_abbreviation);
 
     $prefix = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?
@@ -63,8 +67,12 @@ class HashController extends BaseController
     return $response;
   }
 
-  #Define the action
-  public function eventsRssAction(Request $request, string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/events/rss',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function eventsRssAction(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -85,7 +93,7 @@ class HashController extends BaseController
        WHERE KENNEL_KY = ?
        ORDER BY EVENT_DATE DESC LIMIT 10";
 
-    $args['hashes'] = $this->fetchAll($hashesQuery, array($kennelKy));
+    $args['hashes'] = $this->fetchAll($hashesQuery, [ $kennelKy ]);
 
     $response = new Response($this->render('events_rss.twig', $args));
 
