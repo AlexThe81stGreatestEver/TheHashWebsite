@@ -502,16 +502,16 @@ class HashController extends BaseController
       'tableCaption' => "" ]);
   }
 
-  public function attendancePercentagesPreActionJson(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/attendancePercentages',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function attendancePercentagesPreActionJson(string $kennel_abbreviation) {
 
-    # Establish and set the return value
-    $returnValue = $this->render('attendance_percentages_list_json.twig',array(
+    return $this->render('attendance_percentages_list_json.twig', [
       'pageTitle' => 'Attendance Percentages',
-      'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
   #[Route('/{kennel_abbreviation}/listhashers/byhash/{hash_id}',
@@ -1183,7 +1183,12 @@ class HashController extends BaseController
     return new JsonResponse($output);
   }
 
-  public function attendancePercentagesPostActionJson(Request $request, string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/attendancePercentages',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function attendancePercentagesPostActionJson(string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
@@ -1195,6 +1200,7 @@ class HashController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
       $inputStart = 0;
@@ -1209,12 +1215,10 @@ class HashController extends BaseController
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -1229,61 +1233,57 @@ class HashController extends BaseController
 
     #-------------- End: Modify the input parameters  --------------------------
 
-
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql =
-      "SELECT HASHER_NAME,
-              100 * (NUM_HASHES / ALL_EVENTS_COUNT) AS OVERALL_PERCENTAGE,
-              100 * (NUM_HASHES / HASHER_EVENTS_TO_DATE) AS CURRENT_PERCENTAGE,
-              100 * (NUM_HASHES / CAREER_EVENTS) AS CAREER_PERCENTAGE,
-              NUM_HASHES, HASHER_KY
-          FROM (
-        SELECT HASHERS.HASHER_NAME AS HASHER_NAME, HASHERS.HASHER_KY AS HASHER_KY,
-               HASHERS.HASHER_ABBREVIATION AS HASHER_ABBREVIATION,
-               ALL_EVENTS.THE_COUNT AS ALL_EVENTS_COUNT,
-               HASHER_DETAILS.THE_COUNT AS NUM_HASHES,
-               (SELECT COUNT(*)
-                  FROM HASHES
-                 WHERE HASHES.KENNEL_KY=?
-                   AND HASHES.EVENT_DATE >= HASHER_DETAILS.FIRST_HASH_DATE) AS HASHER_EVENTS_TO_DATE,
-               (SELECT COUNT(*)
-                  FROM HASHES
-                 WHERE HASHES.KENNEL_KY=?
-                   AND HASHES.EVENT_DATE >= HASHER_DETAILS.FIRST_HASH_DATE
-                   AND HASHES.EVENT_DATE <= HASHER_DETAILS.LAST_HASH_DATE) AS CAREER_EVENTS
-          FROM HASHERS
-         CROSS JOIN
-               (SELECT COUNT(*) AS THE_COUNT
-                  FROM HASHES
-                 WHERE HASHES.KENNEL_KY=?) AS ALL_EVENTS
-         JOIN (SELECT HASHER_KY, MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE, MAX(HASHES.EVENT_DATE) AS LAST_HASH_DATE,
-                      COUNT(*) AS THE_COUNT
-                 FROM HASHINGS
-                 JOIN HASHES
-                   ON HASHES.HASH_KY=HASHINGS.HASH_KY
-                WHERE HASHES.KENNEL_KY=?
-                GROUP BY HASHER_KY
-               HAVING COUNT(*)>=10) AS HASHER_DETAILS
-           ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY
-           ) AS INNER_QUERY
-         WHERE (HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
-         ORDER BY $inputOrderColumn $inputOrderDirection
-         LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT HASHER_NAME,
+             100 * (NUM_HASHES / ALL_EVENTS_COUNT) AS OVERALL_PERCENTAGE,
+             100 * (NUM_HASHES / HASHER_EVENTS_TO_DATE) AS CURRENT_PERCENTAGE,
+             100 * (NUM_HASHES / CAREER_EVENTS) AS CAREER_PERCENTAGE,
+             NUM_HASHES, HASHER_KY
+        FROM (SELECT HASHERS.HASHER_NAME AS HASHER_NAME, HASHERS.HASHER_KY AS HASHER_KY,
+                     HASHERS.HASHER_ABBREVIATION AS HASHER_ABBREVIATION,
+                     ALL_EVENTS.THE_COUNT AS ALL_EVENTS_COUNT,
+                     HASHER_DETAILS.THE_COUNT AS NUM_HASHES, (
+                     SELECT COUNT(*)
+                       FROM HASHES
+                      WHERE HASHES.KENNEL_KY=?
+                        AND HASHES.EVENT_DATE >= HASHER_DETAILS.FIRST_HASH_DATE) AS HASHER_EVENTS_TO_DATE, (
+                     SELECT COUNT(*)
+                       FROM HASHES
+                      WHERE HASHES.KENNEL_KY=?
+                        AND HASHES.EVENT_DATE >= HASHER_DETAILS.FIRST_HASH_DATE
+                        AND HASHES.EVENT_DATE <= HASHER_DETAILS.LAST_HASH_DATE) AS CAREER_EVENTS
+                FROM HASHERS
+               CROSS JOIN (SELECT COUNT(*) AS THE_COUNT
+                             FROM HASHES
+                            WHERE HASHES.KENNEL_KY=?) AS ALL_EVENTS
+                JOIN (SELECT HASHER_KY, MIN(HASHES.EVENT_DATE) AS FIRST_HASH_DATE, MAX(HASHES.EVENT_DATE) AS LAST_HASH_DATE,
+                             COUNT(*) AS THE_COUNT
+                        FROM HASHINGS
+                        JOIN HASHES
+                          ON HASHES.HASH_KY=HASHINGS.HASH_KY
+                       WHERE HASHES.KENNEL_KY=?
+                       GROUP BY HASHER_KY
+                      HAVING COUNT(*)>=10) AS HASHER_DETAILS
+                  ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY) AS INNER_QUERY
+       WHERE HASHER_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?
+       ORDER BY $inputOrderColumn $inputOrderDirection
+       LIMIT $inputStart,$inputLength";
 
     #Define the sql that gets the overall counts
-    $sqlUnfilteredCount =
-      "SELECT COUNT(*) AS THE_COUNT
-         FROM HASHERS
-         JOIN (SELECT HASHER_KY
-                 FROM HASHINGS
-                 JOIN HASHES
-                   ON HASHES.HASH_KY=HASHINGS.HASH_KY
-                WHERE HASHES.KENNEL_KY=?
-                GROUP BY HASHER_KY
-               HAVING COUNT(*)>=10) AS HASHER_DETAILS
-           ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY ";
+    $sqlUnfilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+        JOIN (SELECT HASHER_KY
+                FROM HASHINGS
+                JOIN HASHES
+                  ON HASHES.HASH_KY=HASHINGS.HASH_KY
+               WHERE HASHES.KENNEL_KY=?
+               GROUP BY HASHER_KY
+              HAVING COUNT(*)>=10) AS HASHER_DETAILS
+          ON HASHER_DETAILS.HASHER_KY=HASHERS.HASHER_KY ";
 
     #Define the SQL that gets the count for the filtered results
     $sqlFilteredCount = "$sqlUnfilteredCount
@@ -1292,27 +1292,25 @@ class HashController extends BaseController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array(
-      $kennelKy, $kennelKy, $kennelKy, $kennelKy,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql, [
+      $kennelKy, $kennelKy, $kennelKy, $kennelKy, $inputSearchValueModified, $inputSearchValueModified ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy ]))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-      $kennelKy, (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [
+      $kennelKy, $inputSearchValueModified, $inputSearchValueModified ] ))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
@@ -2602,135 +2600,138 @@ class HashController extends BaseController
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
-public function haringPercentageAllHashesAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/haringPercentageAllHashes',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function haringPercentageAllHashesAction(string $kennel_abbreviation) {
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->getHaringPercentageAllHashesQuery();
+    # Declare the SQL used to retrieve this information
+    $sql = $this->getHaringPercentageAllHashesQuery();
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #define the minimum number of hashes
-  $minHashCount = 0;
+    #define the minimum number of hashes
+    $minHashCount = 0;
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy,(int) $minHashCount));
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy,(int) $minHashCount ]);
 
-  # Establish the return value
-  $returnValue = $this->render('percentage_list.twig',array(
-    'pageTitle' => 'Haring Percentage List',
-    'tableCaption' => 'Percentage of harings per hashings for each hasher',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Hashing Count',
-    'columnThreeName' => 'Haring Count',
-    'columnFourName' => 'Haring Percentage',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
-
-public function haringPercentageAction(Request $request, int $hare_type, string $kennel_abbreviation){
-
-  # Declare the SQL used to retrieve this information
-  $sql = $this->getHaringPercentageByHareTypeQuery();
-
-  $hare_type_name = $this->getHareTypeName($hare_type);
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #define the minimum number of hashes
-  $minHashCount = 0;
-
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $hare_type, (int) $minHashCount));
-
-  # Establish the return value
-  $returnValue = $this->render('percentage_list.twig',array(
-    'pageTitle' => $hare_type_name . ' Haring Percentage List',
-    'tableCaption' => 'Percentage Of ' . $hare_type_name . ' Harings Per Hashings For Each Hasher',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Hashing Count',
-    'columnThreeName' => 'Haring Count',
-    'columnFourName' => 'Haring Percentage',
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
-
-
-
-public function percentageHarings(Request $request, string $kennel_abbreviation){
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  $hareTypes = $this->getHareTypes($kennelKy);
-
-  $args = array($kennelKy);
-  $columnNames = array('Hasher Name', 'Haring Count (All)');
-
-  # Declare the SQL used to retrieve this information
-  $sql = "
-    SELECT ";
-
-  foreach ($hareTypes as &$hareType) {
-    $sql .=
-      'COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,0) AS '.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,
-      (COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT / ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT,0) * 100) AS '.$hareType['HARE_TYPE_NAME'].'_HARINGS_PERCENTAGE,';
+    # Establish the return value
+    return $this->render('percentage_list.twig', [
+      'pageTitle' => 'Haring Percentage List',
+      'tableCaption' => 'Percentage of harings per hashings for each hasher',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Hashing Count',
+      'columnThreeName' => 'Haring Count',
+      'columnFourName' => 'Haring Percentage',
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-  $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT
-      FROM HASHERS
-      JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
-              FROM HARINGS
-              JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
-              JOIN HASHES
-                ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-             WHERE HASHES.KENNEL_KY = ?
-             GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE
-        ON (HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
-  foreach ($hareTypes as &$hareType) {
+
+
+  #[Route('/{kennel_abbreviation}/haringPercentage/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function haringPercentageAction(Request $request, int $hare_type, string $kennel_abbreviation) {
+
+    # Declare the SQL used to retrieve this information
+    $sql = $this->getHaringPercentageByHareTypeQuery();
+
+    $hare_type_name = $this->getHareTypeName($hare_type);
+
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #define the minimum number of hashes
+    $minHashCount = 0;
+
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $hare_type, $minHashCount ]);
+
+    # Establish the return value
+    return $this->render('percentage_list.twig', [
+      'pageTitle' => $hare_type_name . ' Haring Percentage List',
+      'tableCaption' => 'Percentage Of ' . $hare_type_name . ' Harings Per Hashings For Each Hasher',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Hashing Count',
+      'columnThreeName' => 'Haring Count',
+      'columnFourName' => 'Haring Percentage',
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
+
+
+
+  #[Route('/{kennel_abbreviation}/percentages/harings',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function percentageHarings(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $hareTypes = $this->getHareTypes($kennelKy);
+
+    $args = [ $kennelKy ];
+    $columnNames = [ 'Hasher Name', 'Haring Count (All)' ];
+
+    # Declare the SQL used to retrieve this information
+    $sql = "
+      SELECT ";
+
+    foreach ($hareTypes as &$hareType) {
+      $sql .=
+        '    COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,0) AS '.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT,
+             (COALESCE('.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT_TEMP_TABLE.'.$hareType['HARE_TYPE_NAME'].'_HARING_COUNT / ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT,0) * 100) AS '.$hareType['HARE_TYPE_NAME'].'_HARINGS_PERCENTAGE,';
+    }
+    $sql .=" HASHERS.HASHER_NAME, HASHERS.HASHER_KY, ALL_HARING_COUNT_TEMP_TABLE.ALL_HARING_COUNT
+        FROM HASHERS
+        JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ALL_HARING_COUNT
+                FROM HARINGS
+                JOIN HARE_TYPES
+                  ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE
+                JOIN HASHES
+                  ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+               GROUP BY HARINGS.HARINGS_HASHER_KY) ALL_HARING_COUNT_TEMP_TABLE
+          ON HASHERS.HASHER_KY = ALL_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY";
+    foreach ($hareTypes as &$hareType) {
+      $sql .="
+        LEFT JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT
+                     FROM HARINGS
+                     JOIN HASHES
+                       ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+                    WHERE HARINGS.HARE_TYPE & ? != 0
+                      AND HASHES.KENNEL_KY = ?
+                    GROUP BY HARINGS.HARINGS_HASHER_KY) ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE
+          ON HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY";
+
+      array_push($args, $hareType['HARE_TYPE']);
+      array_push($args, $kennelKy);
+      array_push($columnNames, 'Haring Count ('.$hareType['HARE_TYPE_NAME'].')');
+      array_push($columnNames, $hareType['HARE_TYPE_NAME'].' Haring Percentage');
+    }
     $sql .="
-      LEFT JOIN (SELECT HARINGS.HARINGS_HASHER_KY AS HARINGS_HASHER_KY, COUNT(HARINGS.HARINGS_HASHER_KY) AS ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT
-              FROM HARINGS
-              JOIN HASHES
-                ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-             WHERE HARINGS.HARE_TYPE & ? != 0
-               AND HASHES.KENNEL_KY = ?
-             GROUP BY HARINGS.HARINGS_HASHER_KY) ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE
-        ON (HASHERS.HASHER_KY = ".$hareType['HARE_TYPE_NAME']."_HARING_COUNT_TEMP_TABLE.HARINGS_HASHER_KY)";
-    array_push($args, $hareType['HARE_TYPE']);
-    array_push($args, $kennelKy);
-    array_push($columnNames, 'Haring Count ('.$hareType['HARE_TYPE_NAME'].')');
-    array_push($columnNames, $hareType['HARE_TYPE_NAME'].' Haring Percentage');
+       ORDER BY HASHERS.HASHER_NAME";
+
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, $args);
+
+    return $this->render('percentage_list_multiple_values.twig', [
+      'pageTitle' => 'Haring Percentages',
+      'tableCaption' => 'This shows the percentage of haring types for each hasher.',
+      'columnNames' => $columnNames,
+      'theList' => $hasherList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hareTypes' => $hareTypes ]);
   }
-  $sql .="
-     ORDER BY HASHERS.HASHER_NAME";
-
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, $args);
-
-  # Establish the return value
-  $returnValue = $this->render('percentage_list_multiple_values.twig',array(
-    'pageTitle' => 'Haring Percentages',
-    'tableCaption' => 'This shows the percentage of haring types for each hasher.',
-    'columnNames' => $columnNames,
-    'theList' => $hasherList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'hareTypes' => $hareTypes
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
 
 
 function addRankToQuery(string $query, string $selectClause, string $countColumn) {

@@ -1250,8 +1250,8 @@ get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 #get('/{kennel_abbreviation}/listvirginharings/{hare_type}',                      'HashController::listVirginHaringsPreActionJson');
 #post('/{kennel_abbreviation}/listvirginharings/{hare_type}',                     'HashController::getVirginHaringsListJson');
 
-get('/{kennel_abbreviation}/attendancePercentages',                                'HashController::attendancePercentagesPreActionJson');
-post('/{kennel_abbreviation}/attendancePercentages',                               'HashController::attendancePercentagesPostActionJson');
+#get('/{kennel_abbreviation}/attendancePercentages',                                'HashController::attendancePercentagesPreActionJson');
+#post('/{kennel_abbreviation}/attendancePercentages',                               'HashController::attendancePercentagesPostActionJson');
 
 #get('/{kennel_abbreviation}/CohareCounts/{hare_type}',                                    'HashController::cohareCountsPreActionJson');
 #get('/{kennel_abbreviation}/allCohareCounts',                                      'HashController::allCohareCountsPreActionJson');
@@ -1323,8 +1323,8 @@ post('/{kennel_abbreviation}/attendancePercentages',                            
 #get('/{kennel_abbreviation}/predictedHasherAnalversaries',                        'HashController::predictedHasherAnalversariesAction');
 #get('/{kennel_abbreviation}/predictedCenturions',                                 'HashController::predictedCenturionsAction');
 #get('/{kennel_abbreviation}/pendingHareAnalversaries',                            'HashController::pendingHareAnalversariesAction');
-get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HashController::haringPercentageAllHashesAction');
-get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HashController::haringPercentageAction');
+#get('/{kennel_abbreviation}/haringPercentageAllHashes',                           'HashController::haringPercentageAllHashesAction');
+#get('/{kennel_abbreviation}/haringPercentage/{hare_type}',                        'HashController::haringPercentageAction');
 #get('/{kennel_abbreviation}/hashingCounts',                                       'HashController::hashingCountsAction');
 #get('/{kennel_abbreviation}/haringCounts',                                        'HashController::haringCountsAction');
 #get('/{kennel_abbreviation}/haringCounts/{hare_type}',                            'HashController::haringTypeCountsAction');
@@ -1338,7 +1338,7 @@ get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',        
 get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController::hashAttendanceByHareGrandTotalNonDistinctHashersAction');
 get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController::hashAttendanceByHareGrandTotalDistinctHashersAction');
 get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController::hasherCountsByHareAction');
-get('/{kennel_abbreviation}/percentages/harings',                                 'HashController::percentageHarings');
+#get('/{kennel_abbreviation}/percentages/harings',                                 'HashController::percentageHarings');
 #get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController::getHasherAnalversariesAction');
 get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController::getHareAnalversariesAction');
 get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController::getHareAnalversariesByHareTypeAction');
