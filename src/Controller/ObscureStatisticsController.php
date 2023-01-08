@@ -1122,295 +1122,227 @@ class ObscureStatisticsController extends BaseController {
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
-    public function highestAverageDaysBetweenHashesAction(Request $request, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql
-      $theSql = LONGEST_HASHING_CAREER_IN_DAYS;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HASHES",LONGEST_HASHING_CAREER_IN_DAYS);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
-
-      #Define the minimum hashing count
-      $minHashingCount = 2;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int)$minHashingCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days between first and last hashes, divided by pi";
-
-      #Define the table caption
-      $tableCaption = "Minimum hashing count: $minHashingCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('career_length_by_day.twig',array(
-        'pageTitle' => "Average days between hashing",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        #'pageCaption' => $pageCaption,
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        #'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
-
-
-    public function lowestAverageDaysBetweenHashesAction(Request $request, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql
-      $theSql = LONGEST_HASHING_CAREER_IN_DAYS;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HASHES",LONGEST_HASHING_CAREER_IN_DAYS);
-      $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
-
-      #Define the minimum hashing count
-      $minHashingCount = 6;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int)$minHashingCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days between first and last hashes, divided by pi";
-
-      #Define the table caption
-      $tableCaption = "Minimum hashing count: $minHashingCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('career_length_by_day.twig',array(
-        'pageTitle' => "Average days between hashing",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        #'pageCaption' => $pageCaption,
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        #'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
-
-
-
-    public function lowestAverageDaysBetweenAllHaringsAction(Request $request, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
-      $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
-
-      #Define the minimum haring count
-      $minHaringCount = 2;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $minHaringCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days between first and last harings, divided by pi";
-
-      #Define the table caption
-      $tableCaption = "Minimum haring count: $minHaringCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('haring_career_length_by_day.twig',array(
-        'pageTitle' => "Average days between harings",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
-
-    public function highestAverageDaysBetweenAllHaringsAction(Request $request, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
-
-      #Define the minimum haring count
-      $minHaringCount = 2;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $minHaringCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days between first and last harings, divided by pi";
-
-      #Define the table caption
-      $tableCaption = "Minimum haring count: $minHaringCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('haring_career_length_by_day.twig',array(
-        'pageTitle' => "Average days between harings",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
-
-
-
-    public function lowestAverageDaysBetweenHaringsAction(Request $request, int $hare_type, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      $hareTypeName = $this->getHareTypeName($hare_type);
-
-      #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS_BY_TYPE;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
-      $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
-
-      #Define the minimum haring count
-      $minHaringCount = 5;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $minHaringCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
-
-      #Define the table caption
-      $tableCaption = "Minimum haring count: $minHaringCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('haring_career_length_by_day.twig',array(
-        'pageTitle' => "Average days between harings",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'hare_type_name' => $hareTypeName
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
-
-
-    public function highestAverageDaysBetweenHaringsAction(Request $request, int $hare_type, string $kennel_abbreviation){
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      $hareTypeName = $this->getHareTypeName($hare_type);
-
-      #Define the sql
-      $theSql = LOWEST_NUMBER_OF_DAYS_BETWEEN_HARINGS_BY_TYPE;
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
-
-      #Define the minimum haring count
-      $minHaringCount = 2;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $kennelKy,
-        (int) $hare_type,
-        (int) $minHaringCount
-      ));
-
-      #Define the page sub title
-      $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
-
-      #Define the table caption
-      $tableCaption = "Minimum haring count: $minHaringCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('haring_career_length_by_day.twig',array(
-        'pageTitle' => "Average days between harings",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'hare_type_name' => $hareTypeName
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
+  #[Route('/{kennel_abbreviation}/highest/averageDaysBetweenHashes',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function highestAverageDaysBetweenHashesAction(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLongestHashingCareerInDays();
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HASHES", $theSql);
+    $theSql = str_replace("XUPORDOWNX","DESC", $theSql);
+
+    #Define the minimum hashing count
+    $minHashingCount = 2;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $minHashingCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days between first and last hashes, divided by pi";
+
+    #Define the table caption
+    $tableCaption = "Minimum hashing count: $minHashingCount";
+
+    #Add the results into the twig template
+    return $this->render('career_length_by_day.twig', [
+      'pageTitle' => "Average days between hashing",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/lowest/averageDaysBetweenHashes',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function lowestAverageDaysBetweenHashesAction(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLongestHashingCareerInDays();
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HASHES", $theSql);
+    $theSql = str_replace("XUPORDOWNX","ASC", $theSql);
+
+    #Define the minimum hashing count
+    $minHashingCount = 6;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $minHashingCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days between first and last hashes, divided by pi";
+
+    #Define the table caption
+    $tableCaption = "Minimum hashing count: $minHashingCount";
+
+    #Add the results into the twig template
+    return $this->render('career_length_by_day.twig', [
+      'pageTitle' => "Average days between hashing",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/lowest/allharings/averageDaysBetweenHarings',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function lowestAverageDaysBetweenAllHaringsAction(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLowestNumberOfDaysBetweenHarings();
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
+    $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
+
+    #Define the minimum haring count
+    $minHaringCount = 2;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $minHaringCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days between first and last harings, divided by pi";
+
+    #Define the table caption
+    $tableCaption = "Minimum haring count: $minHaringCount";
+
+    #Add the results into the twig template
+    return $this->render('haring_career_length_by_day.twig', [
+      'pageTitle' => "Average days between harings",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/highest/allharings/averageDaysBetweenHarings',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function highestAverageDaysBetweenAllHaringsAction(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLowestNumberOfDaysBetweenHarings();
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
+    $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
+
+    #Define the minimum haring count
+    $minHaringCount = 2;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $minHaringCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days between first and last harings, divided by pi";
+
+    #Define the table caption
+    $tableCaption = "Minimum haring count: $minHaringCount";
+
+    #Add the results into the twig template
+    return $this->render('haring_career_length_by_day.twig', [
+      'pageTitle' => "Average days between harings",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function lowestAverageDaysBetweenHaringsAction(Request $request, int $hare_type, string $kennel_abbreviation) {
+
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $hareTypeName = $this->getHareTypeName($hare_type);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLowestNumberOfDaysBetweenHaringsByType();
+    $theSql = str_replace("XORDERCOLUMNX", "DAYS_BETWEEN_HARINGS", $theSql);
+    $theSql = str_replace("XUPORDOWNX", "ASC", $theSql);
+
+    #Define the minimum haring count
+    $minHaringCount = 5;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $hare_type, $kennelKy, $hare_type, $kennelKy,
+      $hare_type, $minHaringCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
+
+    #Define the table caption
+    $tableCaption = "Minimum haring count: $minHaringCount";
+
+    #Add the results into the twig template
+    return $this->render('haring_career_length_by_day.twig', [
+      'pageTitle' => "Average days between harings",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hare_type_name' => $hareTypeName ]);
+  }
+
+  #[Route('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function highestAverageDaysBetweenHaringsAction(int $hare_type, string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    $hareTypeName = $this->getHareTypeName($hare_type);
+
+    #Define the sql
+    $theSql = $this->sqlQueries->getLowestNumberOfDaysBetweenHaringsByType();
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_BETWEEN_HARINGS",$theSql);
+    $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
+
+    #Define the minimum haring count
+    $minHaringCount = 2;
+
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $hare_type, $kennelKy, $hare_type, $kennelKy,
+      $hare_type, $minHaringCount ]);
+
+    #Define the page sub title
+    $pageSubTitle = "Days Between First and Last ".$hareTypeName." Harings";
+
+    #Define the table caption
+    $tableCaption = "Minimum haring count: $minHaringCount";
+
+    #Add the results into the twig template
+    return $this->render('haring_career_length_by_day.twig', [
+      'pageTitle' => "Average days between harings",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hare_type_name' => $hareTypeName
+    ]);
+  }
 
 
 
