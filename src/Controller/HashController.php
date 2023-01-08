@@ -3524,60 +3524,57 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
       'kennelValues' => $kennelValues ]);
   }
 
-public function highestAttendedHashesAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/highest/attendedHashes',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function highestAttendedHashesAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Define the sql
-  $theSql = HASH_EVENTS_WITH_COUNTS;
-  $theSql = str_replace("XLIMITX","25",$theSql);
-  $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
+    #Define the sql
+    $theSql = $this->sqlQueries->getHashEventsWithCounts();
+    $theSql = str_replace("XLIMITX","25",$theSql);
+    $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
 
-  #Execute the SQL statement; create an array of rows
-  $theList = $this->fetchAll($theSql,array($kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $theList = $this->fetchAll($theSql, [ $kennelKy ]);
 
-  # Establish and set the return value
-  $returnValue = $this->render('hash_events_with_participation_counts.twig',array(
-    'theList' => $theList,
-    'pageTitle' => 'The Hashes',
-    'pageSubTitle' => '...with the best attendances',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+    # Establish and set the return value
+    return $this->render('hash_events_with_participation_counts.twig', [
+      'theList' => $theList,
+      'pageTitle' => 'The Hashes',
+      'pageSubTitle' => '...with the best attendances',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-  #Return the return value
-  return $returnValue;
+  #[Route('/{kennel_abbreviation}/lowest/attendedHashes',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function lowestAttendedHashesAction(string $kennel_abbreviation) {
 
-}
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
+    #Define the sql
+    $theSql = $this->sqlQueries->getHashEventsWithCounts();
+    $theSql = str_replace("XLIMITX","25",$theSql);
+    $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
 
-public function lowestAttendedHashesAction(Request $request, string $kennel_abbreviation){
+    #Execute the SQL statement; create an array of rows
+    $theList = $this->fetchAll($theSql, [ $kennelKy ]);
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #Define the sql
-  $theSql = HASH_EVENTS_WITH_COUNTS;
-  $theSql = str_replace("XLIMITX","25",$theSql);
-  $theSql = str_replace("XUPORDOWNX","ASC",$theSql);
-
-  #Execute the SQL statement; create an array of rows
-  $theList = $this->fetchAll($theSql,array($kennelKy));
-
-  # Establish and set the return value
-  $returnValue = $this->render('hash_events_with_participation_counts.twig',array(
-    'theList' => $theList,
-    'pageTitle' => 'The Hashes',
-    'pageSubTitle' => '...with the worst attendances',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
+    # Establish and set the return value
+    return $this->render('hash_events_with_participation_counts.twig', [
+      'theList' => $theList,
+      'pageTitle' => 'The Hashes',
+      'pageSubTitle' => '...with the worst attendances',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
   #[Route('/{kennel_abbreviation}/hashers/of/the/years',
     methods: ['GET'],

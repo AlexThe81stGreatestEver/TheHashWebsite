@@ -1443,8 +1443,8 @@ get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController::longes
 #get('/{kennel_abbreviation}/highest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController::highestAverageDaysBetweenHaringsAction');
 #get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','ObscureStatisticsController::lowestAverageDaysBetweenHaringsAction');
 
-get('/{kennel_abbreviation}/highest/attendedHashes','HashController::highestAttendedHashesAction');
-get('/{kennel_abbreviation}/lowest/attendedHashes','HashController::lowestAttendedHashesAction');
+#get('/{kennel_abbreviation}/highest/attendedHashes','HashController::highestAttendedHashesAction');
+#get('/{kennel_abbreviation}/lowest/attendedHashes','HashController::lowestAttendedHashesAction');
 
 #get('/{kennel_abbreviation}/hashers/of/the/years','HashController::hashersOfTheYearsAction');
 #get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController::HaresOfTheYearsAction');
