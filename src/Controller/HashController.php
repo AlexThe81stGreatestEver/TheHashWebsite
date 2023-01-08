@@ -3792,119 +3792,123 @@ public function hasherCountsByHareAction(Request $request, int $hare_id, int $ha
   }
 
 
-public function getHareAnalversariesAction(Request $request, int $hasher_id, string $kennel_abbreviation) {
+  #[Route('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function getHareAnalversariesAction(int $hasher_id, string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  $sql_hasher_name = "
-      SELECT HASHER_NAME
-        FROM HASHERS
-       WHERE HASHERS.HASHER_KY = ?";
+    $sql_hasher_name = "
+        SELECT HASHER_NAME
+          FROM HASHERS
+         WHERE HASHERS.HASHER_KY = ?";
 
-  $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
+    $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
 
-  # Define the SQL to retrieve all of their hashes
-  $sql_all_hashes_for_this_hasher = "
+    # Define the SQL to retrieve all of their hashes
+    $sql_all_hashes_for_this_hasher = "
       SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
         FROM HARINGS
-        JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
        WHERE HASHERS.HASHER_KY = ?
          AND HASHES.KENNEL_KY = ?
        ORDER BY HASHES.EVENT_DATE ASC";
 
-  #Retrieve all of this hasher's hashes
-  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array($hasher_id, $kennelKy));
+    #Retrieve all of this hasher's hashes
+    $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher, [ $hasher_id, $kennelKy ]);
 
-  # Add a count into their list of hashes
-  $destinationArray = array();
-  $tempCounter = 1;
-  foreach ($theInitialListOfHashes as &$individualHash) {
-    $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
-    if(
-      ($tempCounter % 5 == 0) ||
-      ($tempCounter % 69 == 0) ||
-      ($tempCounter % 666 == 0) ||
-      (($tempCounter - 69) % 100 == 0)
-      ){
-      array_push($destinationArray,$individualHash);
+    # Add a count into their list of hashes
+    $destinationArray = [];
+    $tempCounter = 1;
+    foreach ($theInitialListOfHashes as &$individualHash) {
+      $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
+      if(($tempCounter % 5 == 0) ||
+          ($tempCounter % 69 == 0) ||
+          ($tempCounter % 666 == 0) ||
+          (($tempCounter - 69) % 100 == 0)) {
+        array_push($destinationArray,$individualHash);
+      }
+      $tempCounter ++;
     }
-    $tempCounter ++;
+
+    # Establish and set the return value
+    $pageTitle = "Haring Analversaries: $hasherName";
+
+    return $this->render('hasher_analversary_list.twig', [
+      'theList' => $destinationArray,
+      'pageTitle' => $pageTitle,
+      'pageSubTitle' => '',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
-  # Establish and set the return value
-  $pageTitle = "Haring Analversaries: $hasherName";
-  $returnValue = $this->render('hasher_analversary_list.twig',array(
-    'theList' => $destinationArray,
-    'pageTitle' => $pageTitle,
-    'pageSubTitle' => '',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+  #[Route('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function getHareAnalversariesByHareTypeAction(int $hare_type, int $hasher_id, string $kennel_abbreviation) {
 
-  #Return the return value
-  return $returnValue;
-}
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-public function getHareAnalversariesByHareTypeAction(Request $request, int $hare_type, int $hasher_id, string $kennel_abbreviation) {
+    $hareTypeName = $this->getHareTypeName($hare_type);
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  $hareTypeName = $this->getHareTypeName($hare_type);
-
-  $sql_hasher_name = "
+    $sql_hasher_name = "
       SELECT HASHER_NAME
         FROM HASHERS
        WHERE HASHERS.HASHER_KY = ?";
 
-  $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
+    $hasherName = $this->fetchOne($sql_hasher_name, array($hasher_id));
 
-  # Define the SQL to retrieve all of their hashes
-  $sql_all_hashes_for_this_hasher = "
+    # Define the SQL to retrieve all of their hashes
+    $sql_all_hashes_for_this_hasher = "
       SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_LOCATION, EVENT_DATE, EVENT_CITY, SPECIAL_EVENT_DESCRIPTION
         FROM HARINGS
-        JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-        JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
        WHERE HASHERS.HASHER_KY = ?
          AND HASHES.KENNEL_KY = ?
          AND HARINGS.HARE_TYPE & ? = ?
        ORDER BY HASHES.EVENT_DATE ASC";
 
-  #Retrieve all of this hasher's hashes
-  $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher,array($hasher_id, $kennelKy, $hare_type, $hare_type));
+    #Retrieve all of this hasher's hashes
+    $theInitialListOfHashes = $this->fetchAll($sql_all_hashes_for_this_hasher, [ $hasher_id, $kennelKy, $hare_type, $hare_type ]);
 
-  # Add a count into their list of hashes
-  $destinationArray = array();
-  $tempCounter = 1;
-  foreach ($theInitialListOfHashes as &$individualHash) {
-    $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
-    if(
-      ($tempCounter % 5 == 0) ||
-      ($tempCounter % 69 == 0) ||
-      ($tempCounter % 666 == 0) ||
-      (($tempCounter - 69) % 100 == 0)
-      ){
-      array_push($destinationArray,$individualHash);
+    # Add a count into their list of hashes
+    $destinationArray = [];
+    $tempCounter = 1;
+    foreach ($theInitialListOfHashes as &$individualHash) {
+      $individualHash['ANALVERSARY_NUMBER'] = $tempCounter;
+      if(($tempCounter % 5 == 0) ||
+          ($tempCounter % 69 == 0) ||
+          ($tempCounter % 666 == 0) ||
+          (($tempCounter - 69) % 100 == 0)) {
+        array_push($destinationArray,$individualHash);
+      }
+      $tempCounter ++;
     }
-    $tempCounter ++;
+
+    # Establish and set the return value
+    $pageTitle = $hareTypeName . " Haring Analversaries: $hasherName";
+
+    return$this->render('hasher_analversary_list.twig', [
+      'theList' => $destinationArray,
+      'pageTitle' => $pageTitle,
+      'pageSubTitle' => '',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-
-  # Establish and set the return value
-  $pageTitle = $hareTypeName . " Haring Analversaries: $hasherName";
-  $returnValue = $this->render('hasher_analversary_list.twig',array(
-    'theList' => $destinationArray,
-    'pageTitle' => $pageTitle,
-    'pageSubTitle' => '',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
-
 
   #[Route('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',
     methods: ['GET'],

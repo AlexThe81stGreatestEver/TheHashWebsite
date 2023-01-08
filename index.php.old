@@ -1340,8 +1340,8 @@ get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController::hasherCountsByHareAction');
 #get('/{kennel_abbreviation}/percentages/harings',                                 'HashController::percentageHarings');
 #get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController::getHasherAnalversariesAction');
-get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController::getHareAnalversariesAction');
-get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController::getHareAnalversariesByHareTypeAction');
+#get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',                'HashController::getHareAnalversariesAction');
+#get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController::getHareAnalversariesByHareTypeAction');
 #get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController::getProjectedHasherAnalversariesAction');
 
 #get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController::getLongestStreaksAction');
