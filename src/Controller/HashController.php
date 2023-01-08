@@ -3194,64 +3194,66 @@ function addHasherStatusToQuery(string $query) {
       'pageTracking' => 'TotalHashAttendanceByHareDistinct' ]);
   }
 
-public function hasherCountsByHareAction(Request $request, int $hare_id, int $hare_type, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_id' => '%app.pattern.hare_id%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function hasherCountsByHareAction(int $hare_id, int $hare_type, string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Define the SQL to execute
-  $sql = "SELECT
-      HASHERS.HASHER_KY AS THE_KEY,
-        HASHERS.HASHER_NAME AS NAME,
-        COUNT(*) AS VALUE
-    FROM
-        HARINGS
-        JOIN HASHINGS ON HARINGS.HARINGS_HASH_KY = HASHINGS.HASH_KY
-        JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-        JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY ".
-        ($hare_type != 0 ? "" : "JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE ")."
-    WHERE
-        HARINGS.HARINGS_HASHER_KY = ?
-        AND HASHINGS.HASHER_KY != ?
-        AND HASHES.KENNEL_KY = ? " .
-        ($hare_type != 0 ? "AND HARINGS.HARE_TYPE & ? != 0 " : "AND HARINGS.HARE_TYPE != ?") . "
-    GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
-    ORDER BY VALUE DESC, NAME";
+    #Define the SQL to execute
+    $sql = "
+      SELECT HASHERS.HASHER_KY AS THE_KEY, HASHERS.HASHER_NAME AS NAME, COUNT(*) AS VALUE
+        FROM HARINGS
+        JOIN HASHINGS
+          ON HARINGS.HARINGS_HASH_KY = HASHINGS.HASH_KY
+        JOIN HASHERS
+          ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY ".
+             ($hare_type != 0 ? "" : "
+        JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE ")."
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND HASHINGS.HASHER_KY != ?
+         AND HASHES.KENNEL_KY = ? " .
+             ($hare_type != 0 ? "
+         AND HARINGS.HARE_TYPE & ? != 0 " : "
+         AND HARINGS.HARE_TYPE != ?") . "
+       GROUP BY HASHERS.HASHER_KY, HASHERS.HASHER_NAME
+       ORDER BY VALUE DESC, NAME";
 
-  #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array($hare_id, $hare_id, $kennelKy, $hare_type));
+    #Execute the SQL statement; create an array of rows
+    $hashList = $this->fetchAll($sql, [ $hare_id, $hare_id, $kennelKy, $hare_type ]);
 
-  # Declare the SQL used to retrieve this information
-  $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
+    # Declare the SQL used to retrieve this information
+    $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
-  # Make a database call to obtain the hasher information
-  $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hare_id));
+    # Make a database call to obtain the hasher information
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hare_id ]);
 
-  if($hare_type != 0) {
-    $hare_type_name = $this->getHareTypeName($hare_type);
-  } else {
-    $hare_type_name = "";
+    if($hare_type != 0) {
+      $hare_type_name = $this->getHareTypeName($hare_type);
+    } else {
+      $hare_type_name = "";
+    }
+
+    # Establish and set the return value
+    $hasherName = $hasher['HASHER_NAME'];
+    $captionValue = "The hashers who've hashed under the " . $hare_type_name . " hare, $hasherName";
+
+    return $this->render('name_number_list.twig', [
+      'pageTitle' => 'Hasher Counts',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Hash Count',
+      'tableCaption' => $captionValue,
+      'theList' => $hashList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'HasherCountsByHare' ]);
   }
-
-  # Establish and set the return value
-  $hasherName = $hasher['HASHER_NAME'];
-  $captionValue = "The hashers who've hashed under the " . $hare_type_name . " hare, $hasherName";
-  $returnValue = $this->render('name_number_list.twig',array(
-    'pageTitle' => 'Hasher Counts',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Hash Count',
-    'tableCaption' => $captionValue,
-    'theList' => $hashList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'HasherCountsByHare'
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
-
-
 
   #[Route('/{kennel_abbreviation}/basic/stats',
     methods: ['GET'],
