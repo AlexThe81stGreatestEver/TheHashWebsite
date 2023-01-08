@@ -1335,8 +1335,8 @@ get('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',        
 #get('/{kennel_abbreviation}/hashattendance/byhare/lowest',                        'HashController::hashAttendanceByHareLowestAction');
 #get('/{kennel_abbreviation}/hashattendance/byhare/highest',                       'HashController::hashAttendanceByHareHighestAction');
 #get('/{kennel_abbreviation}/hashattendance/byhare/average',                       'HashController::hashAttendanceByHareAverageAction');
-get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController::hashAttendanceByHareGrandTotalNonDistinctHashersAction');
-get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController::hashAttendanceByHareGrandTotalDistinctHashersAction');
+#get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers', 'HashController::hashAttendanceByHareGrandTotalNonDistinctHashersAction');
+#get('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',    'HashController::hashAttendanceByHareGrandTotalDistinctHashersAction');
 get('/{kennel_abbreviation}/getHasherCountsByHare/{hare_id}/{hare_type}',         'HashController::hasherCountsByHareAction');
 #get('/{kennel_abbreviation}/percentages/harings',                                 'HashController::percentageHarings');
 #get('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',                  'HashController::getHasherAnalversariesAction');
@@ -1344,7 +1344,7 @@ get('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',              
 get('/{kennel_abbreviation}/getHareAnalversaries/{hare_type}/{hasher_id}',      'HashController::getHareAnalversariesByHareTypeAction');
 #get('/{kennel_abbreviation}/getProjectedHasherAnalversaries/{hasher_id}',         'HashController::getProjectedHasherAnalversariesAction');
 
-get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController::getLongestStreaksAction');
+#get('/{kennel_abbreviation}/longestStreaks',                                      'ObscureStatisticsController::getLongestStreaksAction');
 #get('/{kennel_abbreviation}/aboutContact',                                        'ObscureStatisticsController::aboutContactAction');
 
 # Hash name (substring) analysis
@@ -1432,7 +1432,7 @@ post('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/year',    
 #get('/{kennel_abbreviation}/{analversary_number}/slowest/to/reach/bydays',  'ObscureStatisticsController::slowestToReachAnalversaryByDaysAction');
 #get('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/date', 'ObscureStatisticsController::quickestToReachAnalversaryByDate');
 
-get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController::longestCareerAction');
+#get('/{kennel_abbreviation}/longest/career','ObscureStatisticsController::longestCareerAction');
 #get('/{kennel_abbreviation}/highest/averageDaysBetweenHashes','ObscureStatisticsController::highestAverageDaysBetweenHashesAction');
 #get('/{kennel_abbreviation}/lowest/averageDaysBetweenHashes','ObscureStatisticsController::lowestAverageDaysBetweenHashesAction');
 #get('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}','ObscureStatisticsController::everyonesLatestHashesAction');

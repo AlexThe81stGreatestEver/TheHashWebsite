@@ -975,85 +975,69 @@ class ObscureStatisticsController extends BaseController {
   }
 
 
-    public function getLongestStreaksAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/longestStreaks',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getLongestStreaksAction(string $kennel_abbreviation) {
 
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Define the sql statement to execute
+    $theSql = $this->sqlQueries->getTheLongestStreaks()." LIMIT 25";
 
-      #Define the sql statement to execute
-      $theSql = THE_LONGEST_STREAKS." LIMIT 25";
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy ]);
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $kennelKy));
+    #Define the page title
+    $pageTitle = "The longest streaks";
 
-      #Define the page title
-      $pageTitle = "The longest streaks";
+    return $this->render('name_number_list.twig', [
+      'pageTitle' => $pageTitle,
+      'tableCaption' => 'Longest streak per hasher',
 
-      #Set the return value
-      $returnValue = $this->render('name_number_list.twig',array(
-        'pageTitle' => $pageTitle,
-        'tableCaption' => 'Longest streak per hasher',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Streak Length',
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'LongestStreaks' ]);
+  }
 
-        'columnOneName' => 'Hasher Name',
-        'columnTwoName' => 'Streak Length',
-        'theList' => $theResults,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'pageTracking' => 'LongestStreaks'
-      ));
+  #[Route('/{kennel_abbreviation}/longest/career',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function longestCareerAction(string $kennel_abbreviation) {
 
-      return $returnValue;
-    }
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    public function longestCareerAction(Request $request, string $kennel_abbreviation){
+    #Define the sql
+    $theSql = $this->sqlQueries->getLongestHashingCareerInDays();
+    $theSql = str_replace("XORDERCOLUMNX", "DIFFERENCE", $theSql);
+    $theSql = str_replace("XUPORDOWNX", "DESC", $theSql);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Define the minimum hashing count
+    $minHashingCount = 4;
 
-      #Define the sql
-      $theSql = LONGEST_HASHING_CAREER_IN_DAYS;
-      $theSql = str_replace("XORDERCOLUMNX","DIFFERENCE",LONGEST_HASHING_CAREER_IN_DAYS);
-      $theSql = str_replace("XUPORDOWNX","DESC",$theSql);
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy, $kennelKy, $kennelKy, $minHashingCount ]);
 
-      #Define the minimum hashing count
-      $minHashingCount = 4;
+    #Define the page sub title
+    $pageSubTitle = "Days between first hashes and most recent hashes";
 
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int)$minHashingCount
-      ));
+    #Define the table caption
+    $tableCaption = "Minimum hashing count: $minHashingCount";
 
-      #Define the page sub title
-      $pageSubTitle = "Days between first hashes and most recent hashes";
-
-      #Define the table caption
-      $tableCaption = "Minimum hashing count: $minHashingCount";
-
-      #Add the results into the twig template
-      $returnValue = $this->render('career_length_by_day.twig',array(
-        'pageTitle' => "Longest Hashing Career (By Days)",
-        'pageSubTitle' => $pageSubTitle,
-        'tableCaption' => $tableCaption,
-        #'pageCaption' => $pageCaption,
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        #'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      #Return the return value
-      return $returnValue;
-
-    }
+    #Add the results into the twig template
+    return $this->render('career_length_by_day.twig', [
+      'pageTitle' => "Longest Hashing Career (By Days)",
+      'pageSubTitle' => $pageSubTitle,
+      'tableCaption' => $tableCaption,
+      'theList' => $theResults,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
   #[Route('/{kennel_abbreviation}/everyones/latest/hashes/{min_hash_count}',
     methods: ['GET'],

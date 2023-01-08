@@ -3164,59 +3164,55 @@ function addHasherStatusToQuery(string $query) {
       'pageTracking' => 'AverageHashAttendanceByHare' ]);
   }
 
-
-  public function hashAttendanceByHareGrandTotalNonDistinctHashersAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/nondistincthashers',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashAttendanceByHareGrandTotalNonDistinctHashersAction(string $kennel_abbreviation){
 
     #Define the SQL to execute
-    $sql = GRANDTOTAL_NONDISTINCT_HASH_ATTENDANCE_BY_HARE;
+    $sql = $this->sqlQueries->getGrandtotalNondistinctHashAttendanceByHare();
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array($kennelKy));
+    $hashList = $this->fetchAll($sql, [ $kennelKy ]);
 
-    # Establish and set the return value
-    $returnValue = $this->render('name_number_list.twig',array(
+    return $this->render('name_number_list.twig', [
       'pageTitle' => 'Total (non distinct) hashers at their hashes',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hash Count',
       'tableCaption' => 'If hasher X has done 100 of hare Y\'s events, they contribute 100 to the hash count.',
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'TotalHashAttendanceByHareNonDistinct'
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'pageTracking' => 'TotalHashAttendanceByHareNonDistinct' ]);
   }
 
-public function hashAttendanceByHareGrandTotalDistinctHashersAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashattendance/byhare/grandtotal/distincthashers',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashAttendanceByHareGrandTotalDistinctHashersAction(string $kennel_abbreviation){
 
-  #Define the SQL to execute
-  $sql = GRANDTOTAL_DISTINCT_HASH_ATTENDANCE_BY_HARE;
+    $sql = $this->sqlQueries->getGrandtotalDistinctHashAttendanceByHare();
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Execute the SQL statement; create an array of rows
-  $hashList = $this->fetchAll($sql,array($kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $hashList = $this->fetchAll($sql, [ $kennelKy ]);
 
-  # Establish and set the return value
-  $returnValue = $this->render('name_number_list.twig',array(
-    'pageTitle' => 'Total distinct hashers at their hashes',
-    'columnOneName' => 'Hare Name',
-    'columnTwoName' => 'Hash Count',
-    'tableCaption' => 'If hasher X has done 100 of hare Y\'s events, they contribute 1 to the hash count.',
-    'theList' => $hashList,
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'pageTracking' => 'TotalHashAttendanceByHareDistinct'
-  ));
-
-  #Return the return value
-  return $returnValue;
-
-}
+    return $this->render('name_number_list.twig', [
+      'pageTitle' => 'Total distinct hashers at their hashes',
+      'columnOneName' => 'Hare Name',
+      'columnTwoName' => 'Hash Count',
+      'tableCaption' => 'If hasher X has done 100 of hare Y\'s events, they contribute 1 to the hash count.',
+      'theList' => $hashList,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'pageTracking' => 'TotalHashAttendanceByHareDistinct' ]);
+  }
 
 public function hasherCountsByHareAction(Request $request, int $hare_id, int $hare_type, string $kennel_abbreviation){
 
