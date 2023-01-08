@@ -1361,8 +1361,8 @@ get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 #post('/{kennel_abbreviation}/jumboPercentagesTable',                'HashController::jumboPercentagesTablePostActionJson');
 
 #Show events by event tag
-get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController::listHashesByEventTagAction');
-get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController::chartsGraphsByEventTagAction');
+#get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagController::listHashesByEventTagAction');
+#get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController::chartsGraphsByEventTagAction');
 
 # Functions for the "by year" statistics
 #get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController::getYearInReviewAction');

@@ -1,25 +1,25 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-require_once "BaseController.php";
-
-use Symfony\Component\HttpFoundation\Request;
+use App\Controller\BaseController;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Psr\Container\ContainerInterface;
 
 class TagController extends BaseController
 {
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  public function __construct(ManagerRegistry $doctrine) {
+    parent::__construct($doctrine);
   }
 
     public function manageEventTagsPreAction(Request $request){
@@ -375,240 +375,162 @@ public function addNewEventTag(Request $request){
       return $returnValue;
     }
 
-    public function listHashesByEventTagAction(Request $request, int $event_tag_ky, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'event_tag_ky' => '%app.pattern.event_tag_ky%']
+  )]
+  public function listHashesByEventTagAction(int $event_tag_ky, string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Define the SQL to execute
-      $sql = "SELECT
-            HASHES.HASH_KY,
-            KENNEL_EVENT_NUMBER,
-            EVENT_DATE,
-            DAYNAME(EVENT_DATE) AS EVENT_DAY_NAME,
-            EVENT_LOCATION,
-            EVENT_CITY,
-            EVENT_STATE,
-            SPECIAL_EVENT_DESCRIPTION,
-            HASH_TYPE_NAME
-      FROM
-        HASHES JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-        JOIN HASH_TYPES ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
-      WHERE
-        HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-      ORDER BY HASHES.EVENT_DATE DESC";
+    #Define the SQL to execute
+    $sql = "
+      SELECT HASHES.HASH_KY, KENNEL_EVENT_NUMBER, EVENT_DATE, DAYNAME(EVENT_DATE) AS EVENT_DAY_NAME, EVENT_LOCATION,
+             EVENT_CITY, EVENT_STATE, SPECIAL_EVENT_DESCRIPTION, HASH_TYPE_NAME
+        FROM HASHES
+        JOIN HASHES_TAG_JUNCTION
+          ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+        JOIN HASH_TYPES
+          ON HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE
+       WHERE HASHES_TAGS_KY = ?
+         AND KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE DESC";
 
-      #Execute the SQL statement; create an array of rows
-      $hashList = $this->fetchAll($sql,array((int) $event_tag_ky, $kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $hashList = $this->fetchAll($sql, [ $event_tag_ky, $kennelKy ]);
 
-      # Declare the SQL used to retrieve this information
-      $sql_for_tag_lookup = "SELECT * FROM HASHES_TAGS WHERE HASHES_TAGS_KY = ?";
+    # Declare the SQL used to retrieve this information
+    $sql_for_tag_lookup = "SELECT * FROM HASHES_TAGS WHERE HASHES_TAGS_KY = ?";
 
-      # Make a database call to obtain the hasher information
-      $eventTag = $this->fetchAssoc($sql_for_tag_lookup, array((int) $event_tag_ky));
+    # Make a database call to obtain the hasher information
+    $eventTag = $this->fetchAssoc($sql_for_tag_lookup, array((int) $event_tag_ky));
 
-      # Establish and set the return value
-      #$hasherName = $hasher['HASHER_NAME'];
-      $tagText = $eventTag['TAG_TEXT'];
-      $pageSubtitle = "Hashes with the tag: $tagText";
-      $returnValue = $this->render('hash_list.twig',array(
-        'pageTitle' => 'The List of Hashes',
-        'pageSubTitle' => $pageSubtitle,
-        'theList' => $hashList,
-        'tableCaption' => '',
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
+    # Establish and set the return value
+    $tagText = $eventTag['TAG_TEXT'];
+    $pageSubtitle = "Hashes with the tag: $tagText";
 
-      #Return the return value
-      return $returnValue;
+    return $this->render('hash_list.twig', [
+      'pageTitle' => 'The List of Hashes',
+      'pageSubTitle' => $pageSubtitle,
+      'theList' => $hashList,
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-    }
+  #[Route('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'event_tag_ky' => '%app.pattern.event_tag_ky%']
+  )]
+  public function chartsGraphsByEventTagAction(int $event_tag_ky, string $kennel_abbreviation) {
 
+    # Declare the SQL used to retrieve this information
+    $sql = "SELECT * FROM HASHES_TAGS WHERE HASHES_TAGS_KY = ?";
 
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    public function chartsGraphsByEventTagAction(Request $request, int $event_tag_ky, string $kennel_abbreviation){
+    # Make a database call to obtain the hasher information
+    $tagValue = $this->fetchAssoc($sql, [ $event_tag_ky ]);
 
-      # Declare the SQL used to retrieve this information
-      $sql = "SELECT * FROM HASHES_TAGS WHERE HASHES_TAGS_KY = ?";
+    # Obtain their hashes
+    $sqlTheHashes = "
+      SELECT HASHES.*
+        FROM HASHES
+        JOIN HASHES_TAG_JUNCTION
+          ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+       WHERE HASHES_TAGS_KY = ?
+         AND KENNEL_KY = ?
+        AND LAT IS NOT NULL
+        AND LNG IS NOT NULL";
+    $theHashes = $this->fetchAll($sqlTheHashes, [ $event_tag_ky, $kennelKy ]);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the average lat
+    $sqlTheAverageLatLong = "
+      SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG
+        FROM HASHES
+        JOIN HASHES_TAG_JUNCTION
+          ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+       WHERE HASHES_TAGS_KY = ?
+         AND KENNEL_KY = ?  
+         AND LAT IS NOT NULL 
+         AND LNG IS NOT NULL";
+    $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, [ $event_tag_ky, $kennelKy ]);
+    $avgLat = $theAverageLatLong['THE_LAT'];
+    $avgLng = $theAverageLatLong['THE_LNG'];
 
-      # Make a database call to obtain the hasher information
-      $tagValue = $this->fetchAssoc($sql, array((int) $event_tag_ky));
+    #Obtain the hashes by year
+    $sqlHashesByYear = "
+      SELECT TEMP_A.YEAR_A AS THE_VALUE, COUNT(TEMP_B.YEAR_B) AS THE_COUNT
+        FROM (SELECT DISTINCT(YEAR(EVENT_DATE)) AS YEAR_A
+                FROM HASHES
+               WHERE KENNEL_KY = ?
+                 AND EVENT_DATE >= (SELECT MIN(EVENT_DATE)
+                                      FROM HASHES
+                                      JOIN HASHES_TAG_JUNCTION
+                                        ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+                                     WHERE HASHES_TAGS_KY = ?
+                                       AND KENNEL_KY = ?)
+                 AND EVENT_DATE <= (SELECT MAX(EVENT_DATE)
+                                      FROM HASHES
+                                      JOIN HASHES_TAG_JUNCTION
+                                        ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+                                     WHERE HASHES_TAGS_KY = ? AND KENNEL_KY = ?)) TEMP_A
+        LEFT JOIN (SELECT Year(EVENT_DATE) AS YEAR_B
+                     FROM HASHES
+                     JOIN HASHES_TAG_JUNCTION
+                       ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+                    WHERE HASHES_TAGS_KY = ? AND KENNEL_KY = ?) TEMP_B
+          ON TEMP_A.YEAR_A = TEMP_B.YEAR_B
+       GROUP BY TEMP_A.YEAR_A";
+    $hashesByYearList = $this->fetchAll($sqlHashesByYear, [
+      $kennelKy, $event_tag_ky, $kennelKy, $event_tag_ky, $kennelKy, $event_tag_ky, $kennelKy ]);
 
-      # Obtain their hashes
-      $sqlTheHashes = "SELECT
-        HASHES.*
-        FROM
-        HASHES
-        JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-        WHERE
-        HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        AND LAT IS NOT NULL AND LNG IS NOT NULL";
-      $theHashes = $this->fetchAll($sqlTheHashes, array((int) $event_tag_ky, $kennelKy));
+    #Hasher Counts
+    $sqlHasherCounts = "
+      SELECT HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
+        FROM HASHES
+        JOIN HASHES_TAG_JUNCTION
+          ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+        JOIN HASHINGS
+          ON HASHINGS.HASH_KY = HASHES.HASH_KY
+        JOIN HASHERS
+          ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+       WHERE HASHES_TAGS_KY = ? AND KENNEL_KY = ?
+       GROUP BY HASHER_NAME
+       ORDER BY THE_COUNT DESC";
+    $hasherCountList = $this->fetchAll($sqlHasherCounts, [ $event_tag_ky, $kennelKy ]);
 
-      #Obtain the average lat
-      $sqlTheAverageLatLong = "SELECT AVG(LAT) AS THE_LAT, AVG(LNG) AS THE_LNG FROM
-        HASHES
-        JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-        WHERE
-        HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        AND LAT IS NOT NULL AND LNG IS NOT NULL";
-      $theAverageLatLong = $this->fetchAssoc($sqlTheAverageLatLong, array((int) $event_tag_ky, $kennelKy));
-      $avgLat = $theAverageLatLong['THE_LAT'];
-      $avgLng = $theAverageLatLong['THE_LNG'];
+    #Hare Counts
+    $sqlHareCounts = "
+      SELECT HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
+        FROM HASHES
+        JOIN HASHES_TAG_JUNCTION
+          ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
+        JOIN HARINGS
+          ON HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN HASHERS
+          ON HARINGS_HASHER_KY = HASHERS.HASHER_KY
+       WHERE HASHES_TAGS_KY = ? AND KENNEL_KY = ?
+       GROUP BY HASHER_NAME
+       ORDER BY THE_COUNT DESC";
+    $hareCountList = $this->fetchAll($sqlHareCounts, [ $event_tag_ky, $kennelKy ]);
 
-      # Obtain the number of hashings
-      #$hashCountValue = $this->fetchAssoc($this->getPersonsHashingCountQuery(), array((int) $hasher_id, $kennelKy));
-
-      # Obtain the number of harings
-      #$hareCountValue = $this->fetchAssoc(PERSONS_HARING_COUNT_FLEXIBLE, array((int) $hasher_id, $kennelKy,  (int) 0, (int) 1));
-
-      # Obtain the hashes by month (name)
-      #$theHashesByMonthNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_MONTH_NAME, array((int) $hasher_id, $kennelKy));
-
-      # Obtain the hashes by quarter
-      #$theHashesByQuarterList = $this->fetchAll(HASHER_HASH_COUNTS_BY_QUARTER, array((int) $hasher_id, $kennelKy));
-
-      # Obtain the hashes by quarter
-      #$theHashesByStateList = $this->fetchAll(HASHER_HASH_COUNTS_BY_STATE, array((int) $hasher_id, $kennelKy));
-
-      # Obtain the hashes by county
-      #$theHashesByCountyList = $this->fetchAll(HASHER_HASH_COUNTS_BY_COUNTY, array((int) $hasher_id, $kennelKy));
-
-      # Obtain the hashes by postal code
-      #$theHashesByPostalCodeList = $this->fetchAll(HASHER_HASH_COUNTS_BY_POSTAL_CODE, array((int) $hasher_id, $kennelKy));
-
-      # Obtain the hashes by day name
-      #$theHashesByDayNameList = $this->fetchAll(HASHER_HASH_COUNTS_BY_DAYNAME, array((int) $hasher_id, $kennelKy));
-
-      #Obtain the hashes by year
-      $sqlHashesByYear = "SELECT TEMP_A.YEAR_A AS THE_VALUE, COUNT(TEMP_B.YEAR_B) AS THE_COUNT
-        FROM
-        (
-        SELECT
-        	DISTINCT(YEAR(EVENT_DATE)) AS YEAR_A
-        FROM
-        	HASHES
-        WHERE KENNEL_KY = ?
-        	AND EVENT_DATE >= (
-        		SELECT MIN(EVENT_DATE)
-                FROM
-        			HASHES
-        			JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-                WHERE
-        			HASHES_TAGS_KY = ? AND KENNEL_KY = ?)
-        	AND EVENT_DATE <= (
-        		SELECT MAX(EVENT_DATE)
-                FROM
-        			HASHES
-        			JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-                WHERE
-        			HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        )) TEMP_A LEFT JOIN (
-        SELECT Year(EVENT_DATE) AS YEAR_B
-                FROM
-                HASHES
-                JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-                WHERE
-                HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        ) TEMP_B ON TEMP_A.YEAR_A = TEMP_B.YEAR_B
-        GROUP BY TEMP_A.YEAR_A";
-      $hashesByYearList = $this->fetchAll($sqlHashesByYear, array(
-        $kennelKy,
-        (int) $event_tag_ky,
-        $kennelKy,
-        (int) $event_tag_ky,
-        $kennelKy,
-        (int) $event_tag_ky,
-        $kennelKy)
-      );
-
-      #Hasher Counts
-      $sqlHasherCounts = "SELECT HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
-        FROM
-          HASHES
-        JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-        JOIN HASHINGS ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-        WHERE
-          HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        GROUP BY HASHER_NAME
-        ORDER BY THE_COUNT DESC";
-      $hasherCountList = $this->fetchAll($sqlHasherCounts, array((int) $event_tag_ky, $kennelKy));
-
-      #Hare Counts
-      $sqlHareCounts = "SELECT HASHER_NAME AS THE_VALUE, COUNT(*) AS THE_COUNT
-      FROM
-        HASHES
-        JOIN HASHES_TAG_JUNCTION ON HASHES.HASH_KY = HASHES_TAG_JUNCTION.HASHES_KY
-        JOIN HARINGS ON HARINGS_HASH_KY = HASHES.HASH_KY
-        JOIN HASHERS ON HARINGS_HASHER_KY = HASHERS.HASHER_KY
-        WHERE
-          HASHES_TAGS_KY = ? AND KENNEL_KY = ?
-        GROUP BY HASHER_NAME
-        ORDER BY THE_COUNT DESC";
-      $hareCountList = $this->fetchAll($sqlHareCounts, array((int) $event_tag_ky, $kennelKy));
-
-      #Obtain the harings by year
-      #$sqlHaringsByYear = "SELECT
-      #	  YEAR(EVENT_DATE) AS THE_VALUE,
-      #    SUM(CASE WHEN HASHES.IS_HYPER IN (0)  THEN 1 ELSE 0 END) NON_HYPER_COUNT,
-      #	  SUM(CASE WHEN HASHES.IS_HYPER IN (1)  THEN 1 ELSE 0 END) HYPER_COUNT,
-      #    COUNT(*) AS TOTAL_HARING_COUNT
-      #FROM
-      #    HARINGS
-      #	  JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-      #WHERE
-      #    HARINGS.HARINGS_HASHER_KY = ? AND
-      #    HASHES.KENNEL_KY = ?
-      #GROUP BY YEAR(EVENT_DATE)
-      #ORDER BY YEAR(EVENT_DATE)";
-      #$haringsByYearList = $this->fetchAll($sqlHaringsByYear, array((int) $hasher_id, $kennelKy));
-
-      #Query the database
-      #$cityHashingsCountList = $this->fetchAll(HASHER_HASH_COUNTS_BY_CITY, array((int) $hasher_id, $kennelKy));
-
-      #Obtain largest entry from the list
-      #$cityHashingsCountMax = 1;
-      #if(isset($cityHashingsCountList[0]['THE_COUNT'])){
-      #  $cityHashingsCountMax = $cityHashingsCountList[0]['THE_COUNT'];
-      #}
-
-      #Obtain their largest streak
-      #$longestStreakValue = $this->fetchAssoc(THE_LONGEST_STREAKS_FOR_HASHER, array($kennelKy , (int) $hasher_id));
-
-      # Establish and set the return value
-      $returnValue = $this->render('eventtag_chart_details.twig',array(
-        'pageTitle' => 'Tag Charts and Details',
-        'firstHeader' => 'Basic Details',
-        'secondHeader' => 'Statistics',
-        'tag_value' => $tagValue,
-        #'hashCount' => $hashCountValue['THE_COUNT'],
-        #'hareCount' => $hareCountValue['THE_COUNT'],
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'hashes_by_year_list' => $hashesByYearList,
-        'hasher_count_list' => $hasherCountList,
-        'hare_count_list' => $hareCountList,
-        #'harings_by_year_list' => $haringsByYearList,
-        #'hashes_by_month_name_list' => $theHashesByMonthNameList,
-        #'hashes_by_quarter_list' => $theHashesByQuarterList,
-        #'hashes_by_state_list' => $theHashesByStateList,
-        #'hashes_by_county_list' => $theHashesByCountyList,
-        #'hashes_by_postal_code_list' => $theHashesByPostalCodeList,
-        #'hashes_by_day_name_list' => $theHashesByDayNameList,
-        #'city_hashings_count_list' => $cityHashingsCountList,
-        #'city_hashings_max_value' => $cityHashingsCountMax,
-        'the_hashes' => $theHashes,
-        'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
-        'avg_lat' => $avgLat,
-        'avg_lng' => $avgLng,
-        #'longest_streak' => $longestStreakValue['MAX_STREAK']
-      ));
-
-      # Return the return value
-      return $returnValue;
-
-    }
+    return $this->render('eventtag_chart_details.twig', [
+      'pageTitle' => 'Tag Charts and Details',
+      'firstHeader' => 'Basic Details',
+      'secondHeader' => 'Statistics',
+      'tag_value' => $tagValue,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hashes_by_year_list' => $hashesByYearList,
+      'hasher_count_list' => $hasherCountList,
+      'hare_count_list' => $hareCountList,
+      'the_hashes' => $theHashes,
+      'geocode_api_value' => $this->getGoogleMapsJavascriptApiKey(),
+      'avg_lat' => $avgLat,
+      'avg_lng' => $avgLng ]);
+  }
 }
