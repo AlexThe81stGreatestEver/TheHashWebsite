@@ -3579,185 +3579,189 @@ public function lowestAttendedHashesAction(Request $request, string $kennel_abbr
 
 }
 
-public function hashersOfTheYearsAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/hashers/of/the/years',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function hashersOfTheYearsAction(string $kennel_abbreviation) {
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #SQL to determine the distinct year values
-  $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-        KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
+    #SQL to determine the distinct year values
+    $distinctYearsSql = "
+      SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE) DESC";
 
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($distinctYearsSql,array($kennelKy));
+    #Execute the SQL statement; create an array of rows
+    $yearValues = $this->fetchAll($distinctYearsSql,array($kennelKy));
 
-  #Define the sql
-  $topHashersSql = "SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,
-          (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ?) AS THE_YEARS_HASH_COUNT,
-    (THE_TEMPORARY_TABLE.THE_COUNT / (SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ?))*100 AS HASHING_PERCENTAGE
-  FROM (
-        SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, COUNT(*) AS THE_COUNT
-        FROM HASHINGS
-                JOIN HASHERS ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-                JOIN HASHES ON HASHINGS.HASH_KY = HASHES.HASH_KY
-        WHERE
-                HASHES.KENNEL_KY = ?
-                AND YEAR(HASHES.EVENT_DATE) = ?
-        GROUP BY HASHERS.HASHER_KY
-        ORDER BY THE_COUNT DESC
-        LIMIT XLIMITX
-    ) AS THE_TEMPORARY_TABLE";
-  $topHashersSql = str_replace("XLIMITX","12",$topHashersSql);
+    #Define the sql
+    $topHashersSql = "
+      SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR, (
+             SELECT COUNT(*) AS THE_HASH_COUNT
+               FROM HASHES
+              WHERE KENNEL_KY = ?
+                AND YEAR(HASHES.EVENT_DATE) = ?) AS THE_YEARS_HASH_COUNT,
+              (THE_TEMPORARY_TABLE.THE_COUNT / (SELECT COUNT(*) AS THE_HASH_COUNT
+                                                  FROM HASHES
+                                                 WHERE KENNEL_KY = ?
+                                                   AND YEAR(HASHES.EVENT_DATE) = ?))*100 AS HASHING_PERCENTAGE
+        FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, COUNT(*) AS THE_COUNT
+                FROM HASHINGS
+                JOIN HASHERS
+                  ON HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+                JOIN HASHES
+                  ON HASHINGS.HASH_KY = HASHES.HASH_KY
+               WHERE HASHES.KENNEL_KY = ?
+                 AND YEAR(HASHES.EVENT_DATE) = ?
+               GROUP BY HASHERS.HASHER_KY
+               ORDER BY THE_COUNT DESC
+               LIMIT XLIMITX) AS THE_TEMPORARY_TABLE";
+    $topHashersSql = str_replace("XLIMITX","12",$topHashersSql);
 
+    #Initialize the array of arrays
+    $array = [];
 
-  #Initialize the array of arrays
-  $array = array();
+    #Loop through the year values
+    for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++) {
 
-  #Loop through the year values
-  for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++){
+      #Establish the year for this loop iteration
+      $tempYear = $yearValues[$tempCounter-1]["YEAR"];
 
-    #Establish the year for this loop iteration
-    $tempYear = $yearValues[$tempCounter-1]["YEAR"];
+      #Make a database call passing in this iteration's year value
+      $tempResult = $this->fetchAll($topHashersSql,
+        [ $tempYear, $kennelKy, $tempYear, $kennelKy, $tempYear, $kennelKy, $tempYear ]);
 
-    #Make a database call passing in this iteration's year value
-    $tempResult = $this->fetchAll($topHashersSql,array(
-      (int) $tempYear,
-      $kennelKy,
-      (int) $tempYear,
-      $kennelKy,
-      (int) $tempYear,
-      $kennelKy,
-      (int) $tempYear));
+      #Add the database result set to the array of arrays
+      $array[] = $tempResult;
 
-    #Add the database result set to the array of arrays
-    $array[] = $tempResult;
+    }
 
+    return $this->render('top_hashers_by_years.twig', [
+      'theListOfLists' => $array,
+      'pageTitle' => 'Top Hashers Per Year',
+      'pageSubTitle' => '',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
 
+  #[Route('/{kennel_abbreviation}/hares/{hare_type}/of/the/years',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function HaresOfTheYearsAction(int $hare_type, string $kennel_abbreviation) {
 
-  # Establish and set the return value
-  $returnValue = $this->render('top_hashers_by_years.twig',array(
-    'theListOfLists' => $array,
-    #'tempList' => $tempResult,
-    'pageTitle' => 'Top Hashers Per Year',
-    'pageSubTitle' => '',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Return the return value
-  return $returnValue;
+    #SQL to determine the distinct year values
+    $distinctYearsSql = "
+      SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
+        FROM HASHES
+       WHERE KENNEL_KY = ?
+       GROUP BY YEAR(EVENT_DATE)
+       ORDER BY YEAR(EVENT_DATE) DESC";
 
-}
+    #Execute the SQL statement; create an array of rows
+    $yearValues = $this->fetchAll($distinctYearsSql, [ $kennelKy ]);
 
+    $hashTypes = $this->getHashTypes($kennelKy, $hare_type);
 
+    #Define the sql
+    $topHaresSql = "
+      SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,";
 
-public function HaresOfTheYearsAction(Request $request, int $hare_type, string $kennel_abbreviation){
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #SQL to determine the distinct year values
-  $distinctYearsSql = "SELECT YEAR(EVENT_DATE) AS YEAR, COUNT(*) AS THE_COUNT
-  FROM HASHES
-  WHERE
-        KENNEL_KY = ?
-  GROUP BY YEAR(EVENT_DATE)
-  ORDER BY YEAR(EVENT_DATE) DESC";
-
-  #Execute the SQL statement; create an array of rows
-  $yearValues = $this->fetchAll($distinctYearsSql,array($kennelKy));
-
-  $hashTypes = $this->getHashTypes($kennelKy, $hare_type);
-
-  #Define the sql
-  $topHaresSql = "SELECT HASHER_KY, HASHER_NAME, THE_COUNT, ? AS THE_YEAR,";
-  foreach ($hashTypes as &$hashType) {
-    $topHaresSql .=
-      "(SELECT COUNT(*) AS THE_HASH_COUNT FROM HASHES WHERE KENNEL_KY = ? AND YEAR(HASHES.EVENT_DATE) = ? AND HASHES.HASH_TYPE = ?) AS THE_YEARS_".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
-    }
-    $topHaresSql .=
-        "(SELECT COUNT(*) AS THE_HASH_COUNT
-            FROM HASHES ".
-         ($hare_type == 0 ? "" :
-                            "JOIN KENNELS ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY
-                             JOIN HASH_TYPES ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0 AND HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE")."
-           WHERE HASHES.KENNEL_KY = ? ".
-         ($hare_type == 0 ? "" : "AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
-             AND YEAR(HASHES.EVENT_DATE) = ? )
-              AS THE_YEARS_OVERALL_HASH_COUNT
-    FROM (
-        SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, COUNT(*) AS THE_COUNT
-        FROM HARINGS
-                JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY ".
-                ($hare_type == 0 ? "" : "JOIN HARE_TYPES ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE ")."
-        WHERE
-                HASHES.KENNEL_KY = ?
-                AND YEAR(HASHES.EVENT_DATE) = ? ".
-                ($hare_type == 0 ? "" : "AND HARINGS.HARE_TYPE & ? != 0 ")."
-        GROUP BY HASHERS.HASHER_KY
-        ORDER BY THE_COUNT DESC
-        LIMIT XLIMITX
-    ) AS THE_TEMPORARY_TABLE";
-
-  $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
-
-  #Initialize the array of arrays
-  $array = array();
-
-  #Loop through the year values
-  for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++){
-
-    #Establish the year for this loop iteration
-    $tempYear = $yearValues[$tempCounter-1]["YEAR"];
-
-    $args = array((int) $tempYear);
     foreach ($hashTypes as &$hashType) {
+      $topHaresSql .=
+        "(SELECT COUNT(*) AS THE_HASH_COUNT
+            FROM HASHES
+           WHERE KENNEL_KY = ?
+             AND YEAR(HASHES.EVENT_DATE) = ?
+             AND HASHES.HASH_TYPE = ?) AS THE_YEARS_".$hashType['HASH_TYPE_NAME']."_HASH_COUNT,";
+      }
+      $topHaresSql .=
+          "(SELECT COUNT(*) AS THE_HASH_COUNT
+              FROM HASHES ".
+           ($hare_type == 0 ? "" :
+             "JOIN KENNELS
+                ON HASHES.KENNEL_KY = KENNELS.KENNEL_KY
+              JOIN HASH_TYPES
+                ON HASH_TYPES.HASH_TYPE & KENNELS.HASH_TYPE_MASK != 0
+               AND HASHES.HASH_TYPE = HASH_TYPES.HASH_TYPE")."
+             WHERE HASHES.KENNEL_KY = ? ".
+           ($hare_type == 0 ? "" : "
+               AND HASH_TYPES.HARE_TYPE_MASK & ? != 0")."
+               AND YEAR(HASHES.EVENT_DATE) = ? )
+                AS THE_YEARS_OVERALL_HASH_COUNT
+              FROM (SELECT HASHERS.HASHER_KY, HASHERS.HASHER_NAME, COUNT(*) AS THE_COUNT
+                      FROM HARINGS
+                      JOIN HASHERS
+                        ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+                      JOIN HASHES
+                        ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY ".
+                  ($hare_type == 0 ? "" : "
+                      JOIN HARE_TYPES
+                        ON HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE ")."
+                     WHERE HASHES.KENNEL_KY = ?
+                       AND YEAR(HASHES.EVENT_DATE) = ? ".
+                  ($hare_type == 0 ? "" : "
+                       AND HARINGS.HARE_TYPE & ? != 0 ")."
+                     GROUP BY HASHERS.HASHER_KY
+                     ORDER BY THE_COUNT DESC
+                     LIMIT XLIMITX) AS THE_TEMPORARY_TABLE";
+
+    $topHaresSql = str_replace("XLIMITX","12",$topHaresSql);
+
+    #Initialize the array of arrays
+    $array = [];
+
+    #Loop through the year values
+    for ($tempCounter = 1; $tempCounter <= sizeof($yearValues); $tempCounter++){
+
+      #Establish the year for this loop iteration
+      $tempYear = $yearValues[$tempCounter-1]["YEAR"];
+
+      $args = [ $tempYear ];
+      foreach ($hashTypes as &$hashType) {
+        array_push($args, $kennelKy);
+        array_push($args, $tempYear);
+        array_push($args, $hashType['HASH_TYPE']);
+      }
       array_push($args, $kennelKy);
-      array_push($args, (int) $tempYear);
-      array_push($args, (int) $hashType['HASH_TYPE']);
+      if($hare_type != 0) array_push($args, $hare_type);
+      array_push($args, $tempYear);
+      array_push($args, $kennelKy);
+      array_push($args, $tempYear);
+      if($hare_type != 0) array_push($args, $hare_type);
+
+      #Make a database call passing in this iteration's year value
+      $tempResult = $this->fetchAll($topHaresSql,$args);
+
+      #Add the database result set to the array of arrays
+      $array[] = $tempResult;
     }
-    array_push($args, $kennelKy);
-    if($hare_type != 0) array_push($args, $hare_type);
-    array_push($args, (int) $tempYear);
-    array_push($args, $kennelKy);
-    array_push($args, (int) $tempYear);
-    if($hare_type != 0) array_push($args, $hare_type);
 
-    #Make a database call passing in this iteration's year value
-    $tempResult = $this->fetchAll($topHaresSql,$args);
+    if($hare_type != 0) {
+      $hare_type_name = $this->getHareTypeName($hare_type);
+    }
 
-    #Add the database result set to the array of arrays
-    $array[] = $tempResult;
+    # Establish and set the return value
+    return $this->render('top_hares_by_years.twig', [
+      'theListOfLists' => $array,
+      'pageTitle' => $hare_type == 0 ? 'Top Hares Per Year (All harings)' : 'Top '.$hare_type_name.' Hares Per Year',
+      'pageSubTitle' => $hare_type == 0 ? '(All hashes included)' : '',
+      'tableCaption' => '',
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'participant_column_header' => 'Hasher',
+      'number_column_header' => $hare_type == 0 ? 'Number Of Overall Harings' : 'Number Of '.$hare_type_name.' Harings',
+      'percentage_column_header' => $hare_type == 0 ? 'Percentage of overall hashes hared' : 'Percentage of hashes hared',
+      'hash_types' => $hashTypes ]);
   }
-
-  if($hare_type != 0) {
-    $hare_type_name = $this->getHareTypeName($hare_type);
-  }
-
-  # Establish and set the return value
-  $returnValue = $this->render('top_hares_by_years.twig',array(
-    'theListOfLists' => $array,
-    'pageTitle' => $hare_type == 0 ? 'Top Hares Per Year (All harings)' : 'Top '.$hare_type_name.' Hares Per Year',
-    'pageSubTitle' => $hare_type == 0 ? '(All hashes included)' : '',
-    'tableCaption' => '',
-    'kennel_abbreviation' => $kennel_abbreviation,
-    'participant_column_header' => 'Hasher',
-    'number_column_header' => $hare_type == 0 ? 'Number Of Overall Harings' : 'Number Of '.$hare_type_name.' Harings',
-    'percentage_column_header' => $hare_type == 0 ? 'Percentage of overall hashes hared' : 'Percentage of hashes hared',
-    'hash_types' => $hashTypes
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
-
 
   #[Route('/{kennel_abbreviation}/getHasherAnalversaries/{hasher_id}',
     methods: ['GET'],

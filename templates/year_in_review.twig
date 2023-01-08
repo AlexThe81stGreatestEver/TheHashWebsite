@@ -8,8 +8,9 @@
    .row { display: flex; }
   </style>
 
-  <script type = "text/javascript" src = "/vendor/components/jquery/jquery.min.js"></script>
-  <script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
+  <script type = "text/javascript" src = "/node_modules/jquery/dist/jquery.min.js"></script>
+  <script type = "text/javascript" src = "/node_modules/bootstrap-growl-ifightcrime/jquery.bootstrap-growl.min.js"></script>
+
   <script type = "text/javascript" language = "javascript">
 
   //Generic function to retrieve data
@@ -94,7 +95,7 @@
 
   function doList(html, title, subtitle, id) {
 
-    var hasData = $('#' + id + '-list td').size() > 0;
+    var hasData = $('#' + id + '-list td').length;
 
     var data = $('#' + id + '-list').html();
     $('#' + id + '-list').remove();

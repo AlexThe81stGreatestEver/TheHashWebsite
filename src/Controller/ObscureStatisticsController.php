@@ -147,181 +147,202 @@ class ObscureStatisticsController extends BaseController {
       'avg_lng' => $avgLng ]);
   }
 
-    #Landing screen for year in review
-    public function getYearInReviewAction(Request $request, int $year_value, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'year_value' => '%app.pattern.year_value%']
+  )]
+  public function getYearInReviewAction(int $year_value, string $kennel_abbreviation) {
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      $hashTypes = $this->getHashTypes($kennelKy, 0);
-      $hareTypes = $this->getHareTypes($kennelKy);
+    $hashTypes = $this->getHashTypes($kennelKy, 0);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-      #Establish the page title
-      $pageTitle = "$year_value: Year in review";
+    #Establish the page title
+    $pageTitle = "$year_value: Year in review";
 
-      #Obtain number of hashes
-      $hashCount = ($this->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
+    #Obtain number of hashes
+    $hashCount = ($this->fetchAssoc($this->sqlQueries->getPerKennelHashCountsByYear(), [ $year_value, $kennelKy ]))['THE_COUNT'];
 
-      foreach($hashTypes as &$hashType) {
-        #Obtain number of hashtype hashes
-        $hashCounts[$hashType['HASH_TYPE_NAME']] = ($this->fetchAssoc(PER_KENNEL_HASH_COUNTS_BY_YEAR . " AND HASHES.HASH_TYPE = ?",
-          array((int)$year_value, $kennelKy, $hashType['HASH_TYPE'])))['THE_COUNT'];
-      }
-
-      #Obtain number of hashers
-      $hasherCount = ($this->fetchAssoc(PER_KENNEL_HASHERS_COUNT_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
-
-      #Obtain number of overall hares
-      $overallHareCount = ($this->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR,array((int)$year_value, $kennelKy)))['THE_COUNT'];
-
-      foreach($hareTypes as &$hareType) {
-        $hareCounts[$hareType['HARE_TYPE_NAME']] = ($this->fetchAssoc(PER_KENNEL_HARES_COUNT_BY_YEAR . "AND HARINGS.HARE_TYPE & ? != 0",
-          array((int)$year_value, $kennelKy, $hareType['HARE_TYPE'])))['THE_COUNT'];
-      }
-
-      # Obtain the number of newbie hashers
-      $newHashers = $this->fetchAll(NEW_HASHERS_FOR_THIS_YEAR, array($kennelKy, $kennelKy, (int)$year_value));
-      $newHashersCount = count($newHashers);
-
-      foreach($hareTypes as &$hareType) {
-        $newHareCounts[$hareType['HARE_TYPE_NAME']] = count($this->fetchAll(NEW_HARES_FOR_THIS_YEAR_BY_HARE_TYPE,
-          array($hareType['HARE_TYPE'], $kennelKy,$hareType['HARE_TYPE'], $kennelKy, $hareType['HARE_TYPE'],(int)$year_value)));
-      }
-
-      # Obtain the number of new overall hares
-      $newOverallHares = $this->fetchAll(NEW_HARES_FOR_THIS_YEAR, array($kennelKy, $kennelKy,(int)$year_value));
-      $newOverallHaresCount = count($newOverallHares);
-
-      #Establish the return value
-      $returnValue = $this->render('year_in_review.twig', array (
-        'pageTitle' => $pageTitle,
-        'yearValue' => $year_value,
-        'kennel_abbreviation' => $kennel_abbreviation,
-        'hash_types' => $hashTypes,
-        'hare_types' => count($hareTypes) > 1 ? $hareTypes : array(),
-        'hash_count' => $hashCount,
-        'hash_counts' => $hashCounts,
-        'hasher_count' => $hasherCount,
-        'overall_hare_count' => $overallHareCount,
-        'hare_counts' => $hareCounts,
-        'newbie_hashers_count' => $newHashersCount,
-        'newbie_hare_counts' => $newHareCounts,
-        'newbie_overall_hares_count' => $newOverallHaresCount
-      ));
-
-      #Return the return value
-      return $returnValue;
+    foreach($hashTypes as &$hashType) {
+      #Obtain number of hashtype hashes
+      $hashCounts[$hashType['HASH_TYPE_NAME']] = ($this->fetchAssoc($this->sqlQueries->getPerKennelHashCountsByYear() . " AND HASHES.HASH_TYPE = ?",
+        [ $year_value, $kennelKy, $hashType['HASH_TYPE'] ]))['THE_COUNT'];
     }
 
-    #Obtain hashers for an event
-    public function getHasherCountsByYear(Request $request, string $kennel_abbreviation){
+    #Obtain number of hashers
+    $hasherCount = ($this->fetchAssoc($this->sqlQueries->getPerKennelHashersCountByYear(), [ $year_value, $kennelKy ]))['THE_COUNT'];
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain number of overall hares
+    $overallHareCount = ($this->fetchAssoc($this->sqlQueries->getPerKennelHaresCountByYear(), [ $year_value, $kennelKy ]))['THE_COUNT'];
 
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
-
-      #Define the SQL to execute
-      $hasherCountSQL = HASHER_COUNTS_BY_YEAR;
-
-      #Obtain the hare list
-      $hasherCountList = $this->fetchAll($hasherCountSQL,array((int)$theYear, (int) $kennelKy));
-
-      return new JsonResponse($hasherCountList);
+    foreach($hareTypes as &$hareType) {
+      $hareCounts[$hareType['HARE_TYPE_NAME']] = ($this->fetchAssoc($this->sqlQueries->getPerKennelHaresCountByYear() . "AND HARINGS.HARE_TYPE & ? != 0",
+        [ $year_value, $kennelKy, $hareType['HARE_TYPE'] ]))['THE_COUNT'];
     }
 
-    #Obtain total hare counts per year
-    public function getTotalHareCountsByYear(Request $request, string $kennel_abbreviation){
+    # Obtain the number of newbie hashers
+    $newHashers = $this->fetchAll($this->sqlQueries->getNewHashersForThisYear(), [ $kennelKy, $kennelKy, $year_value ]);
+    $newHashersCount = count($newHashers);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
-
-      #Define the SQL to execute
-      $hareCountSQL = TOTAL_HARE_COUNTS_BY_YEAR;
-
-      #Obtain the hare list
-      $hareCountList = $this->fetchAll($hareCountSQL,array((int)$theYear, (int) $kennelKy));
-
-      return new JsonResponse($hareCountList);
+    foreach($hareTypes as &$hareType) {
+      $newHareCounts[$hareType['HARE_TYPE_NAME']] = count($this->fetchAll($this->sqlQueries->getNewHaresForThisYearByHareType(),
+        [ $hareType['HARE_TYPE'], $kennelKy,$hareType['HARE_TYPE'], $kennelKy, $hareType['HARE_TYPE'],(int)$year_value ]));
     }
 
-    #Obtain hare counts per year
-    public function getHareCountsByYear(Request $request, int $hare_type, string $kennel_abbreviation){
+    # Obtain the number of new overall hares
+    $newOverallHares = $this->fetchAll($this->sqlQueries->getNewHaresForThisYear(), [ $kennelKy, $kennelKy, $year_value ]);
+    $newOverallHaresCount = count($newOverallHares);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Establish the return value
+    return $this->render('year_in_review.twig', [
+      'pageTitle' => $pageTitle,
+      'yearValue' => $year_value,
+      'kennel_abbreviation' => $kennel_abbreviation,
+      'hash_types' => $hashTypes,
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : [],
+      'hash_count' => $hashCount,
+      'hash_counts' => $hashCounts,
+      'hasher_count' => $hasherCount,
+      'overall_hare_count' => $overallHareCount,
+      'hare_counts' => $hareCounts,
+      'newbie_hashers_count' => $newHashersCount,
+      'newbie_hare_counts' => $newHareCounts,
+      'newbie_overall_hares_count' => $newOverallHaresCount ]);
+  }
 
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
+  #[Route('/{kennel_abbreviation}/statistics/getHasherCountsByYear',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getHasherCountsByYear(string $kennel_abbreviation) {
 
-      #Define the SQL to execute
-      $hareCountSQL = HARE_COUNTS_BY_YEAR_BY_HARE_TYPE;
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the hare list
-      $hareCountList = $this->fetchAll($hareCountSQL,array((int)$theYear, $hare_type, (int) $kennelKy));
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
 
-      return new JsonResponse($hareCountList);
-    }
+    #Define the SQL to execute
+    $hasherCountSQL = $this->sqlQueries->getHasherCountsByYear();
 
-    #Obtain total hare counts per year
-    public function getNewbieHasherListByYear(Request $request, string $kennel_abbreviation){
+    #Obtain the hare list
+    $hasherCountList = $this->fetchAll($hasherCountSQL, [ $theYear, $kennelKy ]);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    return new JsonResponse($hasherCountList);
+  }
 
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
+  #[Route('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function getTotalHareCountsByYear(string $kennel_abbreviation) {
 
-      #Define the SQL to execute
-      $hareCountSQL = NEW_HASHERS_FOR_THIS_YEAR;
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the hare list
-      $hareCountList = $this->fetchAll($hareCountSQL,array((int) $kennelKy,(int) $kennelKy,(int)$theYear));
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
 
-      return new JsonResponse($hareCountList);
-    }
+    #Define the SQL to execute
+    $hareCountSQL = $this->sqlQueries->getTotalHareCountsByYear();
 
-    public function getNewbieHareListByYear(Request $request, int $hare_type, string $kennel_abbreviation){
+    #Obtain the hare list
+    $hareCountList = $this->fetchAll($hareCountSQL, [ $theYear, $kennelKy ]);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    return new JsonResponse($hareCountList);
+  }
 
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
+  #[Route('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function getHareCountsByYear(int $hare_type, string $kennel_abbreviation) {
 
-      #Define the SQL to execute
-      $hareCountSQL = NEW_HARES_FOR_THIS_YEAR_BY_HARE_TYPE;
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the hare list
-      $hareCountList = $this->fetchAll($hareCountSQL,array(
-        $hare_type, (int) $kennelKy, $hare_type, (int) $kennelKy, $hare_type, (int)$theYear));
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
 
-      return new JsonResponse($hareCountList);
-    }
+    #Define the SQL to execute
+    $hareCountSQL = $this->sqlQueries->getHareCountsByYearByHareType();
 
-    public function getNewbieOverallHareListByYear(Request $request, string $kennel_abbreviation){
+    #Obtain the hare list
+    $hareCountList = $this->fetchAll($hareCountSQL, [ $theYear, $hare_type, $kennelKy ]);
 
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    return new JsonResponse($hareCountList);
+  }
 
-      #Obtain the post values
-      $theYear = $request->request->get('year_value');
+  #[Route('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getNewbieHasherListByYear(string $kennel_abbreviation) {
 
-      #Define the SQL to execute
-      $hareCountSQL = NEW_HARES_FOR_THIS_YEAR;
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Obtain the hare list
-      $hareCountList = $this->fetchAll($hareCountSQL,array(
-        (int) $kennelKy,
-        (int) $kennelKy,
-        (int) $theYear));
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
 
-      return new JsonResponse($hareCountList);
-    }
+    #Define the SQL to execute
+    $hareCountSQL = $this->sqlQueries->getNewHashersForThisYear();
+
+    #Obtain the hare list
+    $hareCountList = $this->fetchAll($hareCountSQL, [ $kennelKy, $kennelKy, $theYear ]);
+
+    return new JsonResponse($hareCountList);
+  }
+
+  #[Route('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function getNewbieHareListByYear(int $hare_type, string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
+
+    #Define the SQL to execute
+    $hareCountSQL = $this->sqlQueries->getNewHaresForThisYearByHareType();
+
+    #Obtain the hare list
+    $hareCountList = $this->fetchAll($hareCountSQL, [
+      $hare_type, $kennelKy, $hare_type, $kennelKy, $hare_type, $theYear ]);
+
+    return new JsonResponse($hareCountList);
+  }
+
+  #[Route('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getNewbieOverallHareListByYear(string $kennel_abbreviation) {
+
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+
+    #Obtain the post values
+    $theYear = $_POST['year_value'];
+
+    #Define the SQL to execute
+    $hareCountSQL = $this->sqlQueries->getNewHaresForThisYear();
+
+    #Obtain the hare list
+    $hareCountList = $this->fetchAll($hareCountSQL, [ $kennelKy, $kennelKy, $theYear ]);
+
+    return new JsonResponse($hareCountList);
+  }
 
   #[Route('/{kennel_abbreviation}/statistics/hasher/firstHash',
     methods: ['POST'],

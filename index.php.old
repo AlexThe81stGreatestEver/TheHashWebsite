@@ -1365,10 +1365,10 @@ get('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}', 'TagControlle
 get('/{kennel_abbreviation}/chartsGraphs/byeventtag/{event_tag_ky}', 'TagController::chartsGraphsByEventTagAction');
 
 # Functions for the "by year" statistics
-get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController::getYearInReviewAction');
-post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'ObscureStatisticsController::getHasherCountsByYear');
-post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'ObscureStatisticsController::getTotalHareCountsByYear');
-post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'ObscureStatisticsController::getHareCountsByYear');
+#get('/{kennel_abbreviation}/statistics/getYearInReview/{year_value}',               'ObscureStatisticsController::getYearInReviewAction');
+#post('/{kennel_abbreviation}/statistics/getHasherCountsByYear',                     'ObscureStatisticsController::getHasherCountsByYear');
+#post('/{kennel_abbreviation}/statistics/getTotalHareCountsByYear',                  'ObscureStatisticsController::getTotalHareCountsByYear');
+#post('/{kennel_abbreviation}/statistics/getHareCountsByYear/{hare_type}',           'ObscureStatisticsController::getHareCountsByYear');
 post('/{kennel_abbreviation}/statistics/getNewbieHasherListByYear',                 'ObscureStatisticsController::getNewbieHasherListByYear');
 post('/{kennel_abbreviation}/statistics/getNewbieHareListByYear/{hare_type}',       'ObscureStatisticsController::getNewbieHareListByYear');
 post('/{kennel_abbreviation}/statistics/getNewbieOverallHareListByYear',            'ObscureStatisticsController::getNewbieOverallHareListByYear');
@@ -1446,8 +1446,8 @@ get('/{kennel_abbreviation}/lowest/{hare_type}/averageDaysBetweenHarings','Obscu
 get('/{kennel_abbreviation}/highest/attendedHashes','HashController::highestAttendedHashesAction');
 get('/{kennel_abbreviation}/lowest/attendedHashes','HashController::lowestAttendedHashesAction');
 
-get('/{kennel_abbreviation}/hashers/of/the/years','HashController::hashersOfTheYearsAction');
-get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController::HaresOfTheYearsAction');
+#get('/{kennel_abbreviation}/hashers/of/the/years','HashController::hashersOfTheYearsAction');
+#get('/{kennel_abbreviation}/hares/{hare_type}/of/the/years','HashController::HaresOfTheYearsAction');
 
 #Establish the mortal kombat head to head matchup functionality
 #get('/{kennel_abbreviation}/hashers/twoHasherComparison',            'HashController::twoPersonComparisonPreAction');
