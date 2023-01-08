@@ -2852,235 +2852,215 @@ function addHasherStatusToQuery(string $query) {
       'pageTracking' => $hare_type_name.'HareCounts' ]);
 }
 
-  public function coharelistByHareAllHashesAction(Request $request, int $hasher_id, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function coharelistByHareAllHashesAction(int $hasher_id, string $kennel_abbreviation) {
 
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Define the SQL to execute
-    $sql = "SELECT
-        TEMPTABLE.HASHER_NAME,TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
-          HASHES.KENNEL_EVENT_NUMBER,
-          HASHES.SPECIAL_EVENT_DESCRIPTION,
-          HASHES.EVENT_LOCATION,
-          HASHES.HASH_KY
-      FROM
-        HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          JOIN (
-                SELECT
-                        HARINGS_HASH_KY,
-                  HASHER_NAME,
-                  HARINGS_HASHER_KY
-                FROM
-                        HARINGS
-                  JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ?
-          AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.KENNEL_KY = ?
-      ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
+    $sql = "
+      SELECT TEMPTABLE.HASHER_NAME,TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY, HASHES.KENNEL_EVENT_NUMBER, HASHES.SPECIAL_EVENT_DESCRIPTION,
+             HASHES.EVENT_LOCATION, HASHES.HASH_KY
+        FROM HARINGS
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN (SELECT HARINGS_HASH_KY, HASHER_NAME, HARINGS_HASHER_KY
+                FROM HARINGS
+                JOIN HASHERS
+                  ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY) TEMPTABLE
+          ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND TEMPTABLE.HARINGS_HASHER_KY <> ?
+         AND HASHES.KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, $kennelKy));
+    $cohareList = $this->fetchAll($sql, [ $hasher_id, $hasher_id, $kennelKy ]);
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
     # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've had the shame of haring with $hasherName";
-    $returnValue = $this->render('cohare_list.twig',array(
+    return $this->render('cohare_list.twig', [
       'pageTitle' => 'Cohare List (All Hashes)',
       'pageSubTitle' => 'All Hashes',
       'tableCaption' => $captionValue,
       'theList' => $cohareList,
-      'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-
-
-    #Return the return value
-    return $returnValue;
-
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
+  #[Route('/{kennel_abbreviation}/coharelist/byhare/{hare_type}/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%',
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function coharelistByHareAction(int $hasher_id, int $hare_type, string $kennel_abbreviation) {
 
-  public function coharelistByHareAction(Request $request, int $hasher_id, int $hare_type, string $kennel_abbreviation){
-
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Define the SQL to execute
-    $sql = "SELECT
-        TEMPTABLE.HASHER_NAME, TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY,
-          HASHES.KENNEL_EVENT_NUMBER,
-          HASHES.SPECIAL_EVENT_DESCRIPTION,
-          HASHES.EVENT_LOCATION,
-          HASHES.HASH_KY
-      FROM
-        HARINGS JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          JOIN (
-                SELECT
-                        HARINGS_HASH_KY,
-                  HASHER_NAME,
-                  HARINGS_HASHER_KY
-                FROM
-                        HARINGS
-                  JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ?
-          AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
-      ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
+    $sql = "
+      SELECT TEMPTABLE.HASHER_NAME, TEMPTABLE.HARINGS_HASHER_KY AS HASHER_KY, HASHES.KENNEL_EVENT_NUMBER, HASHES.SPECIAL_EVENT_DESCRIPTION,
+             HASHES.EVENT_LOCATION, HASHES.HASH_KY
+        FROM HARINGS
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN (SELECT HARINGS_HASH_KY, HASHER_NAME, HARINGS_HASHER_KY
+                FROM HARINGS
+                JOIN HASHERS
+                  ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY) TEMPTABLE
+          ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND TEMPTABLE.HARINGS_HASHER_KY <> ?
+         AND HARINGS.HARE_TYPE & ? != 0
+         AND HASHES.KENNEL_KY = ?
+       ORDER BY HASHES.EVENT_DATE, TEMPTABLE.HASHER_NAME ASC";
 
     #Execute the SQL statement; create an array of rows
-    $cohareList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, $kennelKy));
+    $cohareList = $this->fetchAll($sql, [ $hasher_id, $hasher_id, $hare_type, $kennelKy ]);
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
     # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
     $hare_type_name = $this->getHareTypeName($hare_type);
 
-    # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've had the shame of haring with $hasherName";
-    $returnValue = $this->render('cohare_list.twig',array(
+
+    return $this->render('cohare_list.twig', [
       'pageTitle' => $hare_type_name . ' Cohare List',
       'pageSubTitle' => '',
       'tableCaption' => $captionValue,
       'theList' => $cohareList,
-      'kennel_abbreviation' => $kennel_abbreviation
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/allhashes/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function cohareCountByHareAllHashesAction(int $hasher_id, string $kennel_abbreviation) {
 
-  public function cohareCountByHareAllHashesAction(Request $request, int $hasher_id, string $kennel_abbreviation){
-
-    #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Define the SQL to execute
-    $sql = "SELECT
-           TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY,
-           TEMPTABLE.HASHER_NAME AS NAME,
-           COUNT(*) AS VALUE
-      FROM
-        HARINGS
-          JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          JOIN (
-                SELECT
-                        HARINGS_HASH_KY,
-                  HASHER_NAME,
-                  HARINGS_HASHER_KY
-                FROM
-                        HARINGS
-                  JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ?
-          AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HASHES.KENNEL_KY = ?
-      GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
-      ORDER BY VALUE DESC";
+    $sql = "
+      SELECT TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY, TEMPTABLE.HASHER_NAME AS NAME, COUNT(*) AS VALUE
+        FROM HARINGS
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN (SELECT HARINGS_HASH_KY, HASHER_NAME, HARINGS_HASHER_KY
+                FROM HARINGS
+                JOIN HASHERS
+                  ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY) TEMPTABLE
+          ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND TEMPTABLE.HARINGS_HASHER_KY <> ?
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
+       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array((int) $hasher_id, (int) $hasher_id, $kennelKy));
+    $hashList = $this->fetchAll($sql, [ $hasher_id, (int) $hasher_id, $kennelKy ]);
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
     # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've hared with  $hasherName";
-    $returnValue = $this->render('name_number_list.twig',array(
+
+    return $this->render('name_number_list.twig', [
       'pageTitle' => 'Hare Counts (All Hashes)',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hare Count',
       'tableCaption' => $captionValue,
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'CoHareList'
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'pageTracking' => 'CoHareList' ]);
   }
 
-  public function cohareCountByHareAction(Request $request, int $hasher_id, int $hare_type, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/coharecount/byhare/{hare_type}/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'hare_type' => '%app.pattern.hare_type%',
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function cohareCountByHareAction(int $hasher_id, int $hare_type, string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Define the SQL to execute
-    $sql = "SELECT
-        TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY,
-        TEMPTABLE.HASHER_NAME AS NAME,
-          COUNT(*) AS VALUE
-      FROM
-        HARINGS
-          JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-          JOIN HASHES ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
-          JOIN (
-                SELECT
-                        HARINGS_HASH_KY,
-                  HASHER_NAME,
-                  HARINGS_HASHER_KY
-                FROM
-                        HARINGS
-                  JOIN HASHERS ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
-                ) TEMPTABLE ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
-      WHERE
-        HARINGS.HARINGS_HASHER_KY = ?
-          AND TEMPTABLE.HARINGS_HASHER_KY <> ?
-          AND HARINGS.HARE_TYPE & ? != 0 AND HASHES.KENNEL_KY = ?
-      GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
-      ORDER BY VALUE DESC";
+    $sql = "
+      SELECT TEMPTABLE.HARINGS_HASHER_KY AS THE_KEY, TEMPTABLE.HASHER_NAME AS NAME, COUNT(*) AS VALUE
+        FROM HARINGS
+        JOIN HASHERS
+          ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY
+        JOIN HASHES
+          ON HARINGS.HARINGS_HASH_KY = HASHES.HASH_KY
+        JOIN (SELECT HARINGS_HASH_KY, HASHER_NAME, HARINGS_HASHER_KY
+                FROM HARINGS
+                JOIN HASHERS
+                  ON HARINGS.HARINGS_HASHER_KY = HASHERS.HASHER_KY) TEMPTABLE
+          ON HARINGS.HARINGS_HASH_KY = TEMPTABLE.HARINGS_HASH_KY
+       WHERE HARINGS.HARINGS_HASHER_KY = ?
+         AND TEMPTABLE.HARINGS_HASHER_KY <> ?
+         AND HARINGS.HARE_TYPE & ? != 0
+         AND HASHES.KENNEL_KY = ?
+       GROUP BY TEMPTABLE.HARINGS_HASHER_KY, TEMPTABLE.HASHER_NAME
+       ORDER BY VALUE DESC";
 
     #Execute the SQL statement; create an array of rows
-    $hashList = $this->fetchAll($sql,array($hasher_id, $hasher_id, $hare_type, $kennelKy));
+    $hashList = $this->fetchAll($sql, [ $hasher_id, $hasher_id, $hare_type, $kennelKy ]);
 
     # Declare the SQL used to retrieve this information
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
     # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
     $hare_type_name = $this->getHareTypeName($hare_type);
 
     # Establish and set the return value
     $hasherName = $hasher['HASHER_NAME'];
     $captionValue = "The hares who've hared with  $hasherName";
-    $returnValue = $this->render('name_number_list.twig',array(
+
+    return $this->render('name_number_list.twig', [
       'pageTitle' => $hare_type_name.' Hare Counts',
       'columnOneName' => 'Hare Name',
       'columnTwoName' => 'Hare Count',
       'tableCaption' => $captionValue,
       'theList' => $hashList,
       'kennel_abbreviation' => $kennel_abbreviation,
-      'pageTracking' => 'CoHareList'.$hare_type_name.'Harings'
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'pageTracking' => 'CoHareList'.$hare_type_name.'Harings' ]);
   }
 
   #[Route('/{kennel_abbreviation}/hashattendance/byhare/lowest',
