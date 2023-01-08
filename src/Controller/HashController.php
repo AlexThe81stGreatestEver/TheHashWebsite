@@ -798,7 +798,6 @@ class HashController extends BaseController
     return new JsonResponse($output);
   }
 
-
   #[Route('/{kennel_abbreviation}/listvirginharings/{hare_type}',
     methods: ['POST'],
     requirements: [
@@ -2631,14 +2630,13 @@ class HashController extends BaseController
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
-
   #[Route('/{kennel_abbreviation}/haringPercentage/{hare_type}',
     methods: ['GET'],
     requirements: [
       'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
       'hare_type' => '%app.pattern.hare_type%']
   )]
-  public function haringPercentageAction(Request $request, int $hare_type, string $kennel_abbreviation) {
+  public function haringPercentageAction(int $hare_type, string $kennel_abbreviation) {
 
     # Declare the SQL used to retrieve this information
     $sql = $this->getHaringPercentageByHareTypeQuery();
@@ -2665,8 +2663,6 @@ class HashController extends BaseController
       'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-
-
 
   #[Route('/{kennel_abbreviation}/percentages/harings',
     methods: ['GET'],
@@ -2733,32 +2729,28 @@ class HashController extends BaseController
       'hareTypes' => $hareTypes ]);
   }
 
+  function addRankToQuery(string $query, string $selectClause, string $countColumn) {
+    return "SELECT RANK() OVER(ORDER BY $countColumn DESC) AS THE_RANK, $selectClause FROM ($query) AS INNER_QUERY";
+  }
 
-function addRankToQuery(string $query, string $selectClause, string $countColumn) {
-  return "SELECT RANK() OVER(ORDER BY $countColumn DESC) AS THE_RANK, $selectClause FROM ($query) AS INNER_QUERY";
-}
-
-function addHasherStatusToQuery(string $query) {
-  return
-    "SELECT *
-      FROM (
-     SELECT iq.*,
-            CASE WHEN HASHERS.DECEASED = 1 THEN ' (RIP)'
-                 WHEN (iq.LATEST_EVENT IS NULL) OR (DATEDIFF(CURDATE(), iq.LATEST_EVENT) >
-                      CAST((SELECT value FROM SITE_CONFIG WHERE name='num_days_before_considered_inactive') AS SIGNED))
-                      THEN ' (inactive)'
-                      ELSE ' '
-                       END
-              AS STATUS
-      FROM ($query) iq
-      JOIN HASHERS
-        ON HASHERS.HASHER_KY = iq.THE_KEY) iq2
-     WHERE 1=1 ".
-     (array_key_exists("active", $_GET) && $_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
-     (array_key_exists("inactive", $_GET) && $_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
-     (array_key_exists("deceased", $_GET) && $_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "")."
-     ORDER BY VALUE DESC";
-}
+  function addHasherStatusToQuery(string $query) {
+    return "
+      SELECT *
+        FROM (SELECT iq.*,
+                     CASE WHEN HASHERS.DECEASED = 1 THEN ' (RIP)'
+                          WHEN (iq.LATEST_EVENT IS NULL) OR (DATEDIFF(CURDATE(), iq.LATEST_EVENT) >
+                               CAST((SELECT value FROM SITE_CONFIG WHERE name='num_days_before_considered_inactive') AS SIGNED))
+                               THEN ' (inactive)'
+                          ELSE ' ' END AS STATUS
+                FROM ($query) iq
+                JOIN HASHERS
+                  ON HASHERS.HASHER_KY = iq.THE_KEY) iq2
+       WHERE 1=1 ".
+             (array_key_exists("active", $_GET) && $_GET["active"] == "false" ? " AND STATUS != ' ' " : "").
+             (array_key_exists("inactive", $_GET) && $_GET["inactive"] == "false" ? " AND STATUS != ' (inactive)' " : "").
+             (array_key_exists("deceased", $_GET) && $_GET["deceased"] == "false" ? " AND STATUS != ' (RIP)' " : "")."
+       ORDER BY VALUE DESC";
+  }
 
   #[Route('/{kennel_abbreviation}/hashingCounts',
     methods: ['GET'],
@@ -2850,7 +2842,7 @@ function addHasherStatusToQuery(string $query) {
       'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation,
       'pageTracking' => $hare_type_name.'HareCounts' ]);
-}
+  }
 
   #[Route('/{kennel_abbreviation}/coharelist/byhare/allhashes/{hasher_id}',
     methods: ['GET'],
@@ -3314,17 +3306,16 @@ function addHasherStatusToQuery(string $query) {
   )]
   public function peopleStatsAction(string $kennel_abbreviation) {
 
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  $hareTypes = $this->getHareTypes($kennelKy);
+    $hareTypes = $this->getHareTypes($kennelKy);
 
-  return $this->render('section_people.twig', [
-    'pageTitle' => 'People Stats',
-    'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
-    'overall' => count($hareTypes) > 1 ? "Overall " : "",
-    'kennel_abbreviation' => $kennel_abbreviation ]);
-}
-
+    return $this->render('section_people.twig', [
+      'pageTitle' => 'People Stats',
+      'hare_types' => count($hareTypes) > 1 ? $hareTypes : "",
+      'overall' => count($hareTypes) > 1 ? "Overall " : "",
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
   #[Route('/{kennel_abbreviation}/analversaries/stats',
     methods: ['GET'],
@@ -3469,12 +3460,6 @@ function addHasherStatusToQuery(string $query) {
       'kennel_abbreviation' => $kennel_abbreviation,
       'hareKeys' => $hareKeys ]);
   }
-
-  #[Route('/{kennel_abbreviation}/basic/stats',
-    methods: ['GET'],
-    requirements: [
-      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%' ]
-  )]
 
   #[Route('/{kennel_abbreviation}/miscellaneous/stats',
     methods: ['GET'],
@@ -3624,7 +3609,6 @@ function addHasherStatusToQuery(string $query) {
       'tableCaption' => '',
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/hares/{hare_type}/of/the/years',
     methods: ['GET'],
@@ -3792,7 +3776,6 @@ function addHasherStatusToQuery(string $query) {
       'tableCaption' => '',
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/getHareAnalversaries/all/{hasher_id}',
     methods: ['GET'],
@@ -4056,7 +4039,6 @@ function addHasherStatusToQuery(string $query) {
     ]);
   }
 
-
   #[Route('/{kennel_abbreviation}/jumboCountsTable',
     methods: ['GET'],
     requirements: [
@@ -4315,7 +4297,6 @@ function addHasherStatusToQuery(string $query) {
       "hareTypes" => count($hareTypes) > 1 ? $hareTypes : [],
       'hashTypes' => count($hashTypes) > 1 ? $hashTypes : [] ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/jumboPercentagesTable',
     methods: ['POST'],
@@ -4959,7 +4940,6 @@ function addHasherStatusToQuery(string $query) {
     # Combine the arrays
     return $returnValue + $additionalAttributes;
   }
-
 
   private function createComparisonObjectWithStatsAsDoubles(float $stat1, float $stat2, string $hasher1, string $hasher2, string $statTitle) {
 

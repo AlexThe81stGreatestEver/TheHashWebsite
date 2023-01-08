@@ -9,7 +9,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Wamania\Snowball\StemmerFactory;
@@ -458,99 +457,6 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theirLatestHash);
   }
 
-
-    #Obtain the hasher hashes attended by year
-    public function getHasherHashesByYear(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_YEAR;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-    #Obtain the hasher hashes attended by quarter
-    public function getHasherHashesByQuarter(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_QUARTER;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-
-    #Obtain the hasher hashes attended by quarter
-    public function getHasherHashesByMonth(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_MONTH;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-
-    #Obtain the hasher hashes attended by day name
-    public function getHasherHashesByDayName(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_DAYNAME;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-    #Obtain the hasher hashes attended by state
-    public function getHasherHashesByState(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HASH_COUNTS_BY_STATE;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
   #[Route('/{kennel_abbreviation}/statistics/hasher/hashes/by/city',
     methods: ['POST'],
     requirements: [
@@ -618,24 +524,6 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-
-    public function getHasherAllHaringsByYear(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_YEAR;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
   #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/quarter',
     methods: ['POST'],
     requirements: [
@@ -654,57 +542,6 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
-    public function getHasherAllHaringsByMonth(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_MONTH;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-    public function getHasherAllHaringsByDayName(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_DAYNAME;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
-    public function getHasherAllHaringsByState(Request $request, string $kennel_abbreviation){
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_ALL_HARING_COUNTS_BY_STATE;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy));
-
-      return new JsonResponse($theResults);
-    }
-
   #[Route('/{kennel_abbreviation}/statistics/hasher/all/harings/by/city',
     methods: ['POST'],
     requirements: [
@@ -722,25 +559,6 @@ class ObscureStatisticsController extends BaseController {
 
     return new JsonResponse($theResults);
   }
-
-
-    # Mappings for hasher (non hyper) harings by (year/month/state/etc)
-    public function getHasherHaringsByYear(Request $request, string $kennel_abbreviation, int $hare_type) {
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_YEAR;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
-
-      return new JsonResponse($theResults);
-    }
 
   #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/quarter',
     methods: ['POST'],
@@ -779,23 +597,6 @@ class ObscureStatisticsController extends BaseController {
 
     return new JsonResponse($theResults);
   }
-
-    public function getHasherHaringsByDayName(Request $request, string $kennel_abbreviation, $hare_type) {
-
-      #Obtain the post values
-      $theHasherKey = $request->request->get('hasher_id');
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Define the sql statement to execute
-      $theSql = HASHER_HARING_COUNTS_BY_DAYNAME;
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $theHasherKey, (int) $kennelKy, (int) $hare_type));
-
-      return new JsonResponse($theResults);
-    }
 
   #[Route('/{kennel_abbreviation}/statistics/hasher/{hare_type}/harings/by/state',
     methods: ['POST'],
@@ -853,7 +654,6 @@ class ObscureStatisticsController extends BaseController {
 
     return new JsonResponse($theResults);
   }
-
 
   #[Route('/{kennel_abbreviation}/coharecount/byhare/allhashes',
     methods: ['POST'],
@@ -973,7 +773,6 @@ class ObscureStatisticsController extends BaseController {
       'analversary_number' => $analversary_number,
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/longestStreaks',
     methods: ['GET'],
@@ -1252,7 +1051,7 @@ class ObscureStatisticsController extends BaseController {
       'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
       'hare_type' => '%app.pattern.hare_type%']
   )]
-  public function lowestAverageDaysBetweenHaringsAction(Request $request, int $hare_type, string $kennel_abbreviation) {
+  public function lowestAverageDaysBetweenHaringsAction(int $hare_type, string $kennel_abbreviation) {
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -1327,8 +1126,6 @@ class ObscureStatisticsController extends BaseController {
       'hare_type_name' => $hareTypeName
     ]);
   }
-
-
 
   #[Route('/{kennel_abbreviation}/attendanceStatistics',
     methods: ['GET'],
@@ -1453,9 +1250,6 @@ class ObscureStatisticsController extends BaseController {
       'Min_Hash_Count' => $min_hash_count ]);
   }
 
-
-
-
   #[Route('/{kennel_abbreviation}/virginHaringsStatistics/{hare_type}',
     methods: ['GET'],
     requirements: [
@@ -1501,7 +1295,6 @@ class ObscureStatisticsController extends BaseController {
       'BY_YEAR_MONTH_BAR_LABEL' => 'Total Virgin Harings By Year/Month',
       'BY_YEAR_MONTH_TITLE' => 'Virgin Harings Per Year/Month' ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/distinctHasherStatistics',
     methods: ['GET'],
@@ -2149,7 +1942,6 @@ class ObscureStatisticsController extends BaseController {
       'tableCaption1' => "Hashername sub-word",
       'tableCaption2' => "All names containing the sub-word" ]);
   }
-
 
   #[Route('/{kennel_abbreviation}/hasherNameAnalysisWordCloud',
     methods: ['GET'],
