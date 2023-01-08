@@ -852,125 +852,106 @@ class ObscureStatisticsController extends BaseController {
     return new JsonResponse($theResults);
   }
 
+  #[Route('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/bydays',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'analversary_number' => '%app.pattern.analversary_number%' ]
+  )]
+  public function quickestToReachAnalversaryByDaysAction(string $kennel_abbreviation, int $analversary_number) {
 
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
+    #Obtain the analversary number, then subtract one (for the query requires it)
+    $modifiedAnalversaryNumber = $analversary_number -1;
 
-    public function quickestToReachAnalversaryByDaysAction(Request $request, string $kennel_abbreviation, int $analversary_number){
+    #Define the sql statement to execute
+    $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber, $this->sqlQueries->getFastestHashersToAnalversaries2());
+    $theSql = str_replace("XORDERX","ASC",$theSql);
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
 
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy ]);
 
+    #Define the page title
+    $pageTitle = "Quickest to reach $analversary_number hashes";
 
+    return $this->render('analversaries_achievements_non_json.twig', [
+      'pageTitle' => $pageTitle,
+      'tableCaption' => 'Faster is better',
+      'pageSubTitle' => 'Measured in days',
+      'theList' => $theResults,
+      'analversary_number' => $analversary_number,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-            #Obtain the kennel key
-            $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+  #[Route('/{kennel_abbreviation}/{analversary_number}/quickest/to/reach/date',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'analversary_number' => '%app.pattern.analversary_number%' ]
+  )]
+  public function quickestToReachAnalversaryByDate(string $kennel_abbreviation, int $analversary_number) {
 
-            #Obtain the analversary number, then subtract one (for the query requires it)
-            $modifiedAnalversaryNumber = $analversary_number -1;
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-            #Define the sql statement to execute
-            $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
-            $theSql = str_replace("XORDERX","ASC",$theSql);
-            $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
+    #Obtain the analversary number, then subtract one (for the query requires it)
+    $modifiedAnalversaryNumber = $analversary_number -1;
 
-            #Query the database
-            $theResults = $this->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
+    #Define the sql statement to execute
+    $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,$this->sqlQueries->getFastestHashersToAnalversaries2());
+    $theSql = str_replace("XORDERX","ASC",$theSql);
+    $theSql = str_replace("XORDERCOLUMNX","ANALVERSARY_DATE",$theSql);
 
-            #Define the page title
-            $pageTitle = "Quickest to reach $analversary_number hashes";
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy,  $kennelKy, $kennelKy ]);
 
-            #Set the return value
-            $returnValue = $this->render('analversaries_achievements_non_json.twig',array(
-              'pageTitle' => $pageTitle,
-              'tableCaption' => 'Faster is better',
-              'pageSubTitle' => 'Measured in days',
-              #'subTitle1' => 'Standard Statistics',
-              #'subTitle2' => 'Analversary Statistics',
-              #'subTitle3' => 'Hare Statistics',
-              #'subTitle4' => 'Other Statistics',
-              #'url_value' => $urlValue,
-              'theList' => $theResults,
-              'analversary_number' => $analversary_number,
-              'kennel_abbreviation' => $kennel_abbreviation
-            ));
+    #Define the page title
+    $pageTitle = "Chronological order of analversaries";
+    $pageSubTitle = "($analversary_number hashes)";
 
-            return $returnValue;
-          }
+    return $this->render('analversaries_achievements_chronological.twig',array(
+      'pageTitle' => $pageTitle,
+      'tableCaption' => '',
+      'pageSubTitle' => $pageSubTitle,
+      'theList' => $theResults,
+      'analversary_number' => $analversary_number,
+      'kennel_abbreviation' => $kennel_abbreviation
+    ));
+  }
 
-          public function quickestToReachAnalversaryByDate(Request $request, string $kennel_abbreviation, int $analversary_number){
+  #[Route('/{kennel_abbreviation}/{analversary_number}/slowest/to/reach/bydays',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'analversary_number' => '%app.pattern.analversary_number%' ]
+  )]
+  public function slowestToReachAnalversaryByDaysAction(string $kennel_abbreviation, int $analversary_number) {
 
-                  #Obtain the kennel key
-                  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-                  #Obtain the analversary number, then subtract one (for the query requires it)
-                  $modifiedAnalversaryNumber = $analversary_number -1;
+    #Obtain the analversary number, then subtract one (for the query requires it)
+    $modifiedAnalversaryNumber = $analversary_number -1;
 
-                  #Define the sql statement to execute
-                  $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
-                  $theSql = str_replace("XORDERX","ASC",$theSql);
-                  $theSql = str_replace("XORDERCOLUMNX","ANALVERSARY_DATE",$theSql);
+    #Define the sql statement to execute
+    $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber, $this->sqlQueries->getFastestHashersToAnalversaries2());
+    $theSql = str_replace("XORDERX","DESC",$theSql);
+    $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
 
-                  #Query the database
-                  $theResults = $this->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
+    #Query the database
+    $theResults = $this->fetchAll($theSql, [ $kennelKy, $kennelKy, $kennelKy ]);
 
-                  #Define the page title
-                  $pageTitle = "Chronological order of analversaries";
-                  $pageSubTitle = "($analversary_number hashes)";
+    #Define the page title
+    $pageTitle = "Slowest to reach $analversary_number hashes";
 
-                  #Set the return value
-                  $returnValue = $this->render('analversaries_achievements_chronological.twig',array(
-                    'pageTitle' => $pageTitle,
-                    'tableCaption' => '',
-                    'pageSubTitle' => $pageSubTitle,
-                    #'subTitle1' => 'Standard Statistics',
-                    #'subTitle2' => 'Analversary Statistics',
-                    #'subTitle3' => 'Hare Statistics',
-                    #'subTitle4' => 'Other Statistics',
-                    #'url_value' => $urlValue,
-                    'theList' => $theResults,
-                    'analversary_number' => $analversary_number,
-                    'kennel_abbreviation' => $kennel_abbreviation
-                  ));
-
-                  return $returnValue;
-                }
-
-
-    public function slowestToReachAnalversaryByDaysAction(Request $request, string $kennel_abbreviation, int $analversary_number){
-
-
-      #Obtain the kennel key
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-      #Obtain the analversary number, then subtract one (for the query requires it)
-      $modifiedAnalversaryNumber = $analversary_number -1;
-
-      #Define the sql statement to execute
-      $theSql = str_replace("XLIMITX",$modifiedAnalversaryNumber,FASTEST_HASHERS_TO_ANALVERSARIES2);
-      $theSql = str_replace("XORDERX","DESC",$theSql);
-      $theSql = str_replace("XORDERCOLUMNX","DAYS_TO_REACH_ANALVERSARY",$theSql);
-
-      #Query the database
-      $theResults = $this->fetchAll($theSql, array((int) $kennelKy, (int) $kennelKy,(int) $kennelKy));
-
-      #Define the page title
-      $pageTitle = "Slowest to reach $analversary_number hashes";
-
-      #Set the return value
-      $returnValue = $this->render('analversaries_achievements_non_json.twig',array(
-        'pageTitle' => $pageTitle,
-        'tableCaption' => 'Faster is better',
-        'pageSubTitle' => 'Measured in days',
-        #'subTitle1' => 'Standard Statistics',
-        #'subTitle2' => 'Analversary Statistics',
-        #'subTitle3' => 'Hare Statistics',
-        #'subTitle4' => 'Other Statistics',
-        #'url_value' => $urlValue,
-        'theList' => $theResults,
-        'analversary_number' => $analversary_number,
-        'kennel_abbreviation' => $kennel_abbreviation
-      ));
-
-      return $returnValue;
-    }
+    return $this->render('analversaries_achievements_non_json.twig', [
+      'pageTitle' => $pageTitle,
+      'tableCaption' => 'Faster is better',
+      'pageSubTitle' => 'Measured in days',
+      'theList' => $theResults,
+      'analversary_number' => $analversary_number,
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
 
     public function getLongestStreaksAction(Request $request, string $kennel_abbreviation){

@@ -2471,138 +2471,136 @@ class HashController extends BaseController
     ]);
   }
 
-public function pendingHasherAnalversariesAction(Request $request, string $kennel_abbreviation){
+  #[Route('/{kennel_abbreviation}/pendingHasherAnalversaries',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function pendingHasherAnalversariesAction(string $kennel_abbreviation) {
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->getPendingHasherAnalversariesQuery();
+    # Declare the SQL used to retrieve this information
+    $sql = $this->getPendingHasherAnalversariesQuery();
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #The number of harings into the future in which the analversaries will take place
-  $fastForwardValue = 1;
+    #The number of harings into the future in which the analversaries will take place
+    $fastForwardValue = 1;
 
-  #The number of years absence before removing from the list...
-  $yearsAbsenceLimit = 7;
+    #The number of years absence before removing from the list...
+    $yearsAbsenceLimit = 7;
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($fastForwardValue, $kennelKy, $yearsAbsenceLimit));
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $fastForwardValue, $kennelKy, $yearsAbsenceLimit ]);
 
-  $tableCaption = $this->getMostRecentHash($kennelKy);
+    $tableCaption = $this->getMostRecentHash($kennelKy);
 
-  # Establish the return value
-  $returnValue = $this->render('pending_analversary_list.twig',array(
-    'pageTitle' => 'Pending Hasher Analversaries',
-    'pageSubTitle' => 'The analversaries at their *next* hashes',
-    'theList' => $hasherList,
-    'tableCaption' => $tableCaption,
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Pending Count',
-    'columnThreeName' => 'Years Absent',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+    return $this->render('pending_analversary_list.twig', [
+      'pageTitle' => 'Pending Hasher Analversaries',
+      'pageSubTitle' => 'The analversaries at their *next* hashes',
+      'theList' => $hasherList,
+      'tableCaption' => $tableCaption,
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Pending Count',
+      'columnThreeName' => 'Years Absent',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-  #Return the return value
-  return $returnValue;
-}
+  #[Route('/{kennel_abbreviation}/predictedHasherAnalversaries',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function predictedHasherAnalversariesAction(string $kennel_abbreviation) {
 
+    # Declare the SQL used to retrieve this information
+    $sql = $this->getPredictedHasherAnalversariesQuery();
 
-public function predictedHasherAnalversariesAction(Request $request, string $kennel_abbreviation){
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->getPredictedHasherAnalversariesQuery();
+    $runrate=180;
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate ]);
 
-  $runrate=180;
+    # Establish the return value
+    return $this->render('predicted_analversary_list.twig', [
+      'pageTitle' => 'Predicted Hasher Analversaries (experimental)',
+      'pageSubTitle' => 'Upcoming analversary predictions based on recent run rate (last '.$runrate.' days).',
+      'theList' => $hasherList,
+      'tableCaption' => 'Analversary Predictions',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Current Run Count',
+      'columnThreeName' => 'Next Milestone',
+      'columnFourName' => 'Predicted Date',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate));
+  #[Route('/{kennel_abbreviation}/predictedCenturions',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function predictedCenturionsAction(string $kennel_abbreviation) {
 
-  # Establish the return value
-  $returnValue = $this->render('predicted_analversary_list.twig',array(
-    'pageTitle' => 'Predicted Hasher Analversaries (experimental)',
-    'pageSubTitle' => 'Upcoming analversary predictions based on recent run rate (last '.$runrate.' days).',
-    'theList' => $hasherList,
-    'tableCaption' => 'Analversary Predictions',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Current Run Count',
-    'columnThreeName' => 'Next Milestone',
-    'columnFourName' => 'Predicted Date',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+    # Declare the SQL used to retrieve this information
+    $sql = $this->getPredictedCenturionsQuery();
 
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  #Return the return value
-  return $returnValue;
-}
+    $runrate=180;
 
-public function predictedCenturionsAction(Request $request, string $kennel_abbreviation){
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate));
 
-  # Declare the SQL used to retrieve this information
-  $sql = $this->getPredictedCenturionsQuery();
+    return $this->render('predicted_analversary_list.twig', [
+      'pageTitle' => 'Predicted Centurions (experimental)',
+      'pageSubTitle' => 'Upcoming centurion predictions based on recent run rate (last '.$runrate.' days).',
+      'theList' => $hasherList,
+      'tableCaption' => 'Centurion Predictions',
+      'columnOneName' => 'Hasher Name',
+      'columnTwoName' => 'Current Run Count',
+      'columnThreeName' => 'Next Milestone',
+      'columnFourName' => 'Predicted Date',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+  #[Route('/{kennel_abbreviation}/pendingHareAnalversaries',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function pendingHareAnalversariesAction(string $kennel_abbreviation) {
 
-  $runrate=180;
+    # Declare the SQL used to retrieve this information
+    $sql = $this->sqlQueries->getPendingHareAnalversaries();
 
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $kennelKy, $runrate, $kennelKy, $runrate));
+    #Obtain the kennel key
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-  # Establish the return value
-  $returnValue = $this->render('predicted_analversary_list.twig',array(
-    'pageTitle' => 'Predicted Centurions (experimental)',
-    'pageSubTitle' => 'Upcoming centurion predictions based on recent run rate (last '.$runrate.' days).',
-    'theList' => $hasherList,
-    'tableCaption' => 'Centurion Predictions',
-    'columnOneName' => 'Hasher Name',
-    'columnTwoName' => 'Current Run Count',
-    'columnThreeName' => 'Next Milestone',
-    'columnFourName' => 'Predicted Date',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
+    #The number of harings into the future in which the analversaries will take place
+    $fastForwardValue = 1;
 
+    #The number of years absence before removing from the list...
+    $yearsAbsenceLimit = 7;
 
-  #Return the return value
-  return $returnValue;
-}
+    #Execute the SQL statement; create an array of rows
+    $hasherList = $this->fetchAll($sql, [ $fastForwardValue, $kennelKy, $yearsAbsenceLimit ]);
 
-public function pendingHareAnalversariesAction(Request $request, string $kennel_abbreviation){
+    $tableCaption = $this->getMostRecentHash($kennelKy);
 
-  # Declare the SQL used to retrieve this information
-  $sql = PENDING_HARE_ANALVERSARIES;
-
-  #Obtain the kennel key
-  $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
-
-  #The number of harings into the future in which the analversaries will take place
-  $fastForwardValue = 1;
-
-  #The number of years absence before removing from the list...
-  $yearsAbsenceLimit = 7;
-
-  #Execute the SQL statement; create an array of rows
-  $hasherList = $this->fetchAll($sql, array($fastForwardValue, $kennelKy, $yearsAbsenceLimit));
-
-  $tableCaption = $this->getMostRecentHash($kennelKy);
-
-  # Establish the return value
-  $returnValue = $this->render('pending_analversary_list.twig',array(
-    'pageTitle' => 'Pending Hare Analversaries',
-    'pageSubTitle' => 'The analversaries at their *next* harings',
-    'theList' => $hasherList,
-    'tableCaption' => $tableCaption,
-    'columnOneName' => 'Hare Name',
-    'columnTwoName' => 'Pending Count',
-    'columnThreeName' => 'Years Absent',
-    'kennel_abbreviation' => $kennel_abbreviation
-  ));
-
-  #Return the return value
-  return $returnValue;
-}
+    return $this->render('pending_analversary_list.twig', [
+      'pageTitle' => 'Pending Hare Analversaries',
+      'pageSubTitle' => 'The analversaries at their *next* harings',
+      'theList' => $hasherList,
+      'tableCaption' => $tableCaption,
+      'columnOneName' => 'Hare Name',
+      'columnTwoName' => 'Pending Count',
+      'columnThreeName' => 'Years Absent',
+      'kennel_abbreviation' => $kennel_abbreviation ]);
+  }
 
 public function haringPercentageAllHashesAction(Request $request, string $kennel_abbreviation){
 
