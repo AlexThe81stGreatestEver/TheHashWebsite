@@ -1,26 +1,36 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-require_once realpath(__DIR__ . '/../..').'/config/SQL_Queries.php';
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use App\Controller\BaseController;
+use App\Entity\User;
+use App\SqlQueries;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Psr\Container\ContainerInterface;
 
 class AdminController extends BaseController
 {
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  private SqlQueries $sqlQueries;
+
+  public function __construct(ManagerRegistry $doctrine, SqlQueries $sqlQueries) {
+    parent::__construct($doctrine);
+    $this->sqlQueries = $sqlQueries;
+  }
+
+  protected function render(string $template, array $args = [], Response $response = null) : Response {
+    $args['user'] = $this->getUser();
+    return parent::render($template, $args, $response);
   }
 
   public function logoutAction(Request $request){
@@ -32,15 +42,15 @@ class AdminController extends BaseController
     return new RedirectResponse('/');
   }
 
-  #Define the action
+  #[Route('/admin/hello',
+    methods: ['GET']
+  )]
   public function helloAction(Request $request){
-
-      return $this->render('admin_landing.twig', array (
-        'pageTitle' => 'This is the admin landing screen',
-        'subTitle1' => 'This is the admin landing screen',
-        'showAwardsPage' => $this->showAwardsPage(),
-        'hasLegacyHashCounts' => $this->hasLegacyHashCounts()
-    ));
+    return $this->render('admin_landing.twig', [
+      'pageTitle' => 'This is the admin landing screen',
+      'subTitle1' => 'This is the admin landing screen',
+      'showAwardsPage' => $this->showAwardsPage(),
+      'hasLegacyHashCounts' => $this->hasLegacyHashCounts() ]);
   }
 
     public function listOrphanedHashersAction(Request $request){

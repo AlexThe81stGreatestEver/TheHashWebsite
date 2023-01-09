@@ -20,7 +20,7 @@ parameters:
     app.pattern.row_limit: '\d+'
     app.pattern.kennel_ky: '\d+'
     app.pattern.horizon: '\d+'
-    app.pattern.kennel_abbreviation: '^[A-Za-z0-9]+$'
+    app.pattern.kennel_abbreviation: '^[A-Z0-9]+$'
     app.pattern.name: '^[a-z_]+$'
     app.pattern.ridiculous: '^ridiculous\d+$'
 

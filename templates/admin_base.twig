@@ -3,28 +3,30 @@
   <head>
     {% block head %}
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 	<link rel="manifest" href="/site.webmanifest">
 	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
 	<meta name="msapplication-TileColor" content="#da532c">
 	<meta name="theme-color" content="#ffffff">
-        <link rel = "stylesheet" href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
-        <link rel = "stylesheet" href="/vendor/datatables/datatables/media/css/dataTables.bootstrap.css">
 
-        <script type = "text/javascript" src = "/vendor/components/jquery/jquery.min.js"></script>
-        <script type = "text/javascript" src = "/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-        <script type = "text/javascript" src = "/vendor/ifightcrime/bootstrap-growl/jquery.bootstrap-growl.min.js"></script>
-        <script type = "text/javascript" src = "/vendor/twbs/bootstrap/js/collapse.js"></script>
-        <script type = "text/javascript" src = "/vendor/datatables/datatables/media/js/jquery.dataTables.js"></script>
-        <script type = "text/javascript" src = "/vendor/datatables/datatables/media/js/dataTables.bootstrap.min.js"></script>
-        <script type = "text/javascript" src = "/node_modules/datatables.net-responsive/js/dataTables.responsive.js"></script>
-
-        <script type = "text/javascript" src = "/node_modules/jquery-tags-input/src/jquery.tagsinput.js"></script>
+        <link rel = "stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel = "stylesheet" href="/node_modules/datatables.net-bs/css/dataTables.bootstrap.css">
         <link rel = "stylesheet" href="/node_modules/datatables.net-responsive-dt/css/responsive.dataTables.css">
         <link rel = "stylesheet" href="/node_modules/jquery-tags-input/src/jquery.tagsinput.css">
         <link rel = "stylesheet" href="/node_modules/jquery-ui-dist/jquery-ui.min.css">
+
+        <script type = "text/javascript" src = "/node_modules/jquery/dist/jquery.min.js"></script>
+        <script type = "text/javascript" src = "/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+        <script type = "text/javascript" src = "/node_modules/bootstrap-growl-ifightcrime/jquery.bootstrap-growl.min.js"></script>
+        <script type = "text/javascript" src = "/node_modules/bootstrap/js/collapse.js"></script>
+        <script type = "text/javascript" src = "/node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
+        <script type = "text/javascript" src = "/node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script type = "text/javascript" src = "/node_modules/datatables.net-responsive/js/dataTables.responsive.js"></script>
+        <script type = "text/javascript" src = "/node_modules/jquery-tags-input/src/jquery.tagsinput.js"></script>
 
         <script type = "text/javascript">
 	  function displayMessage(messageValue) {
@@ -104,7 +106,7 @@
               <li><a href="/admin/listhashes2">Manage Events</a></li>
               <li><a href="/admin/listhashers2">Manage People</a></li>
               <li><a href="/admin/viewAuditRecords">Audit Activity</a></li>
-              <li><a href="{{ path('admin_logoutaction') }}">Logout</a></li>
+              <li><a href="{{ path('app_logout') }}">Logout</a></li>
             </ul>
           </div>
           {% endif %}
