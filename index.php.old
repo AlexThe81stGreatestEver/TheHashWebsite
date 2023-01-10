@@ -1186,8 +1186,8 @@ post('/admin/newhasher/form',                               'HashPersonControlle
 #post('/admin/newPassword/form',                               'AdminController::newPasswordAction');
 
 # View audit records
-get('/admin/viewAuditRecords',                                  'AdminController::viewAuditRecordsPreActionJson');
-post('/admin/viewAuditRecords',                                 'AdminController::viewAuditRecordsJson');
+#get('/admin/viewAuditRecords',                                  'AdminController::viewAuditRecordsPreActionJson');
+#post('/admin/viewAuditRecords',                                 'AdminController::viewAuditRecordsJson');
 
 # Modify the participation for an event
 get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController::hashParticipationJsonPreAction');

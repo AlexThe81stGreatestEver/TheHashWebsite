@@ -222,20 +222,19 @@ class AdminController extends BaseController
       'userid' => $user->getUsername() ]);
   }
 
-  #Define the action
-  public function viewAuditRecordsPreActionJson(Request $request){
-
-    # Establish and set the return value
-    $returnValue = $this->render('audit_records_json.twig',array(
+  #[Route('/admin/viewAuditRecords',
+    methods: ['GET']
+  )]
+  public function viewAuditRecordsPreActionJson() {
+    return $this->render('audit_records_json.twig', [
       'pageTitle' => 'The audit records',
-      'pageSubTitle' => 'Stuff that the admins have done',
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'pageSubTitle' => 'Stuff that the admins have done' ]);
   }
 
-  public function viewAuditRecordsJson(Request $request){
+  #[Route('/admin/viewAuditRecords',
+    methods: ['POST']
+  )]
+  public function viewAuditRecordsJson() {
 
     #Obtain the post parameters
     $inputStart = $_POST['start'] ;
@@ -245,26 +244,25 @@ class AdminController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
-    if(!is_numeric($inputStart)){
+    if(!is_numeric($inputStart)) {
       $inputStart = 0;
     }
 
     #Validate input length
-    if(!is_numeric($inputLength)){
+    if(!is_numeric($inputLength)) {
       $inputStart = "0";
       $inputLength = "50";
-    } else if($inputLength == "-1"){
+    } else if($inputLength == "-1") {
       $inputStart = "0";
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -273,11 +271,11 @@ class AdminController extends BaseController
     $inputOrderColumnExtracted = "1";
     $inputOrderColumnIncremented = "1";
     $inputOrderDirectionExtracted = "asc";
-    if(!is_null($inputOrderRaw)){
+    if(!is_null($inputOrderRaw)) {
       $inputOrderColumnExtracted = $inputOrderRaw[0]['column'];
       $inputOrderColumnIncremented = $inputOrderColumnExtracted + 1;
       $inputOrderDirectionExtracted = $inputOrderRaw[0]['dir'];
-    }else{
+    } else {
       $inputOrderColumnIncremented =2;
       $inputOrderDirectionExtracted = "desc";
     }
@@ -287,34 +285,27 @@ class AdminController extends BaseController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-      USERNAME,
-      AUDIT_TIME,
-      ACTION_TYPE,
-      ACTION_DESCRIPTION,
-      IP_ADDR,
-      AUDIT_KY,
-      DATE_FORMAT(AUDIT_TIME,'%m/%d/%y %h:%i:%s %p') AS AUDIT_TIME_FORMATTED
-      FROM AUDIT
-      WHERE
-        (
-          USERNAME LIKE ? OR
-          AUDIT_TIME LIKE ? OR
-          ACTION_TYPE LIKE ? OR
-          ACTION_DESCRIPTION LIKE ? OR
-          IP_ADDR LIKE ?)
-      ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-      LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT USERNAME, AUDIT_TIME, ACTION_TYPE, ACTION_DESCRIPTION, IP_ADDR, AUDIT_KY,
+             DATE_FORMAT(AUDIT_TIME,'%m/%d/%y %h:%i:%s %p') AS AUDIT_TIME_FORMATTED
+        FROM AUDIT
+       WHERE USERNAME LIKE ?
+          OR AUDIT_TIME LIKE ?
+          OR ACTION_TYPE LIKE ?
+          OR ACTION_DESCRIPTION LIKE ?
+          OR IP_ADDR LIKE ?
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-      FROM AUDIT
-      WHERE
-          USERNAME LIKE ? OR
-          AUDIT_TIME LIKE ? OR
-          ACTION_TYPE LIKE ? OR
-          ACTION_DESCRIPTION LIKE ? OR
-          IP_ADDR LIKE ?";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM AUDIT
+       WHERE USERNAME LIKE ?
+          OR AUDIT_TIME LIKE ?
+          OR ACTION_TYPE LIKE ?
+          OR ACTION_DESCRIPTION LIKE ?
+          OR IP_ADDR LIKE ?";
 
     #Define the sql that gets the overall counts
     $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM AUDIT";
@@ -322,33 +313,26 @@ class AdminController extends BaseController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql, [ $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array()))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, []))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
