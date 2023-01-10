@@ -833,6 +833,14 @@ class AdminController extends BaseController
     return $returnValue;
   }
 
+  #[Route('/admin/roster',
+    methods: ['GET']
+  )]
+  #[Route('/admin/{kennel_abbreviation}/roster',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function roster(Request $request, string $kennel_abbreviation = null) {
 
     if($kennel_abbreviation) {
@@ -841,13 +849,13 @@ class AdminController extends BaseController
       $kennels = $this->getKennels();
 
       if(count($kennels) == 1) {
-        $kennelKy = (int) $kennels[0]['KENNEL_KY'];
+        $kennelKy = $kennels[0]['KENNEL_KY'];
       } else {
-        return $this->render('admin_select_kennel.twig',array(
+        return $this->render('admin_select_kennel.twig', [
           'kennels' => $kennels,
           'pageTracking' => 'AdminSelectKennel',
           'pageTitle' => 'Select Kennel',
-          'urlSuffix' => 'roster'));
+          'urlSuffix' => 'roster']);
       }
     }
 
@@ -880,13 +888,7 @@ class AdminController extends BaseController
       if(count($theList) > 15) break;
     }
 
-    # Establish and set the return value
-    $returnValue = $this->render('admin_roster.twig',array(
-      'theList' => $theList
-    ));
-
-    #Return the return value
-    return $returnValue;
+    return $this->render('admin_roster.twig', [ 'theList' => $theList ]);
   }
 
   public function legacy(Request $request, string $kennel_abbreviation = null) {

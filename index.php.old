@@ -1220,8 +1220,8 @@ get('/admin/listOrphanedHashers',                             'AdminController::
 get('/admin/legacy',                                          'AdminController::legacy');
 get('/admin/{kennel_abbreviation}/legacy',                    'AdminController::legacy');
 post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::legacyUpdate');
-get('/admin/roster',                                          'AdminController::roster');
-get('/admin/{kennel_abbreviation}/roster',                    'AdminController::roster');
+#get('/admin/roster',                                          'AdminController::roster');
+#get('/admin/{kennel_abbreviation}/roster',                    'AdminController::roster');
 get('/admin/awards/{type}',                                   'AdminController::awards');
 get('/admin/{kennel_abbreviation}/awards/{type}',             'AdminController::awards');
 get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController::awards');
