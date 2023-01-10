@@ -3,18 +3,20 @@
 namespace App\Controller;
 
 use App\Controller\BaseController;
+use App\Entity\PasswordChangeTask;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\SqlQueries;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -129,109 +131,95 @@ class AdminController extends BaseController
     return $returnValue;
   }
 
-  public function newPasswordAction(Request $request){
+  #[Route('/admin/newPassword/form',
+    methods: ['GET', 'POST']
+  )]
+  public function newPasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher,
+      UserRepository $userRepository) {
 
-    $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class)
-      ->add('Current_Password', TextType::class)
-      ->add('New_Password_Initial', TextType::class)
-      ->add('New_Password_Confirmation', TextType::class);
+    $task = new PasswordChangeTask();
 
-    $formFactoryThing->add('save', SubmitType::class, array('label' => 'Change your password!'));
-    $formFactoryThing->setAction('#');
-    $formFactoryThing->setMethod('POST');
-    $form=$formFactoryThing->getForm();
+    $form = $this->createFormBuilder($task)
+      ->add('currentPassword', TextType::class)
+      ->add('newPasswordInitial', TextType::class)
+      ->add('newPasswordConfirmation', TextType::class)
+      ->add('save', SubmitType::class, array('label' => 'Change your password!'))
+      ->setAction('#')
+      ->setMethod('POST')
+      ->getForm();
 
     $form->handleRequest($request);
 
     #Establish the user value
     $user = $this->getUser();
 
-    if($request->getMethod() == 'POST'){
+    if($request->getMethod() == 'POST') {
 
       if ($form->isValid()) {
-          #Obtain the name/value pairs from the form
-          $data = $form->getData();
+        #Obtain the name/value pairs from the form
+        $task = $form->getData();
 
-          #Establish the values from the form
-          $tempCurrentPassword = $data['Current_Password'];
-          $tempNewPasswordInitial = $data['New_Password_Initial'];
-          $tempNewPasswordConfirmation = $data['New_Password_Confirmation'];
+        #Establish the values from the form
+        $tempCurrentPassword = $task->getCurrentPassword();
+        $tempNewPasswordInitial = $task->getNewPasswordInitial();
+        $tempNewPasswordConfirmation = $task->getNewPasswordConfirmation();
 
-          // find the encoder for a UserInterface instance
-          $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
+        // compute the encoded password for the new password
+        $encodedNewPassword = $passwordHasher->hashPassword($user, $tempNewPasswordInitial);
 
-          // compute the encoded password for the new password
-          $encodedNewPassword = $encoder->encodePassword($tempNewPasswordInitial, $user->getSalt());
+        // verify current password
+        $validCurrentPassword = $passwordHasher->isPasswordValid($user, $tempCurrentPassword);
 
-          // compute the encoded password for the current password
-          $encodedCurrentPassword = $encoder->encodePassword($tempCurrentPassword, $user->getSalt());
+        $foundValidationError=FALSE;
 
-          #Check if the current password is valid
-          # Declare the SQL used to retrieve this information
-          $sql = "SELECT * FROM USERS WHERE USERNAME = ? AND PASSWORD = ?";
+        if(!$validCurrentPassword) {
+          $this->addFlash('danger', 'Wrong! You screwed up your current password.');
+          $foundValidationError=TRUE;
+        }
 
-          # Make a database call to obtain the hasher information
-          $retrievedUserValue = $this->fetchAssoc($sql, array($user->getUsername(), $encodedCurrentPassword));
-          $sizeOfRetrievedUserValueArray = sizeof($retrievedUserValue);
+        #Check if the initial new password and the confirmation new password match
+        $validNewPasswordsMatch = FALSE;
+        if($tempNewPasswordInitial == $tempNewPasswordConfirmation) {
+          $validNewPasswordsMatch = TRUE;
+        } else {
+          $this->addFlash('danger', 'Wrong! The new passwords do not match.');
+          $foundValidationError=TRUE;
+        }
 
-          # If there are more than one columns, then it is valid
-          $foundValidationError=FALSE;
-          $validCurrentPassword = FALSE;
-          if($sizeOfRetrievedUserValueArray > 1){
-            $validCurrentPassword = TRUE;
-          }else{
-            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You screwed up your current password.');
-            $foundValidationError=TRUE;
-          }
+        #Check if the new password matches password complexity requirements
+        $validPasswordComplexity = FALSE;
+        if (preg_match_all('$\S*(?=\S{8,})(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[\d])(?=\S*[\W])\S*$', $tempNewPasswordInitial)) {
+          $validPasswordComplexity = TRUE;
+        } else {
+          $this->addFlash('danger', 'Wrong! Your proposed password is too simple. It must be 8 characters long, contain a lower case letter, an upper case letter, a digit, and a special character!');
+          $foundValidationError=TRUE;
+        }
 
-          #Check if the initial new password and the confirmation new password match
-          $validNewPasswordsMatch = FALSE;
-          if($tempNewPasswordInitial == $tempNewPasswordConfirmation){
-            $validNewPasswordsMatch = TRUE;
-          }else{
-            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! The new passwords do not match.');
-            $foundValidationError=TRUE;
-          }
+        if(!$foundValidationError) {
 
-          #Check if the new password matches password complexity requirements
-          $validPasswordComplexity = FALSE;
-          if (preg_match_all('$\S*(?=\S{8,})(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[\d])(?=\S*[\W])\S*$', $tempNewPasswordInitial)){
-            $validPasswordComplexity = TRUE;
-          }else{
-            $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! Your proposed password is too simple. It must be 8 characters long, contain a lower case letter, an upper case letter, a digit, and a special character!');
-            $foundValidationError=TRUE;
-          }
+          #Update the password
+          $user->setPassword($encodedNewPassword);
+          $userRepository->save($user, true);
 
-          if(!$foundValidationError){
-            #Define the SQL for the password update
-            $updateSql = "UPDATE USERS SET PASSWORD = ? WHERE USERNAME = ?";
+          #Audit this activity
+          $actionType = "Password Change";
+          $actionDescription = "Changed their password";
+          $this->auditTheThings($request, $actionType, $actionDescription);
 
-            #Run the update SQL
-            $this->dbw->executeUpdate($updateSql,array($encodedNewPassword,$user->getUsername()));
-
-            #Audit this activity
-            $actionType = "Password Change";
-            $actionDescription = "Changed their password";
-            $this->auditTheThings($request, $actionType, $actionDescription);
-
-            #Show the confirmation message
-            $this->container->get('session')->getFlashBag()->add('success', 'Success! You updated your password. Probably.');
-          }
+          #Show the confirmation message
+          $this->addFlash('success', 'Success! You updated your password. Probably.');
+        }
 
       } else{
-        $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You screwed up.');
+        $this->addFlash('danger', 'Wrong! You screwed up.');
       }
     }
 
-    $returnValue = $this->render('admin_change_password_form.twig', array (
+    return $this->render('admin_change_password_form.twig', [
       'pageTitle' => 'Password change',
       'pageHeader' => 'Your new password must contain letters, numbers, an odd number of prime numbers.',
       'form' => $form->createView(),
-      'userid' => $user->getUsername(),
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'userid' => $user->getUsername() ]);
   }
 
   #Define the action

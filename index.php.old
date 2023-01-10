@@ -1182,8 +1182,8 @@ get('/admin/newhasher/form',                                'HashPersonControlle
 post('/admin/newhasher/form',                               'HashPersonController::createHashPersonAction');
 
 # Change admin password
-get('/admin/newPassword/form',                                'AdminController::newPasswordAction');
-post('/admin/newPassword/form',                               'AdminController::newPasswordAction');
+#get('/admin/newPassword/form',                                'AdminController::newPasswordAction');
+#post('/admin/newPassword/form',                               'AdminController::newPasswordAction');
 
 # View audit records
 get('/admin/viewAuditRecords',                                  'AdminController::viewAuditRecordsPreActionJson');

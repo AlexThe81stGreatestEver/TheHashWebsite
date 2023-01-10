@@ -623,22 +623,10 @@ class BaseController extends AbstractController {
 
     #Define the sql insert statement
     $sql = "
-      INSERT INTO AUDIT (
-        USERNAME,
-        AUDIT_TIME,
-        ACTION_TYPE,
-        ACTION_DESCRIPTION,
-        IP_ADDR
-      ) VALUES (?, ?, ?, ?, ?)";
+      INSERT INTO AUDIT (USERNAME, AUDIT_TIME, ACTION_TYPE, ACTION_DESCRIPTION, IP_ADDR) VALUES (?, ?, ?, ?, ?)";
 
     #Execute the insert statement
-    $this->getWriteConnection()->executeUpdate($sql,array(
-      $this->getUsername(),
-      $nowDateTime,
-      $actionType,
-      $actionDescription,
-      $theClientIP
-    ));
+    $this->getWriteConnection()->executeUpdate($sql, [ $this->getUsername(), $nowDateTime, $actionType, $actionDescription, $theClientIP ]);
   }
 
   protected function getMostRecentHash(int $kennelKy) {
