@@ -985,7 +985,25 @@ class AdminController extends BaseController
     return $this->fetchAll($sql, array());
   }
 
-  public function awards(Request $request, string $kennel_abbreviation = null, string $type, int $horizon = -1) {
+  #[Route('/admin/awards/{award_type}',
+    methods: ['GET'],
+    requirements: [
+      'award_type' => '%app.pattern.award_type%']
+  )]
+  #[Route('/admin/{kennel_abbreviation}/awards/{award_type}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'award_type' => '%app.pattern.award_type%']
+  )]
+  #[Route('/admin/{kennel_abbreviation}/awards/{award_type}/{horizon}',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%',
+      'horizon' => '%app.pattern.horizon%',
+      'award_type' => '%app.pattern.award_type%']
+  )]
+  public function awards(Request $request, string $kennel_abbreviation = null, string $award_type, int $horizon = -1) {
 
     if($kennel_abbreviation) {
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -993,14 +1011,14 @@ class AdminController extends BaseController
       $kennels = $this->getKennels();
 
       if(count($kennels) == 1) {
-        $kennelKy = (int) $kennels[0]['KENNEL_KY'];
+        $kennelKy = $kennels[0]['KENNEL_KY'];
         $kennel_abbreviation = $kennels[0]['KENNEL_ABBREVIATION'];
       } else {
-        return $this->render('admin_select_kennel.twig',array(
+        return $this->render('admin_select_kennel.twig', [
           'kennels' => $kennels,
           'pageTracking' => 'AdminSelectKennel',
           'pageTitle' => 'Select Kennel',
-          'urlSuffix' => 'awards/'.$type));
+          'urlSuffix' => 'awards/'.$award_type ]);
       }
     }
 
@@ -1008,76 +1026,70 @@ class AdminController extends BaseController
       $horizon = $this->getDefaultAwardEventHorizon();
     }
 
-    # Declare the SQL used to retrieve this information
-    if($type == "pending") {
-      $sql =
-        "SELECT THE_KEY, NAME, VALUE,
-                HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD,
-                MAX(AWARD_LEVELS.AWARD_LEVEL) AS NEXT_AWARD_LEVEL
-           FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
-           LEFT JOIN HASHER_AWARDS
-             ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
-            AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
-           JOIN AWARD_LEVELS
-             ON AWARD_LEVELS.KENNEL_KY = HASHER_COUNTS.KENNEL_KY
-          WHERE AWARD_LEVELS.AWARD_LEVEL > COALESCE(HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED, 0)
-            AND (VALUE + ?) >= AWARD_LEVELS.AWARD_LEVEL
-          GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
-          ORDER BY VALUE DESC, NAME";
-      $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy, $horizon));
+    if($award_type == "pending") {
+      $sql = "
+        SELECT THE_KEY, NAME, VALUE,
+               HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD,
+               MAX(AWARD_LEVELS.AWARD_LEVEL) AS NEXT_AWARD_LEVEL
+          FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
+          LEFT JOIN HASHER_AWARDS
+            ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
+           AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
+          JOIN AWARD_LEVELS
+            ON AWARD_LEVELS.KENNEL_KY = HASHER_COUNTS.KENNEL_KY
+         WHERE AWARD_LEVELS.AWARD_LEVEL > COALESCE(HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED, 0)
+           AND (VALUE + ?) >= AWARD_LEVELS.AWARD_LEVEL
+         GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
+         ORDER BY VALUE DESC, NAME";
+      $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $horizon ]);
     } else {
-      $sql =
-        "SELECT THE_KEY, NAME, VALUE,
-                HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD
-           FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
-           LEFT JOIN HASHER_AWARDS
-             ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
-            AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
-          GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
-          ORDER BY VALUE DESC, NAME";
-      $hasherList = $this->fetchAll($sql, array($kennelKy, $kennelKy));
+      $sql = "
+        SELECT THE_KEY, NAME, VALUE,
+               HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED AS LAST_AWARD
+          FROM (".$this->getHashingCountsQuery().") HASHER_COUNTS
+          LEFT JOIN HASHER_AWARDS
+            ON HASHER_COUNTS.THE_KEY = HASHER_AWARDS.HASHER_KY
+           AND HASHER_COUNTS.KENNEL_KY = HASHER_AWARDS.KENNEL_KY
+         GROUP BY THE_KEY, NAME, VALUE, HASHER_AWARDS.LAST_AWARD_LEVEL_RECOGNIZED
+         ORDER BY VALUE DESC, NAME";
+      $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy ]);
     }
 
-    # Establish and set the return value
-    $returnValue = $this->render('admin_awards.twig',array(
-      'pageTitle' => ($type=="pending" ? 'Pending' : 'All')." Hasher Awards",
-      'tableCaption' => $type=="pending" ? 'Hashers, awards due, and last awards given.  Click the checkbox when a hasher receives the award they are due.' :
+    return $this->render('admin_awards.twig', [
+      'pageTitle' => ($award_type=="pending" ? 'Pending' : 'All')." Hasher Awards",
+      'tableCaption' => $award_type=="pending" ? 'Hashers, awards due, and last awards given.  Click the checkbox when a hasher receives the award they are due.' :
         'All hashers and the last award they received.',
-      'subTitle' => $type=="pending" ? "All hashers that are due to receive an award." : "All hashers and the last award they have received.",
+      'subTitle' => $award_type=="pending" ? "All hashers that are due to receive an award." : "All hashers and the last award they have received.",
       'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation,
       'kennel_key' => $kennelKy,
       'pageTracking' => 'Hasher Awards',
-      'type' => $type,
+      'award_type' => $award_type,
       'horizon' => $horizon,
-      'csrf_token' => $this->getCsrfToken('awards')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('awards') ]);
   }
 
+  #[Route('/admin/updateHasherAward',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function updateHasherAwardAjaxAction(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('awards', $token);
 
-    $user_id = $request->request->get('id');
-
-    #Establish the return message
-    $returnMessage = "This has not been set yet...";
-
     #Obtain the post values
-    $hasherKey = $request->request->get('hasher_key');
-    $kennelKey = $request->request->get('kennel_key');
-    $awardLevel = $request->request->get('award_level');
+    $hasherKey = $_POST['hasher_key'];
+    $kennelKey = $_POST['kennel_key'];
+    $awardLevel = $_POST['award_level'];
 
     #Validate the post values; ensure that they are both numbers
     if(ctype_digit($hasherKey) & ctype_digit($kennelKey)) {
 
       $sql = "SELECT 1 FROM HASHER_AWARDS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
 
-      $exists = $this->fetchAssoc($sql, array((int) $hasherKey, (int) $kennelKey));
+      $exists = $this->fetchAssoc($sql, [ $hasherKey, $kennelKey ]);
 
       if($exists) {
         $sql = "UPDATE HASHER_AWARDS SET LAST_AWARD_LEVEL_RECOGNIZED = ? WHERE HASHER_KY = ? AND KENNEL_KY = ?";
@@ -1086,7 +1098,7 @@ class AdminController extends BaseController
       }
 
       try {
-        $this->dbw->executeUpdate($sql, array((int) $awardLevel, (int) $hasherKey, (int) $kennelKey));
+        $this->getWriteConnection()->executeUpdate($sql, [ $awardLevel, $hasherKey, $kennelKey ]);
 
         $returnMessage = "Success!";
       } catch (\Exception $theException) {
@@ -1095,7 +1107,6 @@ class AdminController extends BaseController
         $tempActionDescription = "Failed to update hasher award for $hasherKey";
         $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
-        #Define the return message
         $returnMessage = "Oh crap. Something bad happened.";
       }
     }
@@ -1104,7 +1115,6 @@ class AdminController extends BaseController
     $actionDescription = "Award level $awardLevel set for $hasherKey";
     $this->auditTheThings($request, $actionType, $actionDescription);
 
-    #Set the return value
     return new JsonResponse($returnMessage);
   }
 }

@@ -23,6 +23,7 @@ parameters:
     app.pattern.kennel_abbreviation: '^[A-Z0-9]+$'
     app.pattern.name: '^[a-z_]+$'
     app.pattern.ridiculous: '^ridiculous\d+$'
+    app.pattern.award_type: '^(all|pending)$'
 
 services:
     # default configuration for services in *this* file

@@ -40,11 +40,11 @@
     <tr>
       <th>Hasher Name</th>
       <td>Hash Count</td>
-      {% if type == "pending" %}
+      {% if award_type == "pending" %}
         <td>Award Due</td>
       {% endif %}
       <td>Last Award Given</td>
-      {% if type == "pending" %}
+      {% if award_type == "pending" %}
         <td>Award Given</td>
       {% endif %}
     </tr>
@@ -54,11 +54,11 @@
       <tr id="{{hasher.THE_KEY}}">
         <td>{{ hasher.NAME }}</td>
         <td>{{ hasher.VALUE }}</td>
-        {% if type == "pending" %}
+        {% if award_type == "pending" %}
           <td>{{ hasher.NEXT_AWARD_LEVEL }}</td>
         {% endif %}
         <td>{{ hasher.LAST_AWARD }}</td>
-        {% if type == "pending" %}
+        {% if award_type == "pending" %}
           <td><input type="checkbox" onclick="updateHasherAward({{hasher.THE_KEY}}, {{hasher.NEXT_AWARD_LEVEL}})" /></td>
         {% endif %}
       </tr>
@@ -67,7 +67,7 @@
 </table>
 </div>
 
-{% if type == "pending" %}
+{% if award_type == "pending" %}
 <div>
 Showing hashers within {{ horizon }} events of being due their next award,
 and hashers who have not yet received awards that are due.

@@ -1222,10 +1222,10 @@ get('/admin/{kennel_abbreviation}/legacy',                    'AdminController::
 post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::legacyUpdate');
 #get('/admin/roster',                                          'AdminController::roster');
 #get('/admin/{kennel_abbreviation}/roster',                    'AdminController::roster');
-get('/admin/awards/{type}',                                   'AdminController::awards');
-get('/admin/{kennel_abbreviation}/awards/{type}',             'AdminController::awards');
-get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController::awards');
-post('/admin/updateHasherAward',                              'AdminController::updateHasherAwardAjaxAction');
+#get('/admin/awards/{type}',                                   'AdminController::awards');
+#get('/admin/{kennel_abbreviation}/awards/{type}',             'AdminController::awards');
+#get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController::awards');
+#post('/admin/updateHasherAward',                              'AdminController::updateHasherAwardAjaxAction');
 
 get('/admin/listhashes2',                                    'AdminController::listHashesPreActionJson');
 get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController::listHashesPreActionJson');

@@ -645,11 +645,11 @@ class BaseController extends AbstractController {
   }
 
   protected function getCsrfToken(string $key) {
-    return $this->container->get('csrf.token_manager')->getToken($key);
+    return $this->container->get('security.csrf.token_manager')->getToken($key);
   }
 
   protected function validateCsrfToken(string $key, string $value) {
-    if(!$this->container->get('csrf.token_manager')->isTokenValid(new CsrfToken($key, $value))) {
+    if(!$this->container->get('security.csrf.token_manager')->isTokenValid(new CsrfToken($key, $value))) {
       throw new \Exception("Bad request");
     }
   }
