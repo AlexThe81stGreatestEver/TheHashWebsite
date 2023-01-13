@@ -359,7 +359,14 @@ class AdminController extends BaseController
     return new JsonResponse("");
   }
 
-  #Define the action
+  #[Route('/admin/listhashes2',
+    methods: ['GET']
+  )]
+  #[Route('/admin/{kennel_abbreviation}/listhashes2',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function listHashesPreActionJson(Request $request, string $kennel_abbreviation = null) {
 
     if($kennel_abbreviation) {
@@ -371,11 +378,11 @@ class AdminController extends BaseController
         $kennelKy = (int) $kennels[0]['KENNEL_KY'];
         $kennel_abbreviation = $kennels[0]['KENNEL_ABBREVIATION'];
       } else {
-        return $this->render('admin_select_kennel.twig',array(
+        return $this->render('admin_select_kennel.twig', [
           'kennels' => $kennels,
           'pageTracking' => 'AdminSelectKennel',
           'pageTitle' => 'Select Kennel',
-	  'urlSuffix' => 'listhashes2'));
+	  'urlSuffix' => 'listhashes2' ]);
       }
     }
 
@@ -383,16 +390,16 @@ class AdminController extends BaseController
     $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES_TABLE WHERE KENNEL_KY = ?";
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy ]))['THE_COUNT'];
 
     #Define the sql that gets the overall counts
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES_TABLE WHERE PLACE_ID is null AND KENNEL_KY = ?";
+    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES_TABLE WHERE PLACE_ID IS NULL AND KENNEL_KY = ?";
 
     #Perform the untiltered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $kennelKy ]))['THE_COUNT'];
 
     # Establish and set the return value
-    $returnValue = $this->render('admin_hash_list_json.twig',array(
+    return $this->render('admin_hash_list_json.twig', [
       'pageTitle' => 'The List of Hashes',
       'pageSubTitle' => 'The List of *ALL* Hashes',
       'pageCaption' => "",
@@ -401,19 +408,19 @@ class AdminController extends BaseController
       'totalHashes' => $theUnfilteredCount,
       'totalHashesToUpdate' => $theFilteredCount,
       'showBudgetPage' => $this->showBudgetPage(),
-      'csrf_token' => $this->getCsrfToken('admin')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('admin') ]);
   }
 
-  public function getHashListJson(Request $request, string $kennel_abbreviation){
+  #[Route('/admin/{kennel_abbreviation}/listhashes2',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function getHashListJson(Request $request, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     #Obtain the post parameters
-    #$inputDraw = $_POST['draw'] ;
     $inputStart = $_POST['start'] ;
     $inputLength = $_POST['length'] ;
     $inputColumns = $_POST['columns'];
@@ -421,6 +428,7 @@ class AdminController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
       $inputStart = 0;
@@ -435,12 +443,10 @@ class AdminController extends BaseController
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -460,39 +466,22 @@ class AdminController extends BaseController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-        KENNEL_EVENT_NUMBER,
-        HASH_KY,
-        DATE_FORMAT(EVENT_DATE,\"%Y/%m/%d\") AS EVENT_DATE,
-        EVENT_LOCATION,
-        SPECIAL_EVENT_DESCRIPTION,
-        PLACE_ID,
-        COALESCE(
-          (SELECT 0 FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES_TABLE.HASH_KY LIMIT 1),
-          (SELECT 0 FROM HASHINGS WHERE HASHINGS.HASH_KY = HASHES_TABLE.HASH_KY LIMIT 1),
-          1) AS CAN_DELETE
-      FROM HASHES_TABLE
-      WHERE
-        (
-          KENNEL_EVENT_NUMBER LIKE ? OR
-          EVENT_DATE LIKE ? OR
-          EVENT_LOCATION LIKE ?  OR
-          SPECIAL_EVENT_DESCRIPTION LIKE ?
-        )
-        AND KENNEL_KY = ?
-      ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-      LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT KENNEL_EVENT_NUMBER, HASH_KY, DATE_FORMAT(EVENT_DATE,\"%Y/%m/%d\") AS EVENT_DATE, EVENT_LOCATION, SPECIAL_EVENT_DESCRIPTION,
+             PLACE_ID, COALESCE((SELECT 0 FROM HARINGS WHERE HARINGS.HARINGS_HASH_KY = HASHES_TABLE.HASH_KY LIMIT 1),
+                           (SELECT 0 FROM HASHINGS WHERE HASHINGS.HASH_KY = HASHES_TABLE.HASH_KY LIMIT 1), 1) AS CAN_DELETE
+        FROM HASHES_TABLE
+       WHERE (KENNEL_EVENT_NUMBER LIKE ? OR EVENT_DATE LIKE ? OR EVENT_LOCATION LIKE ? OR SPECIAL_EVENT_DESCRIPTION LIKE ?)
+         AND KENNEL_KY = ?
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-    FROM HASHES_TABLE
-    WHERE
-      (
-        KENNEL_EVENT_NUMBER LIKE ? OR
-        EVENT_DATE LIKE ? OR
-        EVENT_LOCATION LIKE ? OR
-        SPECIAL_EVENT_DESCRIPTION LIKE ?)
-        AND KENNEL_KY = ?";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHES_TABLE
+       WHERE ( KENNEL_EVENT_NUMBER LIKE ? OR EVENT_DATE LIKE ? OR EVENT_LOCATION LIKE ? OR SPECIAL_EVENT_DESCRIPTION LIKE ?)
+         AND KENNEL_KY = ?";
 
     #Define the sql that gets the overall counts
     $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHES_TABLE WHERE KENNEL_KY = ?";
@@ -500,33 +489,26 @@ class AdminController extends BaseController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      $kennelKy));
+    $theResults = $this->fetchAll($sql, [ $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $kennelKy ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($kennelKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $kennelKy ]))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      $kennelKy)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified, $kennelKy ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }
@@ -656,7 +638,10 @@ class AdminController extends BaseController
     return new JsonResponse($output);
   }
 
-  public function getHashersParticipationListJson(Request $request){
+  #[Route('/admin/listhashers3',
+    methods: ['POST']
+  )]
+  public function getHashersParticipationListJson() {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($_POST['kennel_abbreviation']);
     $hashKy = $_POST['hash_key'];
@@ -668,6 +653,7 @@ class AdminController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
     if(!is_numeric($inputStart)){
       $inputStart = 0;
@@ -682,12 +668,10 @@ class AdminController extends BaseController
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -695,109 +679,80 @@ class AdminController extends BaseController
 
     #-------------- Begin: Define the SQL used here   --------------------------
 
-    $hashersAlreadyAddedToEventSql =
-      "SELECT HASHER_KY FROM HASHINGS WHERE HASH_KY = ?";
+    $hashersAlreadyAddedToEventSql = "
+      SELECT HASHER_KY
+        FROM HASHINGS WHERE HASH_KY = ?";
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-        HASHER_NAME AS NAME,
-        HASHER_KY AS THE_KEY,
-        FIRST_NAME,
-        LAST_NAME,
-        HASHER_ABBREVIATION,
-        (SELECT COUNT(*)
-           FROM HASHINGS
-          WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-            AND HASHINGS.HASH_KY != ?
-            AND HASHINGS.HASH_KY IN (
-            SELECT HASH_KY
-              FROM HASHES_TABLE
-             WHERE KENNEL_KY = ?
-               AND EVENT_DATE > DATE_SUB((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 3 MONTH)
-               AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 3 MONTH))) AS RECENT_HASH_COUNT,
-        (SELECT COUNT(*)
-           FROM HASHINGS
-          WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
-            AND HASHINGS.HASH_KY != ?
-            AND HASHINGS.HASH_KY IN (
-            SELECT HASH_KY
-              FROM HASHES_TABLE
-             WHERE KENNEL_KY = ?
-               AND EVENT_DATE > DATE_SUB((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR)
-               AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR))) AS SORTA_RECENT_HASH_COUNT
-      FROM HASHERS
-      WHERE
-          DECEASED = 0
-        AND
-          BANNED = 0
-        AND
-          HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
-        AND
-        (
-          HASHER_NAME LIKE ? OR
-          FIRST_NAME LIKE ? OR
-          LAST_NAME LIKE ? OR
-          HASHER_ABBREVIATION LIKE ?)
-      ORDER BY RECENT_HASH_COUNT DESC, SORTA_RECENT_HASH_COUNT DESC
-      LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT HASHER_NAME AS NAME, HASHER_KY AS THE_KEY, FIRST_NAME, LAST_NAME, HASHER_ABBREVIATION, (
+             SELECT COUNT(*)
+               FROM HASHINGS
+              WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+                AND HASHINGS.HASH_KY != ?
+                AND HASHINGS.HASH_KY IN (
+                    SELECT HASH_KY
+                      FROM HASHES_TABLE
+                     WHERE KENNEL_KY = ?
+                       AND EVENT_DATE > DATE_SUB((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 3 MONTH)
+                       AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 3 MONTH))) AS RECENT_HASH_COUNT, (
+                    SELECT COUNT(*)
+                      FROM HASHINGS
+                     WHERE HASHINGS.HASHER_KY = HASHERS.HASHER_KY
+                       AND HASHINGS.HASH_KY != ?
+                       AND HASHINGS.HASH_KY IN (
+                           SELECT HASH_KY
+                             FROM HASHES_TABLE
+                            WHERE KENNEL_KY = ?
+                              AND EVENT_DATE > DATE_SUB((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR)
+                              AND EVENT_DATE < DATE_ADD((SELECT EVENT_DATE FROM HASHES_TABLE WHERE HASH_KY = ?), INTERVAL 1 YEAR))) AS SORTA_RECENT_HASH_COUNT
+        FROM HASHERS
+       WHERE DECEASED = 0
+         AND BANNED = 0
+         AND HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
+         AND ( HASHER_NAME LIKE ? OR FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+       ORDER BY RECENT_HASH_COUNT DESC, SORTA_RECENT_HASH_COUNT DESC
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-    FROM HASHERS
-    WHERE
-        DECEASED = 0
-      AND
-        BANNED = 0
-      AND
-        HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
-      AND
-      (
-        HASHER_NAME LIKE ? OR
-        FIRST_NAME LIKE ? OR
-        LAST_NAME LIKE ? OR
-        HASHER_ABBREVIATION LIKE ?)";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+       WHERE DECEASED = 0
+         AND BANNED = 0
+         AND HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")
+         AND (HASHER_NAME LIKE ? OR FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)";
 
     #Define the sql that gets the overall counts
     $sqlUnfilteredCount = "
-      SELECT COUNT(*)
-          AS THE_COUNT
+      SELECT COUNT(*) AS THE_COUNT
         FROM HASHERS
-       WHERE
-           DECEASED = 0
-         AND
-           BANNED = 0
-         AND
-           HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")";
+       WHERE DECEASED = 0
+         AND BANNED = 0
+         AND HASHER_KY NOT IN (".$hashersAlreadyAddedToEventSql.")";
 
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array(
-      $hashKy, $kennelKy, $hashKy, $hashKy,
-      $hashKy, $kennelKy, $hashKy, $hashKy, $hashKy,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+
+    $theResults = $this->fetchAll($sql, [ $hashKy, $kennelKy, $hashKy, $hashKy, $hashKy, $kennelKy, $hashKy, $hashKy, $hashKy,
+      $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array($hashKy)))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, [ $hashKy ]))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array($hashKy,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $hashKy,
+       $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }

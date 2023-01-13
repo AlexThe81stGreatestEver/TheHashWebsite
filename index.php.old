@@ -1166,8 +1166,8 @@ post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::admi
 get('/admin/{hash_id}/duplicateHash',                 'HashEventController::adminDuplicateHash');
 
 # Hash event modification (ajaxified)
-get('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPreAction');
-post('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPostAction');
+#get('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPreAction');
+#post('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPostAction');
 
 # Hash person modification
 get('/admin/modifyhasher/form/{hasher_id}',                 'HashPersonController::modifyHashPersonAction');
@@ -1190,8 +1190,8 @@ post('/admin/newhasher/form',                               'HashPersonControlle
 #post('/admin/viewAuditRecords',                                 'AdminController::viewAuditRecordsJson');
 
 # Modify the participation for an event
-get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController::hashParticipationJsonPreAction');
-post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController::hashParticipationJsonPostAction');
+#get('/admin/hash/manageparticipation2/{hash_id}',            'HashEventController::hashParticipationJsonPreAction');
+#post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController::hashParticipationJsonPostAction');
 
 # Page to manage the event tags
 get('/admin/tags/manageeventtags',                            'TagController::manageEventTagsPreAction');
@@ -1207,13 +1207,13 @@ post('/admin/tags/removetagfromevent',                        'TagController::re
 get('/admin/tags/eventscreen/{hash_id}',                      'TagController::showEventForTaggingPreAction');
 
 # Functions to add and delete hounds and hares to the hashes
-post('/admin/hash/addHasherToHash',                         'HashEventController::addHashParticipant');
-post('/admin/hash/addHareToHash',                           'HashEventController::addHashOrganizer');
-post('/admin/hash/deleteHasherFromHash',                    'HashEventController::deleteHashParticipant');
-post('/admin/hash/deleteHareFromHash',                      'HashEventController::deleteHashOrganizer');
+#post('/admin/hash/addHasherToHash',                         'HashEventController::addHashParticipant');
+#post('/admin/hash/addHareToHash',                           'HashEventController::addHashOrganizer');
+#post('/admin/hash/deleteHasherFromHash',                    'HashEventController::deleteHashParticipant');
+#post('/admin/hash/deleteHareFromHash',                      'HashEventController::deleteHashOrganizer');
 
-post('/admin/hash/getHaresForEvent',                        'HashEventController::getHaresForEvent');
-post('/admin/hash/getHashersForEvent',                      'HashEventController::getHashersForEvent');
+#post('/admin/hash/getHaresForEvent',                        'HashEventController::getHaresForEvent');
+#post('/admin/hash/getHashersForEvent',                      'HashEventController::getHashersForEvent');
 
 get('/admin/listOrphanedHashers',                             'AdminController::listOrphanedHashersAction');
 
@@ -1227,14 +1227,14 @@ post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::
 #get('/admin/{kennel_abbreviation}/awards/{type}/{horizon}',   'AdminController::awards');
 #post('/admin/updateHasherAward',                              'AdminController::updateHasherAwardAjaxAction');
 
-get('/admin/listhashes2',                                    'AdminController::listHashesPreActionJson');
-get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController::listHashesPreActionJson');
-post('/admin/{kennel_abbreviation}/listhashes2',             'AdminController::getHashListJson');
+#get('/admin/listhashes2',                                    'AdminController::listHashesPreActionJson');
+#get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController::listHashesPreActionJson');
+#post('/admin/{kennel_abbreviation}/listhashes2',             'AdminController::getHashListJson');
 
 get('/admin/listhashers2',                                    'AdminController::listHashersPreActionJson');
 post('/admin/listhashers2',                                   'AdminController::getHashersListJson');
 
-post('/admin/listhashers3',                                   'AdminController::getHashersParticipationListJson');
+#post('/admin/listhashers3',                                   'AdminController::getHashersParticipationListJson');
 
 get('/admin/hasherDetailsKennelSelection/{hasher_id}',        'AdminController::hasherDetailsKennelSelection');
 post('/admin/deleteHash',                                     'AdminController::deleteHash');
