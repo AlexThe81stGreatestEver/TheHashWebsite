@@ -828,7 +828,15 @@ class AdminController extends BaseController
     return $this->render('admin_roster.twig', [ 'theList' => $theList ]);
   }
 
-  public function legacy(Request $request, string $kennel_abbreviation = null) {
+  #[Route('/admin/legacy',
+    methods: ['GET'],
+  )]
+  #[Route('/admin/{kennel_abbreviation}/legacy',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function legacy(string $kennel_abbreviation = null) {
 
     if($kennel_abbreviation) {
       $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -839,11 +847,11 @@ class AdminController extends BaseController
         $kennelKy = (int) $kennels[0]['KENNEL_KY'];
         $kennel_abbreviation = $kennels[0]['KENNEL_ABBREVIATION'];
       } else {
-        return $this->render('admin_select_kennel.twig',array(
+        return $this->render('admin_select_kennel.twig', [
           'kennels' => $kennels,
           'pageTracking' => 'AdminSelectKennel',
           'pageTitle' => 'Select Kennel',
-          'urlSuffix' => 'legacy'));
+          'urlSuffix' => 'legacy' ]);
       }
     }
 
@@ -857,33 +865,29 @@ class AdminController extends BaseController
        ORDER BY HASHERS.HASHER_NAME";
 
     #Execute the SQL statement; create an array of rows
-    $theList = $this->fetchAll($sql, array($kennelKy));
+    $theList = $this->fetchAll($sql, [ $kennelKy ]);
 
     # Establish and set the return value
-    $returnValue = $this->render('admin_legacy_hashings.twig',array(
+    return $this->render('admin_legacy_hashings.twig', [
       'theList' => $theList,
       'pageTitle' => 'Legacy Hashing Counts',
       'tableCaption' => 'Legacy Hashing Counts',
       'kennelAbbreviation' => $kennel_abbreviation,
-      'csrf_token' => $this->getCsrfToken('legacy')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('legacy') ]);
   }
 
   private function processLegacyCountChange(Request $request, int $kennelKy, int $k, int $c) {
 
     if($c == 0) {
       $sql = "DELETE FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      $this->dbw->executeUpdate($sql, array($k, $kennelKy));
+      $this->getWriteConnection()->executeUpdate($sql, [ $k, $kennelKy ]);
     } else {
       $sql = "UPDATE LEGACY_HASHINGS SET LEGACY_HASHINGS_COUNT = ? WHERE HASHER_KY = ? AND KENNEL_KY = ?";
-      if($this->dbw->executeUpdate($sql, array($c, $k, $kennelKy)) == 0) {
+      if($this->getWriteConnection()->executeUpdate($sql, [ $c, $k, $kennelKy ]) == 0) {
         $sql = "SELECT 'exists' AS x FROM LEGACY_HASHINGS WHERE HASHER_KY = ? AND KENNEL_KY = ?";
         if($this->fetchOne($sql, array($k, $kennelKy)) != 'exists') {
           $sql = "INSERT INTO LEGACY_HASHINGS(LEGACY_HASHINGS_COUNT, HASHER_KY, KENNEL_KY) VALUES(?,?,?)";
-          $this->dbw->executeUpdate($sql, array($c, $k, $kennelKy));
+          $this->getWriteConnection()->executeUpdate($sql, [ $c, $k, $kennelKy ]);
         }
       }
     }
@@ -892,15 +896,20 @@ class AdminController extends BaseController
     $this->auditTheThings($request, $actionType, $actionDescription);
   }
 
+  #[Route('/admin/{kennel_abbreviation}/legacyUpdate',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function legacyUpdate(Request $request, string $kennel_abbreviation) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('legacy', $token);
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-    $k = $request->request->get('k');
-    $c = $request->request->get('c');
+    $k = $_POST['k'];
+    $c = $_POST['c'];
 
     if(is_array($k)) {
       for($i=0; $i < count($k); $i++) {

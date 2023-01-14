@@ -1123,9 +1123,9 @@ if (!$schema->tablesExist('USERS')) {
 #get('/{kennel_abbreviation}/events/rss',                    'HashController::eventsRssAction');
 
 #Admin section logon
-get('/logonscreen',                                         'HashController::logonScreenAction');
-get('/admin/logoutaction',                                  'AdminController::logoutAction');
-get('/admin/hello',                                         'AdminController::helloAction');
+#get('/logonscreen',                                         'HashController::logonScreenAction');
+#get('/admin/logoutaction',                                  'AdminController::logoutAction');
+#get('/admin/hello',                                         'AdminController::helloAction');
 
 #Superadmin section logon
 get('/logonscreen/sa',                                        'SuperAdminController::logonScreenAction');
@@ -1217,9 +1217,9 @@ get('/admin/tags/eventscreen/{hash_id}',                      'TagController::sh
 
 #get('/admin/listOrphanedHashers',                             'AdminController::listOrphanedHashersAction');
 
-get('/admin/legacy',                                          'AdminController::legacy');
-get('/admin/{kennel_abbreviation}/legacy',                    'AdminController::legacy');
-post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::legacyUpdate');
+#get('/admin/legacy',                                          'AdminController::legacy');
+#get('/admin/{kennel_abbreviation}/legacy',                    'AdminController::legacy');
+#post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::legacyUpdate');
 #get('/admin/roster',                                          'AdminController::roster');
 #get('/admin/{kennel_abbreviation}/roster',                    'AdminController::roster');
 #get('/admin/awards/{type}',                                   'AdminController::awards');
@@ -1455,7 +1455,7 @@ post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::
 #post('/{kennel_abbreviation}/hashers/retrieve',                         'HashPersonController::retrieveHasherAction');
 
 # kennel home page
-get('/{kennel_abbreviation}',                               'HashController::slashKennelAction2');
+#get('/{kennel_abbreviation}',                               'HashController::slashKennelAction2');
 
 $app['dispatcher']->addSubscriber(new ResponseListener($app['charset']));
 
