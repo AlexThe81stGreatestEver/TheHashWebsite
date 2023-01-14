@@ -24,27 +24,6 @@ class HashController extends BaseController
     $this->helper = $helper;
   }
 
-  #Define the action
-  public function logonScreenAction(Request $request){
-
-    # Establisht the last error
-    $lastError = $this->container->get('security.last_error')($request);
-
-    # Establish the last username
-    $lastUserName = $this->container->get('session')->get('_security.last_username');
-
-    # Establish the return value
-    $returnValue =  $this->render('logon_screen.twig', array (
-      'pageTitle' => 'Stats Logon',
-      'pageHeader' => 'Please log on!',
-      'error' => $lastError,
-      'last_username' => $lastUserName,
-    ));
-
-    # Return the return value;
-    return $returnValue;
-  }
-
   #[Route('/{kennel_abbreviation}/rss',
     methods: ['GET'],
     requirements: [

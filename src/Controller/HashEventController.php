@@ -621,7 +621,6 @@ class HashEventController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-
   #[Route('/admin/hash/deleteHasherFromHash',
     methods: ['POST']
   )]

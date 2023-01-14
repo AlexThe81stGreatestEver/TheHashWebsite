@@ -35,15 +35,6 @@ class AdminController extends BaseController
     return parent::render($template, $args, $response);
   }
 
-  public function logoutAction(Request $request){
-
-    # Invalidate the session
-    $this->container->get('session')->invalidate();
-
-    # Redirect the user to the root url
-    return new RedirectResponse('/');
-  }
-
   #[Route('/admin/hello',
     methods: ['GET']
   )]
