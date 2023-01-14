@@ -1240,7 +1240,7 @@ post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::
 #post('/admin/deleteHash',                                     'AdminController::deleteHash');
 
 #The per event budget screen
-get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
+#get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
 
 #get('/{kennel_abbreviation}/mia',                                       'HashController::miaPreActionJson');
 #post('/{kennel_abbreviation}/mia',                                       'HashController::miaPostActionJson');

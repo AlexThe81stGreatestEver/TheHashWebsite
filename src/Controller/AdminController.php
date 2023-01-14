@@ -86,10 +86,12 @@ class AdminController extends BaseController
       return $returnValue;
     }
 
-  #Define the action
-  public function eventBudgetPreAction(Request $request, int $hash_id){
-
-    #Obtain the hash event information
+  #[Route('/admin/eventBudget/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
+  public function eventBudgetPreAction(int $hash_id) {
 
     #Obtain the default cost information
     $virginCost= 0;
@@ -97,22 +99,21 @@ class AdminController extends BaseController
     $hareCost = 0;
 
     #Obtain the number of hounds
-    $houndCountSQL = HOUND_COUNT_BY_HASH_KEY;
-    $theHoundCountValue = $this->fetchAssoc($houndCountSQL, array((int) $hash_id));
+    $houndCountSQL = $this->sqlQueries->getHoundCountByHashKey();
+    $theHoundCountValue = $this->fetchAssoc($houndCountSQL, [ $hash_id ]);
     $theHoundCount = $theHoundCountValue['THE_COUNT'];
 
     #Obtain the number of hares
-    $hareCountSQL = HARE_COUNT_BY_HASH_KEY;
-    $theHareCountValue = $this->fetchAssoc($hareCountSQL, array((int) $hash_id));
+    $hareCountSQL = $this->sqlQueries->getHareCountByHashKey();
+    $theHareCountValue = $this->fetchAssoc($hareCountSQL, [ $hash_id ]);
     $theHareCount = $theHareCountValue['THE_COUNT'];
 
     # Establish and set the return value
-    $returnValue = $this->render('event_budget.twig',array(
+    return $this->render('event_budget.twig', [
       'pageTitle' => 'Event Budget',
       'pageSubTitle' => 'Online Calculator',
       'pageCaption' => 'Event Budget Test Page Caption',
       'tableCaption' => 'Event Budget Test Table Caption',
-
       'defaultBeveragePrice' => 7.00,
       'defaultHareExpense' => 0,
       'defaultTreasuryDeposit' => 0,
@@ -124,11 +125,7 @@ class AdminController extends BaseController
       'defaultCharitableDonation' => 0,
       'defaultTipPercentage' => 20,
       'houndCount' => $theHoundCount ,
-      'hareCount' => $theHareCount
-    ));
-
-    # Return the return value
-    return $returnValue;
+      'hareCount' => $theHareCount ]);
   }
 
   #[Route('/admin/newPassword/form',
