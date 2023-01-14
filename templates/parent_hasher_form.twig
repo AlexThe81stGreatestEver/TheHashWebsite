@@ -14,7 +14,7 @@ dl div input { display: table-cell;}
   <h6>{{pageHeader}}</h6>
 
   {% for alert in [ 'info', 'success', 'warning', 'danger'] %}
-    {% for message in global.getFlashes(alert) %}
+    {% for message in app.flashes(alert) %}
         <div class="alert alert-{{ alert }} alert-dismissible" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           {{ message }}

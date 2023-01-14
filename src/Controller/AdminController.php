@@ -513,22 +513,22 @@ class AdminController extends BaseController
     return new JsonResponse($output);
   }
 
-  #Define the action
-  public function listHashersPreActionJson(Request $request){
-
-    # Establish and set the return value
-    $returnValue = $this->render('admin_hasher_list_json.twig',array(
+  #[Route('/admin/listhashers2',
+    methods: ['GET']
+  )]
+  public function listHashersPreActionJson(Request $request) {
+    return $this->render('admin_hasher_list_json.twig', [
       'pageTitle' => 'The List of Hashers',
       'pageSubTitle' => '',
       'pageCaption' => "",
       'tableCaption' => ""
-    ));
-
-    #Return the return value
-    return $returnValue;
+    ]);
   }
 
-  public function getHashersListJson(Request $request){
+  #[Route('/admin/listhashers2',
+    methods: ['POST']
+  )]
+  public function getHashersListJson(Request $request) {
 
     #Obtain the post parameters
     $inputStart = $_POST['start'] ;
@@ -538,26 +538,25 @@ class AdminController extends BaseController
     $inputSearchValue = $inputSearch['value'];
 
     #-------------- Begin: Validate the post parameters ------------------------
+
     #Validate input start
-    if(!is_numeric($inputStart)){
+    if(!is_numeric($inputStart)) {
       $inputStart = 0;
     }
 
     #Validate input length
-    if(!is_numeric($inputLength)){
+    if(!is_numeric($inputLength)) {
       $inputStart = "0";
       $inputLength = "50";
-    } else if($inputLength == "-1"){
+    } else if($inputLength == "-1") {
       $inputStart = "0";
       $inputLength = "1000000000";
     }
 
-    #Validate input search
-    #We are using database parameterized statements, so we are good already...
-
     #---------------- End: Validate the post parameters ------------------------
 
     #-------------- Begin: Modify the input parameters  ------------------------
+
     #Modify the search string
     $inputSearchValueModified = "%$inputSearchValue%";
 
@@ -577,31 +576,17 @@ class AdminController extends BaseController
     #-------------- Begin: Define the SQL used here   --------------------------
 
     #Define the sql that performs the filtering
-    $sql = "SELECT
-        HASHER_NAME AS NAME,
-        HASHER_KY AS THE_KEY,
-        FIRST_NAME,
-        LAST_NAME,
-        HASHER_ABBREVIATION
-      FROM HASHERS
-      WHERE
-        (
-          HASHER_NAME LIKE ? OR
-          FIRST_NAME LIKE ? OR
-          LAST_NAME LIKE ? OR
-          HASHER_ABBREVIATION LIKE ?)
-      ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
-      LIMIT $inputStart,$inputLength";
+    $sql = "
+      SELECT HASHER_NAME AS NAME, HASHER_KY AS THE_KEY, FIRST_NAME, LAST_NAME, HASHER_ABBREVIATION
+        FROM HASHERS WHERE (HASHER_NAME LIKE ? OR FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)
+       ORDER BY $inputOrderColumnIncremented $inputOrderDirectionExtracted
+       LIMIT $inputStart,$inputLength";
 
     #Define the SQL that gets the count for the filtered results
-    $sqlFilteredCount = "SELECT COUNT(*) AS THE_COUNT
-    FROM HASHERS
-    WHERE
-      (
-        HASHER_NAME LIKE ? OR
-        FIRST_NAME LIKE ? OR
-        LAST_NAME LIKE ? OR
-        HASHER_ABBREVIATION LIKE ?)";
+    $sqlFilteredCount = "
+      SELECT COUNT(*) AS THE_COUNT
+        FROM HASHERS
+       WHERE (HASHER_NAME LIKE ? OR FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR HASHER_ABBREVIATION LIKE ?)";
 
     #Define the sql that gets the overall counts
     $sqlUnfilteredCount = "SELECT COUNT(*) AS THE_COUNT FROM HASHERS";
@@ -609,31 +594,26 @@ class AdminController extends BaseController
     #-------------- End: Define the SQL used here   ----------------------------
 
     #-------------- Begin: Query the database   --------------------------------
+
     #Perform the filtered search
-    $theResults = $this->fetchAll($sql,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified));
+    $theResults = $this->fetchAll($sql, [ $inputSearchValueModified, $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified ]);
 
     #Perform the untiltered count
-    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount,array()))['THE_COUNT'];
+    $theUnfilteredCount = ($this->fetchAssoc($sqlUnfilteredCount, []))['THE_COUNT'];
 
     #Perform the filtered count
-    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount,array(
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified,
-      (string) $inputSearchValueModified)))['THE_COUNT'];
+    $theFilteredCount = ($this->fetchAssoc($sqlFilteredCount, [ $inputSearchValueModified, $inputSearchValueModified,
+      $inputSearchValueModified, $inputSearchValueModified ]))['THE_COUNT'];
+
     #-------------- End: Query the database   --------------------------------
 
     #Establish the output
-    $output = array(
+    $output = [
       "sEcho" => "foo",
       "iTotalRecords" => $theUnfilteredCount,
       "iTotalDisplayRecords" => $theFilteredCount,
-      "aaData" => $theResults
-    );
+      "aaData" => $theResults ];
 
     return new JsonResponse($output);
   }

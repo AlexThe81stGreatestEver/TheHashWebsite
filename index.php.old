@@ -1170,12 +1170,12 @@ get('/admin/{hash_id}/duplicateHash',                 'HashEventController::admi
 #post('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPostAction');
 
 # Hash person modification
-get('/admin/modifyhasher/form/{hasher_id}',                 'HashPersonController::modifyHashPersonAction');
-post('/admin/modifyhasher/form/{hasher_id}',                'HashPersonController::modifyHashPersonAction');
+#get('/admin/modifyhasher/form/{hasher_id}',                 'HashPersonController::modifyHashPersonAction');
+#post('/admin/modifyhasher/form/{hasher_id}',                'HashPersonController::modifyHashPersonAction');
 
 # Hash person deletion
-get('/admin/deleteHasher/{hasher_id}',                      'HashPersonController::deleteHashPersonPreAction');
-post('/admin/deleteHasherPost',                      'HashPersonController::deleteHashPersonAjaxAction');
+#get('/admin/deleteHasher/{hasher_id}',                      'HashPersonController::deleteHashPersonPreAction');
+#post('/admin/deleteHasherPost',                      'HashPersonController::deleteHashPersonAjaxAction');
 
 # Hash person creation
 get('/admin/newhasher/form',                                'HashPersonController::createHashPersonAction');
@@ -1231,8 +1231,8 @@ post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::
 #get('/admin/{kennel_abbreviation}/listhashes2',              'AdminController::listHashesPreActionJson');
 #post('/admin/{kennel_abbreviation}/listhashes2',             'AdminController::getHashListJson');
 
-get('/admin/listhashers2',                                    'AdminController::listHashersPreActionJson');
-post('/admin/listhashers2',                                   'AdminController::getHashersListJson');
+#get('/admin/listhashers2',                                    'AdminController::listHashersPreActionJson');
+#post('/admin/listhashers2',                                   'AdminController::getHashersListJson');
 
 #post('/admin/listhashers3',                                   'AdminController::getHashersParticipationListJson');
 
