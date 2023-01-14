@@ -55,36 +55,32 @@ class AdminController extends BaseController
       'hasLegacyHashCounts' => $this->hasLegacyHashCounts() ]);
   }
 
-    public function listOrphanedHashersAction(Request $request){
+  #[Route('/admin/listOrphanedHashers',
+    methods: ['GET'],
+  )]
+  public function listOrphanedHashersAction(Request $request) {
 
-      #Define the SQL to execute
-      $sql = "SELECT *
-              FROM
-              	HASHERS
-              WHERE
-              	HASHERS.HASHER_KY NOT IN (SELECT HASHER_KY FROM HASHINGS)
-                  AND
-                  HASHERS.HASHER_KY NOT IN (SELECT HARINGS_HASHER_KY FROM HARINGS)";
+    #Define the SQL to execute
+    $sql = "
+      SELECT *
+        FROM HASHERS
+       WHERE HASHERS.HASHER_KY NOT IN (SELECT HASHER_KY FROM HASHINGS)
+         AND HASHERS.HASHER_KY NOT IN (SELECT HARINGS_HASHER_KY FROM HARINGS)";
 
-      if($this->hasLegacyHashCounts()) {
-        $sql .= " AND HASHERS.HASHER_KY NOT IN (SELECT HASHER_KY FROM LEGACY_HASHINGS)";
-      }
-
-      #Execute the SQL statement; create an array of rows
-      $theList = $this->fetchAll($sql);
-
-      # Establish and set the return value
-      $returnValue = $this->render('admin_orphaned_hashers.twig',array(
-        'pageTitle' => 'The List of Orphaned Hashers',
-        'pageSubTitle' => 'Hashers who have never hashed or hared',
-        'theList' => $theList,
-        'tableCaption' => 'A list of all hashes ever, since forever.',
-        'kennel_abbreviation' => 'XXX'
-      ));
-
-      #Return the return value
-      return $returnValue;
+    if($this->hasLegacyHashCounts()) {
+      $sql .= " AND HASHERS.HASHER_KY NOT IN (SELECT HASHER_KY FROM LEGACY_HASHINGS)";
     }
+
+    #Execute the SQL statement; create an array of rows
+    $theList = $this->fetchAll($sql);
+
+    return $this->render('admin_orphaned_hashers.twig', [
+      'pageTitle' => 'The List of Orphaned Hashers',
+      'pageSubTitle' => 'Hashers who have never hashed or hared',
+      'theList' => $theList,
+      'tableCaption' => 'A list of all hashes ever, since forever.',
+      'kennel_abbreviation' => 'XXX' ]);
+  }
 
   #[Route('/admin/eventBudget/{hash_id}',
     methods: ['GET'],

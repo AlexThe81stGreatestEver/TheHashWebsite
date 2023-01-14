@@ -1215,7 +1215,7 @@ get('/admin/tags/eventscreen/{hash_id}',                      'TagController::sh
 #post('/admin/hash/getHaresForEvent',                        'HashEventController::getHaresForEvent');
 #post('/admin/hash/getHashersForEvent',                      'HashEventController::getHashersForEvent');
 
-get('/admin/listOrphanedHashers',                             'AdminController::listOrphanedHashersAction');
+#get('/admin/listOrphanedHashers',                             'AdminController::listOrphanedHashersAction');
 
 get('/admin/legacy',                                          'AdminController::legacy');
 get('/admin/{kennel_abbreviation}/legacy',                    'AdminController::legacy');
