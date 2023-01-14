@@ -83,18 +83,20 @@ class HashEventController extends BaseController {
     return $returnValue;
   }
 
-  #Define action
+  #[Route('/admin/{kennel_abbreviation}/newhash/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function adminCreateHashAjaxPreAction(Request $request, string $kennel_abbreviation) {
 
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
     $timesQuery = "
       SELECT *
-        FROM (
-              SELECT event_time
-                FROM (
-                      SELECT date_format(EVENT_DATE, '%H:%i:%S') AS event_time, COUNT(*) as counts
-                        FROM `HASHES_TABLE`
+        FROM (SELECT event_time
+                FROM (SELECT date_format(EVENT_DATE, '%H:%i:%S') AS event_time, COUNT(*) as counts
+                        FROM HASHES_TABLE
                        WHERE KENNEL_KY = ?
                        GROUP BY date_format(EVENT_DATE, '%H:%i:%S')
                      ) AS TIMES_AND_COUNTS
@@ -104,191 +106,150 @@ class HashEventController extends BaseController {
 
     $hashEventNumberQuery = "
       SELECT MAX(CAST(KENNEL_EVENT_NUMBER AS UNSIGNED)) AS event_number
-        FROM `HASHES_TABLE`
+        FROM HASHES_TABLE
        WHERE KENNEL_KY = ?
          AND KENNEL_EVENT_NUMBER REGEXP '^[0-9]+$'";
 
-    $times = $this->fetchAll($timesQuery, array($kennelKy));
-    $defaultEventNumber = 1 + (int) $this->fetchOne($hashEventNumberQuery, array($kennelKy));
+    $times = $this->fetchAll($timesQuery, [ $kennelKy ]);
+    $defaultEventNumber = 1 + (int) $this->fetchOne($hashEventNumberQuery, [ $kennelKy ]);
 
-    $returnValue = $this->render('new_hash_form_ajax.twig', array(
+    return $this->render('new_hash_form_ajax.twig', [
       'pageTitle' => 'Create an Event!',
       'times' => $times,
       'defaultEventNumber' => $defaultEventNumber,
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
       'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey(),
-      'csrf_token' => $this->getCsrfToken('create_event')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('create_event') ]);
   }
 
-    public function adminCreateHashAjaxPostAction(Request $request, $kennel_abbreviation) {
+  #[Route('/admin/{kennel_abbreviation}/newhash/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function adminCreateHashAjaxPostAction(Request $request, $kennel_abbreviation) {
 
-      $token = $request->request->get('csrf_token');
-      $this->validateCsrfToken('create_event', $token);
+    $token = $_POST['csrf_token'];
+    $this->validateCsrfToken('create_event', $token);
 
-      $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
+    $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
 
-      #Establish the return message
-      $returnMessage = "This has not been set yet...";
+    $theHashEventNumber = trim(strip_tags($_POST['hashEventNumber']));
+    $theHashEventDescription = trim(strip_tags($_POST['hashEventDescription']));
+    $theHashType = trim(strip_tags($_POST['hashType']));
+    $theEventDate = trim(strip_tags($_POST['eventDate']));
+    $theEventTime = trim(strip_tags($_POST['eventTime']));
+    $theEventDateAndTime = $theEventDate." ".$theEventTime;
+    $theLocationDescription = trim(strip_tags($_POST['locationDescription']));
+    $theStreet_number = trim(strip_tags($_POST['street_number']));
+    $theRoute = trim(strip_tags($_POST['route']));
+    $theLocality = trim(strip_tags($_POST['locality']));
+    $theAdministrative_area_level_1 = trim(strip_tags($_POST['administrative_area_level_1']));
+    $theAdministrative_area_level_2 = trim(strip_tags($_POST['administrative_area_level_2']));
+    $thePostal_code = trim(strip_tags($_POST['postal_code']));
+    $theNeighborhood = trim(strip_tags($_POST['neighborhood']));
+    $theCountry = trim(strip_tags($_POST['country']));
+    $theLat = trim(strip_tags($_POST['lat']));
+    $theLng = trim(strip_tags($_POST['lng']));
+    $theFormatted_address = trim(strip_tags($_POST['formatted_address']));
+    $thePlace_id = trim(strip_tags($_POST['place_id']));
 
-      $theHashEventNumber = trim(strip_tags($request->request->get('hashEventNumber')));
-      $theHashEventDescription = trim(strip_tags($request->request->get('hashEventDescription')));
-      $theHashType= trim(strip_tags($request->request->get('hashType')));
-      $theEventDate= trim(strip_tags($request->request->get('eventDate')));
-      $theEventTime= trim(strip_tags($request->request->get('eventTime')));
-      $theEventDateAndTime = $theEventDate." ".$theEventTime;
-      $theLocationDescription= trim(strip_tags($request->request->get('locationDescription')));
-      $theStreet_number= trim(strip_tags($request->request->get('street_number')));
-      $theRoute= trim(strip_tags($request->request->get('route')));
-      $theLocality= trim(strip_tags($request->request->get('locality')));
-      $theAdministrative_area_level_1= trim(strip_tags($request->request->get('administrative_area_level_1')));
-      $theAdministrative_area_level_2= trim(strip_tags($request->request->get('administrative_area_level_2')));
-      $thePostal_code= trim(strip_tags($request->request->get('postal_code')));
-      $theNeighborhood= trim(strip_tags($request->request->get('neighborhood')));
-      $theCountry= trim(strip_tags($request->request->get('country')));
-      $theLat= trim(strip_tags($request->request->get('lat')));
-      $theLng= trim(strip_tags($request->request->get('lng')));
-      $theFormatted_address= trim(strip_tags($request->request->get('formatted_address')));
-      $thePlace_id= trim(strip_tags($request->request->get('place_id')));
+    $theEventToCopy = array_key_exists('eventToCopy', $_POST) ? trim(strip_tags($_POST['eventToCopy'])) : null;
 
-      $theEventToCopy= trim(strip_tags($request->request->get('eventToCopy')));
+    // Establish a "passed validation" variable
+    $passedValidation = TRUE;
 
-      // Establish a "passed validation" variable
-      $passedValidation = TRUE;
+    // Establish the return message value as empty (at first)
+    $returnMessage = "";
 
-      // Establish the return message value as empty (at first)
-      $returnMessage = "";
+    if(!(is_numeric($theLat)||empty($theLat))) {
+      $passedValidation = FALSE;
+      $returnMessage .= " |Failed validation on the lat";
+    }
 
-      if(!(is_numeric($theLat)||empty($theLat))){
-        $passedValidation = FALSE;
-        $returnMessage .= " |Failed validation on the lat";
-        //$this->container->get('monolog')->addDebug("--- theLat failed validation: $theLat");
-      }
+    if(!(is_numeric($theLng)||empty($theLng))) {
+      $passedValidation = FALSE;
+      $returnMessage .= " |Failed validation on the lng";
+    }
 
-      if(!(is_numeric($theLng)||empty($theLng))){
-        $passedValidation = FALSE;
-        $returnMessage .= " |Failed validation on the lng";
-        //$this->container->get('monolog')->addDebug("--- theLng failed validation: $theLng");
-      }
+    if(!(is_numeric($thePostal_code)||empty($thePostal_code))) {
+      $passedValidation = FALSE;
+      $returnMessage .= " |Failed validation on the postal code";
+    }
 
-      if(!(is_numeric($thePostal_code)||empty($thePostal_code))){
-        $passedValidation = FALSE;
-        $returnMessage .= " |Failed validation on the postal code";
-        //$this->container->get('monolog')->addDebug("--- thePostal_code failed validation: $thePostal_code");
-      }
+    if(!is_numeric($theLat)) {
+      $theLat = NULL;
+    }
 
-      if(!is_numeric($theLat)){
-        $theLat = NULL;
-      }
+    if(!is_numeric($theLng)) {
+      $theLng = NULL;
+    }
 
-      if(!is_numeric($theLng)){
-        $theLng = NULL;
-      }
+    // Ensure the following is a date
+    // $theEventDate
+    if (!preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$theEventDate)) {
+      $passedValidation = FALSE;
+      $returnMessage .= " |Failed validation on the event date";
+    }
 
-      // Ensure the following is a date
-      // $theEventDate
-      if (!preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$theEventDate)){
-        $passedValidation = FALSE;
-        $returnMessage .= " |Failed validation on the event date";
-        //$this->container->get('monolog')->addDebug("--- the date failed validation $theEventDate");
-      }
+    // Ensure the following is a time
+    // $theEventTime
+    if (!preg_match("/^([01]\d|2[0-3]):([0-5][0-9]):([0-5][0-9])$/",$theEventTime)) {
+      $passedValidation = FALSE;
+      $returnMessage .= " |Failed validation on the event time";
+    }
 
+    if($passedValidation) {
 
-      // Ensure the following is a time
-      // $theEventTime
-      if (!preg_match("/^([01]\d|2[0-3]):([0-5][0-9]):([0-5][0-9])$/",$theEventTime)){
-        $passedValidation = FALSE;
-        $returnMessage .= " |Failed validation on the event time";
-        //$this->container->get('monolog')->addDebug("--- the time failed validation $theEventTime");
+      $sql = "
+        INSERT INTO HASHES_TABLE(KENNEL_KY, KENNEL_EVENT_NUMBER, EVENT_DATE, EVENT_LOCATION, EVENT_CITY, EVENT_STATE,
+                    SPECIAL_EVENT_DESCRIPTION, HASH_TYPE, STREET_NUMBER, ROUTE, COUNTY, POSTAL_CODE, NEIGHBORHOOD, COUNTRY,
+                    FORMATTED_ADDRESS, PLACE_ID, LAT, LNG)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-      }
+        $this->getWriteConnection()->executeUpdate($sql, [ $kennelKy, $theHashEventNumber, $theEventDateAndTime,
+          $theLocationDescription, $theLocality, $theAdministrative_area_level_1, $theHashEventDescription, $theHashType,
+          $theStreet_number, $theRoute, $theAdministrative_area_level_2, $thePostal_code, $theNeighborhood, $theCountry,
+          $theFormatted_address, $thePlace_id, $theLat, $theLng ]);
 
+      if($theEventToCopy != null) {
 
-      if($passedValidation){
+        // Get the hash key for the event that was just created
+        $hashKy = $this->getWriteConnection()->lastInsertId();
 
         $sql = "
-          INSERT INTO HASHES_TABLE (
-            KENNEL_KY,
-            KENNEL_EVENT_NUMBER,
-            EVENT_DATE,
-            EVENT_LOCATION,
-            EVENT_CITY,
-            EVENT_STATE,
-            SPECIAL_EVENT_DESCRIPTION,
-            HASH_TYPE,
-            STREET_NUMBER,
-            ROUTE,
-            COUNTY,
-            POSTAL_CODE,
-            NEIGHBORHOOD,
-            COUNTRY,
-            FORMATTED_ADDRESS,
-            PLACE_ID,
-            LAT,
-            LNG
-          ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          INSERT INTO HASHINGS(HASH_KY, HASHER_KY)
+          SELECT ?, HASHER_KY
+            FROM HASHINGS
+           WHERE HASH_KY = ?";
 
-          $this->dbw->executeUpdate($sql,array(
-            $kennelKy,
-            $theHashEventNumber,
-            $theEventDateAndTime,
-            $theLocationDescription,
-            $theLocality,
-            $theAdministrative_area_level_1,
-            $theHashEventDescription,
-            $theHashType,
-            $theStreet_number,
-            $theRoute,
-            $theAdministrative_area_level_2,
-            $thePostal_code,
-            $theNeighborhood,
-            $theCountry,
-            $theFormatted_address,
-            $thePlace_id,
-            $theLat,
-            $theLng
-          ));
+        $this->getWriteConnection()->executeUpdate($sql, [ $hashKy, $theEventToCopy ]);
 
-        if($theEventToCopy != null) {
+        $sql = "
+          INSERT INTO HARINGS(HARINGS_HASH_KY, HARINGS_HASHER_KY, HARE_TYPE)
+          SELECT ?, HARINGS_HASHER_KY, HARE_TYPE
+            FROM HARINGS
+           WHERE HARINGS_HASH_KY = ?";
 
-          // Get the hash key for the event that was just created
-          $hashKy = $this->dbw->lastInsertId();
+        $this->getWriteConnection()->executeUpdate($sql, [ $hashKy, (int)$theEventToCopy ]);
 
-          $sql = "INSERT INTO HASHINGS(HASH_KY, HASHER_KY)
-                  SELECT ?, HASHER_KY
-                    FROM HASHINGS
-                   WHERE HASH_KY = ?";
-
-          $this->dbw->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
-
-          $sql = "INSERT INTO HARINGS(HARINGS_HASH_KY, HARINGS_HASHER_KY, HARE_TYPE)
-                  SELECT ?, HARINGS_HASHER_KY, HARE_TYPE
-                    FROM HARINGS
-                   WHERE HARINGS_HASH_KY = ?";
-
-          $this->dbw->executeUpdate($sql,array($hashKy, (int)$theEventToCopy));
-
-          $auditAddl = " from event key ".$theEventToCopy;
-        } else {
-          $auditAddl = "";
-        }
-
-        #Audit this activity
-        $actionType = "Event Creation (Ajax)";
-        $actionDescription = "Created event ($kennel_abbreviation # $theHashEventNumber)".$auditAddl;
-        $this->auditTheThings($request, $actionType, $actionDescription);
-
-
-        // Establish the return value message
-        $returnMessage = "Success! Great, it worked";
+        $auditAddl = " from event key ".$theEventToCopy;
+      } else {
+        $auditAddl = "";
       }
 
-      return new JsonResponse($returnMessage);
+      #Audit this activity
+      $actionType = "Event Creation (Ajax)";
+      $actionDescription = "Created event ($kennel_abbreviation # $theHashEventNumber)".$auditAddl;
+      $this->auditTheThings($request, $actionType, $actionDescription);
+
+      // Establish the return value message
+      $returnMessage = "Success! Great, it worked";
     }
+
+    return new JsonResponse($returnMessage);
+  }
 
   #[Route('/admin/edithash/ajaxform/{hash_id}',
     methods: ['GET'],

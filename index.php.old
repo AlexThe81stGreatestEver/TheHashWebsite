@@ -1161,8 +1161,8 @@ get('/superadmin/newharetype/ajaxform',                       'SuperAdminControl
 post('/superadmin/newharetype/ajaxform',                      'SuperAdminController::newHareTypeAjaxPostAction');
 get('/superadmin/export',                                     'SuperAdminController::exportDatabaseAction');
 
-get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPreAction');
-post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPostAction');
+#get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPreAction');
+#post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPostAction');
 get('/admin/{hash_id}/duplicateHash',                 'HashEventController::adminDuplicateHash');
 
 # Hash event modification (ajaxified)
