@@ -1178,8 +1178,8 @@ get('/admin/{hash_id}/duplicateHash',                 'HashEventController::admi
 #post('/admin/deleteHasherPost',                      'HashPersonController::deleteHashPersonAjaxAction');
 
 # Hash person creation
-get('/admin/newhasher/form',                                'HashPersonController::createHashPersonAction');
-post('/admin/newhasher/form',                               'HashPersonController::createHashPersonAction');
+#get('/admin/newhasher/form',                                'HashPersonController::createHashPersonAction');
+#post('/admin/newhasher/form',                               'HashPersonController::createHashPersonAction');
 
 # Change admin password
 #get('/admin/newPassword/form',                                'AdminController::newPasswordAction');

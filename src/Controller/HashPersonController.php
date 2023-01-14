@@ -230,65 +230,50 @@ class HashPersonController extends BaseController
     ]);
   }
 
-  #Define the action
-  public function createHashPersonAction(Request $request){
+  #[Route('/admin/newhasher/form',
+    methods: ['GET','POST'],
+  )]
+  public function createHashPersonAction(Request $request, HasherRepository $hasherRepository) {
 
-    $formFactoryThing = $this->container->get('form.factory')->createBuilder(FormType::class)
-      ->add('HASHER_NAME', TextType::class, array('label' => 'Hasher Name'))
-      ->add('HASHER_ABBREVIATION', TextType::class, array('label' => 'Hasher Abbreviation'))
-      ->add('LAST_NAME', TextType::class, array('label' => 'Last Name'))
-      ->add('FIRST_NAME', TextType::class, array('label' => 'First Name'))
-      ->add('HOME_KENNEL', TextType::class, array('label' => 'Home Kennel'))
-      ->add('DECEASED', ChoiceType::class, array('label' => 'Deceased',
-        'choices'  => array('No' => '0', 'Yes, let us cherish their memory' => '1')));
+    $task = new ModifyHasherTask();
 
-
-    $formFactoryThing->setAction('#');
-    $formFactoryThing->setMethod('POST');
-    $form=$formFactoryThing->getForm();
-
+    $form = $this->createFormBuilder($task)
+      ->add('hasherName', TextType::class, array('label' => 'Hasher Name'))
+      ->add('hasherAbbreviation', TextType::class, array('label' => 'Hasher Abbreviation'))
+      ->add('lastName', TextType::class, array('label' => 'Last Name'))
+      ->add('firstName', TextType::class, array('label' => 'First Name'))
+      ->add('homeKennel', TextType::class, array('label' => 'Home Kennel'))
+      ->add('deceased', ChoiceType::class, array('label' => 'Deceased',
+        'choices'  => array('No' => '0', 'Yes, let us cherish their memory' => '1')))
+      ->setAction('#')
+      ->setMethod('POST')
+      ->getForm();
 
     $form->handleRequest($request);
 
-    if($request->getMethod() == 'POST'){
+    if($request->getMethod() == 'POST') {
 
       if ($form->isValid()) {
           #Obtain the name/value pairs from the form
           $data = $form->getData();
 
+          $hasher = new Hasher();
+
           #Establish the values from the form
-          $tempHasherName = $data['HASHER_NAME'];
-          $tempHasherAbbreviation = $data['HASHER_ABBREVIATION'];
-          $tempLastName = $data['LAST_NAME'];
-          $tempFirstName = $data['FIRST_NAME'];
-          $tempHomeKennel = $data['HOME_KENNEL'];
-          $tempDeceased = $data['DECEASED'];
+          $tempHasherName = $task->getHasherName();
+          $hasher->setHasherName($tempHasherName);
+          $hasher->setHasherAbbreviation($task->getHasherAbbreviation());
+          $hasher->setLastName($task->getLastName());
+          $hasher->setFirstName($task->getFirstName());
+          $hasher->setHomeKennel($task->getHomeKennel());
+          $hasher->setBanned(0);
+          $hasher->setDeceased($task->getDeceased());
 
-
-          $sql = "
-            INSERT INTO HASHERS (
-              HASHER_NAME,
-              HASHER_ABBREVIATION,
-              LAST_NAME,
-              FIRST_NAME,
-              HOME_KENNEL,
-              DECEASED
-            ) VALUES (?, ?, ?, ?, ?, ?)";
-
-
-          $this->dbw->executeUpdate($sql,array(
-            $tempHasherName,
-            $tempHasherAbbreviation,
-            $tempLastName,
-            $tempFirstName,
-            $tempHomeKennel,
-            $tempDeceased
-          ));
-
+          $hasherRepository->save($hasher, true);
 
           #Add a confirmation that everything worked
           $theSuccessMessage = "Success! You created a person. (Hasher $tempHasherName)";
-          $this->container->get('session')->getFlashBag()->add('success', $theSuccessMessage);
+          $this->addFlash('success', $theSuccessMessage);
 
           #Audit the action
           $tempActionType = "Create Person";
@@ -296,20 +281,14 @@ class HashPersonController extends BaseController
           $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
       } else{
-        $this->container->get('session')->getFlashBag()->add('danger', 'Wrong! You broke it.');
+        $this->addFlash('danger', 'Wrong! You broke it.');
       }
-
     }
 
-    $returnValue = $this->render('new_hasher_form.twig', array (
+    return $this->render('new_hasher_form.twig', [
       'pageTitle' => 'Hasher Person Creation',
       'pageHeader' => 'All fields are required',
-      'form' => $form->createView(),
-    ));
-
-    #Return the return value
-    return $returnValue;
-
+      'form' => $form->createView() ]);
   }
 
 
