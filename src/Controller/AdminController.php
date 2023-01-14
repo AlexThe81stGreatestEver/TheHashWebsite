@@ -737,7 +737,13 @@ class AdminController extends BaseController
     return new JsonResponse($output);
   }
 
-  public function hasherDetailsKennelSelection(Request $request, int $hasher_id){
+  #[Route('/admin/hasherDetailsKennelSelection/{hasher_id}',
+    methods: ['GET'],
+    requirements: [
+      'hasher_id' => '%app.pattern.hasher_id%']
+  )]
+  public function hasherDetailsKennelSelection(int $hasher_id) {
+
     #Obtain the kennels that are being tracked in this website instance
     $listOfKennelsSQL = "SELECT * FROM KENNELS WHERE IN_RECORD_KEEPING = 1";
     $kennelValues = $this->fetchAll($listOfKennelsSQL);
@@ -751,21 +757,16 @@ class AdminController extends BaseController
     $sql_for_hasher_lookup = "SELECT HASHER_NAME FROM HASHERS WHERE HASHER_KY = ?";
 
     # Make a database call to obtain the hasher information
-    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, array((int) $hasher_id));
+    $hasher = $this->fetchAssoc($sql_for_hasher_lookup, [ $hasher_id ]);
 
     # Derive the hasher name
     $hasherName = $hasher['HASHER_NAME'];
 
-    # Establish and set the return value
-    $returnValue = $this->render('hasher_details_select_kennel.twig',array(
+    return $this->render('hasher_details_select_kennel.twig', [
       'pageTitle' => 'Hasher Details: Select Kennel',
       'kennelValues' => $kennelValues,
       'hasherId' => $hasher_id,
-      'hasherName' => $hasherName
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'hasherName' => $hasherName ]);
   }
 
   #[Route('/admin/roster',
