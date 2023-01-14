@@ -337,20 +337,28 @@ class AdminController extends BaseController
     return new JsonResponse($output);
   }
 
+  #[Route('/admin/deleteHash',
+    methods: ['POST'],
+  )]
   public function deleteHash(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('admin', $token);
 
-    $hash_id = $request->request->get('id');
+    $hash_id = $_POST['id'];
 
-    $sql = "SELECT KENNEL_EVENT_NUMBER, KENNEL_ABBREVIATION FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
-    $eventDetails = $this->fetchAssoc($sql, array($hash_id));
+    $sql = "
+      SELECT KENNEL_EVENT_NUMBER, KENNEL_ABBREVIATION
+        FROM HASHES_TABLE
+        JOIN KENNELS
+          ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
+       WHERE HASH_KY = ?";
+    $eventDetails = $this->fetchAssoc($sql, [ $hash_id ]);
     $kennel_event_number = $eventDetails['KENNEL_EVENT_NUMBER'];
     $kennel_abbreviation = $eventDetails['KENNEL_ABBREVIATION'];
 
     $sql = "DELETE FROM HASHES_TABLE WHERE HASH_KY = ?";
-    $this->dbw->executeUpdate($sql, array($hash_id));
+    $this->getWriteConnection()->executeUpdate($sql, [ $hash_id ]);
 
     $actionType = "Event Deletion (Ajax)";
     $actionDescription = "Deleted event ($kennel_abbreviation # $kennel_event_number)";

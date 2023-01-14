@@ -1237,7 +1237,7 @@ post('/admin/{kennel_abbreviation}/legacyUpdate',             'AdminController::
 #post('/admin/listhashers3',                                   'AdminController::getHashersParticipationListJson');
 
 #get('/admin/hasherDetailsKennelSelection/{hasher_id}',        'AdminController::hasherDetailsKennelSelection');
-post('/admin/deleteHash',                                     'AdminController::deleteHash');
+#post('/admin/deleteHash',                                     'AdminController::deleteHash');
 
 #The per event budget screen
 get('/admin/eventBudget/{hash_id}','AdminController::eventBudgetPreAction');
