@@ -54,33 +54,34 @@ class HashEventController extends BaseController {
     return $hashTypes;
   }
 
+  #[Route('/admin/{hash_id}/duplicateHash',
+    methods: ['GET'],
+    requirements: [
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
   public function adminDuplicateHash(Request $request, int $hash_id) {
 
-    $sql = "SELECT HASHES_TABLE.*, KENNEL_ABBREVIATION,
-                   DATE_FORMAT(EVENT_DATE, '%Y-%m-%d') AS THE_EVENT_DATE,
-                   DATE_FORMAT(EVENT_DATE, '%H:%i:%s') AS THE_EVENT_TIME
-              FROM HASHES_TABLE
-              JOIN KENNELS
-                ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
-             WHERE HASH_KY = ?";
+    $sql = "
+      SELECT HASHES_TABLE.*, KENNEL_ABBREVIATION, DATE_FORMAT(EVENT_DATE, '%Y-%m-%d') AS THE_EVENT_DATE,
+             DATE_FORMAT(EVENT_DATE, '%H:%i:%s') AS THE_EVENT_TIME
+        FROM HASHES_TABLE
+        JOIN KENNELS
+          ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
+       WHERE HASH_KY = ?";
 
-    $eventDetails = $this->fetchAssoc($sql, array($hash_id));
+    $eventDetails = $this->fetchAssoc($sql, [ $hash_id ]);
 
-    $kennelKy = (int) $eventDetails['KENNEL_KY'];
+    $kennelKy = $eventDetails['KENNEL_KY'];
     $kennel_abbreviation = $eventDetails['KENNEL_ABBREVIATION'];
 
-    $returnValue = $this->render('duplicate_hash_form_ajax.twig', array(
+    return $this->render('duplicate_hash_form_ajax.twig', [
       'pageTitle' => 'Duplicate an Event!',
       'pageHeader' => 'Page Header',
       'kennel_abbreviation' => $kennel_abbreviation,
       'hashTypes' => $this->getHashTypes($kennelKy, 0),
       'geocode_api_value' => $this->getGooglePlacesApiWebServiceKey(),
       'eventDetails' => $eventDetails,
-      'csrf_token' => $this->getCsrfToken('create_event')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('create_event') ]);
   }
 
   #[Route('/admin/{kennel_abbreviation}/newhash/ajaxform',

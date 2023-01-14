@@ -1163,7 +1163,7 @@ get('/superadmin/export',                                     'SuperAdminControl
 
 #get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPreAction');
 #post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPostAction');
-get('/admin/{hash_id}/duplicateHash',                 'HashEventController::adminDuplicateHash');
+#get('/admin/{hash_id}/duplicateHash',                 'HashEventController::adminDuplicateHash');
 
 # Hash event modification (ajaxified)
 #get('/admin/edithash/ajaxform/{hash_id}', 'HashEventController::adminModifyHashAjaxPreAction');
