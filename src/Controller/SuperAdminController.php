@@ -1045,25 +1045,26 @@ class SuperAdminController extends BaseController {
     return new JsonResponse("");
   }
 
-  public function deleteUser(Request $request) {
+  #[Route('/superadmin/deleteuser',
+    methods: ['POST']
+  )]
+  public function deleteUser(Request $request, UserRepository $userRepository) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('superadmin', $token);
 
-    $user_id = $request->request->get('id');
+    $user_id = $_POST['id'];
 
-    $sql = "SELECT username FROM USERS WHERE ID = ?";
-    $username = $this->fetchOne($sql, array($user_id));
+    $user = $userRepository->findOneBy([ 'id' => $user_id ]);
 
     $currentUsername = $this->getUsername();
 
-    if(($currentUsername !== 'UNKNOWN') && ($username != $currentUsername)) {
+    if(($currentUsername !== 'UNKNOWN') && ($user->getUsername() != $currentUsername)) {
 
-      $sql = "DELETE FROM USERS WHERE id = ?";
-      $this->dbw->executeUpdate($sql,array($user_id));
+      $userRepository->remove($user, true);
 
       $actionType = "User Deletion (Ajax)";
-      $actionDescription = "Deleted user $username";
+      $actionDescription = "Deleted user ".$user->getUsername();
 
       $this->auditTheThings($request, $actionType, $actionDescription);
     }
