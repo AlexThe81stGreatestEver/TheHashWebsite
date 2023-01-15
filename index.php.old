@@ -1138,8 +1138,8 @@ get('/superadmin/{hare_type}/editharetype/ajaxform',          'SuperAdminControl
 post('/superadmin/{hare_type}/editharetype/ajaxform',         'SuperAdminController::modifyHareTypeAjaxPostAction');
 get('/superadmin/{hash_type}/edithashtype/ajaxform',          'SuperAdminController::modifyHashTypeAjaxPreAction');
 post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController::modifyHashTypeAjaxPostAction');
-get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController::modifyUserAjaxPreAction');
-post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController::modifyUserAjaxPostAction');
+#get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController::modifyUserAjaxPreAction');
+#post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController::modifyUserAjaxPostAction');
 get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController::modifySiteConfigAjaxPreAction');
 post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController::modifySiteConfigAjaxPostAction');
 get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController::modifyRidiculousAjaxPreAction');

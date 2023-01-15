@@ -699,8 +699,12 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function modifyUserAjaxPreAction(Request $request, int $user_id) {
+  #[Route('/superadmin/{user_id}/edituser/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'user_id' => '%app.pattern.user_id%']
+  )]
+  public function modifyUserAjaxPreAction(int $user_id) {
 
     # Declare the SQL used to retrieve this information
     $sql = "
@@ -709,30 +713,32 @@ class SuperAdminController extends BaseController {
        WHERE ID = ?";
 
     # Make a database call to obtain the hasher information
-    $userValue = $this->fetchAssoc($sql, array($user_id));
+    $userValue = $this->fetchAssoc($sql, [ $user_id ]);
 
-    $returnValue = $this->render('edit_user_form_ajax.twig', array(
+    return $this->render('edit_user_form_ajax.twig', [
       'pageTitle' => 'Modify a User!',
       'userValue' => $userValue,
       'user_id' => $user_id,
-      'csrf_token' => $this->getCsrfToken('mod_user'.$user_id)
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('mod_user'.$user_id) ]);
   }
 
-  public function modifyUserAjaxPostAction(Request $request, int $user_id) {
+  #[Route('/superadmin/{user_id}/edituser/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'user_id' => '%app.pattern.user_id%']
+  )]
+  public function modifyUserAjaxPostAction(Request $request, int $user_id,
+      UserPasswordHasherInterface $passwordHasher, UserRepository $userRepository) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('mod_user'.$user_id, $token);
 
-    $theUsername = trim(strip_tags($request->request->get('username')));
-    $thePassword = trim(strip_tags($request->request->get('password')));
-    $theSuperadmin = $request->request->get('superadmin');
+    $theUsername = trim(strip_tags($_POST['username']));
+    $thePassword = trim(strip_tags($_POST['password']));
+    $theSuperadmin = array_key_exists('superadmin', $_POST) ? $_POST['superadmin'] : null;
 
     // Establish a "passed validation" variable
-    $passedValidation = TRUE;
+    $passedValidation = FALSE;
 
     if($theSuperadmin == "1") {
       $roles="ROLE_ADMIN,ROLE_SUPERADMIN";
@@ -743,51 +749,25 @@ class SuperAdminController extends BaseController {
     // Establish the return message value as empty (at first)
     $returnMessage = "";
 
+    $user = $userRepository->findOneBy([ 'id' => $user_id ]);
+
     if(strlen($thePassword) >= 8) {
-
       // compute the encoded password for the new password
-      $user = new User($theUsername, null, array("ROLE_USER"), true, true, true, true);
-
-      // find the encoder for a UserInterface instance
-      $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
-
-      // compute the encoded password for the new password
-      $encodedNewPassword = $encoder->encodePassword($thePassword, $user->getSalt());
-
+      $encodedNewPassword = $passwordHasher->hashPassword($user, $thePassword);
+      $user->setPassword($encodedNewPassword);
+      $passedValidation = TRUE;
     } else if(strlen($thePassword) != 0) {
-      $passedValidation = FALSE;
       $returnMessage .= " |Failed validation on password";
     } else {
-      $encodedNewPassword = null;
+      $passedValidation = TRUE;
     }
+
+    $user->setUsername($theUsername);
+    $user->setRoles($roles);
 
     if($passedValidation) {
 
-      $sql = "
-        UPDATE USERS
-          SET
-            username = ?,
-            roles = ?
-         WHERE id = ?";
-
-        $this->dbw->executeUpdate($sql,array(
-          $theUsername,
-          $roles,
-          $user_id
-        ));
-
-      if($encodedNewPassword != null) {
-        $sql = "
-          UPDATE USERS
-            SET
-              password = ?
-           WHERE id = ?";
-
-          $this->dbw->executeUpdate($sql,array(
-            $encodedNewPassword,
-            $user_id
-          ));
-      }
+      $userRepository->save($user, true);
 
       #Audit this activity
       $actionType = "User Modification (Ajax)";
