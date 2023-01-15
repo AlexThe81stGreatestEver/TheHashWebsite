@@ -22,358 +22,320 @@ class TagController extends BaseController
     parent::__construct($doctrine);
   }
 
-    public function manageEventTagsPreAction(Request $request){
-      #Define the SQL to execute
-      $eventTagListSQL = "SELECT TAG_TEXT, COUNT(HTJ.HASHES_KY) AS THE_COUNT
-        FROM  HASHES_TAGS HT LEFT JOIN HASHES_TAG_JUNCTION HTJ ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
-        GROUP BY TAG_TEXT
-        ORDER BY THE_COUNT DESC";
+  #[Route('/admin/tags/manageeventtags',
+    methods: ['GET']
+  )]
+  public function manageEventTagsPreAction(Request $request) {
 
-      #Execute the SQL statement; create an array of rows
-      $eventTagList = $this->fetchAll($eventTagListSQL);
+    $eventTagListSQL = "
+      SELECT TAG_TEXT, COUNT(HTJ.HASHES_KY) AS THE_COUNT
+        FROM  HASHES_TAGS HT
+   LEFT JOIN HASHES_TAG_JUNCTION HTJ
+          ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
+       GROUP BY TAG_TEXT
+       ORDER BY THE_COUNT DESC";
 
+    #Execute the SQL statement; create an array of rows
+    $eventTagList = $this->fetchAll($eventTagListSQL);
 
-      #Establish the return value
-      $returnValue = $this->render('manage_event_tag_json.twig', array (
-        'pageTitle' => "Event Tags",
-        'pageSubTitle' => 'Create Event Tags. (Add them to the events sometime later).',
-        'pageHeader' => 'Why is this so complicated ?',
-        'tagList' => $eventTagList,
-        'csrf_token' => $this->getCsrfToken('tag')
-      ));
-
-      #Return the return value
-      return $returnValue;
-    }
-
-public function getEventTagsWithCountsJsonAction(Request $request){
-
-  #Define the SQL to execute
-  $tagListSQL = "SELECT TAG_TEXT, COUNT(HTJ.HASHES_KY) AS THE_COUNT
-    FROM  HASHES_TAGS HT LEFT JOIN HASHES_TAG_JUNCTION HTJ ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
-    GROUP BY TAG_TEXT
-    ORDER BY THE_COUNT DESC";
-
-  #Obtain the hare list
-  $tagList = $this->fetchAll($tagListSQL);
-
-  return new JsonResponse($tagList);
-}
-
-
-public function getAllEventTagsJsonAction(Request $request){
-
-  #Define the SQL to execute
-  $tagListSQL = "SELECT HASHES_TAGS_KY AS id, TAG_TEXT AS label, TAG_TEXT AS value
-    FROM  HASHES_TAGS HT
-    ORDER BY TAG_TEXT ASC";
-
-  #Obtain the hare list
-  $tagList = $this->fetchAll($tagListSQL);
-
-  return new JsonResponse($tagList);
-}
-
-
-
-
-public function getMatchingEventTagsJsonAction(Request $request){
-
-  //Default the search term to an empty string
-  $searchTerm = "";
-
-  //Check the format of the search string
-  if(isset($_GET['term'])  &&  ctype_alnum(trim(str_replace(' ','',$_GET['term'])))  ){
-    $searchTerm = $_GET['term'];
-    $searchTerm = "%$searchTerm%";
+    return $this->render('manage_event_tag_json.twig', [
+      'pageTitle' => "Event Tags",
+      'pageSubTitle' => 'Create Event Tags. (Add them to the events sometime later).',
+      'pageHeader' => 'Why is this so complicated ?',
+      'tagList' => $eventTagList,
+      'csrf_token' => $this->getCsrfToken('tag') ]);
   }
 
+  #[Route('/admin/tags/getmatchingeventtags',
+    methods: ['GET']
+  )]
+  public function getMatchingEventTagsJsonAction(Request $request) {
 
-  #Define the SQL to execute
-  $tagListSQL = "SELECT HASHES_TAGS_KY AS id, TAG_TEXT AS label, TAG_TEXT AS value
-    FROM  HASHES_TAGS HT
-    WHERE TAG_TEXT LIKE ?
-    ORDER BY TAG_TEXT ASC";
+    //Default the search term to an empty string
+    $searchTerm = "";
 
-  #Obtain the tag list
-  $tagList = $this->fetchAll($tagListSQL,array((string) $searchTerm));
+    //Check the format of the search string
+    if(isset($_GET['term']) && ctype_alnum(trim(str_replace(' ','',$_GET['term'])))) {
+      $searchTerm = $_GET['term'];
+      $searchTerm = "%$searchTerm%";
+    }
 
-  return new JsonResponse($tagList);
-}
+    #Define the SQL to execute
+    $tagListSQL = "
+      SELECT HASHES_TAGS_KY AS id, TAG_TEXT AS label, TAG_TEXT AS value
+        FROM HASHES_TAGS HT
+       WHERE TAG_TEXT LIKE ?
+       ORDER BY TAG_TEXT ASC";
 
+    #Obtain the tag list
+    $tagList = $this->fetchAll($tagListSQL, [ $searchTerm ]);
 
-private function addNewEventTagAfterDbChecking(Request $request, string $theTagText){
+    return new JsonResponse($tagList);
+  }
 
-        #Define the sql insert statement
-        $sql = "INSERT INTO HASHES_TAGS (TAG_TEXT, CREATED_BY) VALUES (?, ?);";
+  private function addNewEventTagAfterDbChecking(Request $request, string $theTagText) {
 
-        #Execute the sql insert statement
-        $this->dbw->executeUpdate($sql,array($theTagText,$this->getUsername()));
+    #Define the sql insert statement
+    $sql = "INSERT INTO HASHES_TAGS (TAG_TEXT, CREATED_BY) VALUES (?, ?);";
 
-        #Audit the action
-        $tempActionType = "Created Event Tag";
-        $tempActionDescription = "Created event tag: $theTagText";
-        $this->auditTheThings($request, $tempActionType, $tempActionDescription);
+    #Execute the sql insert statement
+    $this->getWriteConnection()->executeUpdate($sql, [ $theTagText,$this->getUsername() ]);
 
-        #Set the return message
-        $returnMessage = "Success! $theTagText has been created as an event tag.";
+    #Audit the action
+    $tempActionType = "Created Event Tag";
+    $tempActionDescription = "Created event tag: $theTagText";
+    $this->auditTheThings($request, $tempActionType, $tempActionDescription);
+  }
 
-}
+  #[Route('/admin/tags/addneweventtag',
+    methods: ['POST']
+  )]
+  public function addNewEventTag(Request $request) {
 
-public function addNewEventTag(Request $request){
+    $token = $_POST['csrf_token'];
+    $this->validateCsrfToken('tag', $token);
 
-        $token = $request->request->get('csrf_token');
-        $this->validateCsrfToken('tag', $token);
+    #Obtain the post values
+    $theTagText = $_POST['tag_text'];
+    $theTagText = trim($theTagText);
 
-        #Establish the return message
-        $returnMessage = null;
+    #Validate the post values; ensure that they are both numbers
+    if(ctype_alnum(trim(str_replace(' ','', $theTagText)))) {
 
-        #Obtain the post values
-        $theTagText = $request->request->get('tag_text');
-        $theTagText = trim($theTagText);
+      if(($this->doesTagTextExistAlready($request, $theTagText))) {
+        #Set the return value
+        $returnMessage = "Uh oh! This tag already exists: $theTagText";
 
-        #Validate the post values; ensure that they are both numbers
-        if(ctype_alnum(trim(str_replace(' ','',$theTagText)))){
+      } else {
+        #Add the tag into the tags table
+        $this->addNewEventTagAfterDbChecking($request, $theTagText);
 
-          if(($this->doesTagTextExistAlready($request,$theTagText))){
-            #Set the return value
-            $returnMessage = "Uh oh! This tag already exists: $theTagText";
+        #Set the return value
+        $returnMessage = "Success! You've created the tag: $theTagText";
+      }
+    } else {
+      $returnMessage = "Something is wrong with the input $theTagText";
+    }
 
-          }else{
-            #Add the tag into the tags table
-            $this->addNewEventTagAfterDbChecking($request, $theTagText);
-
-            #Set the return value
-            $returnMessage = "Success! You've created the tag: $theTagText";
-          }
-        } else{
-          $returnMessage = "Something is wrong with the input $theTagText";
-        }
-
-        return new JsonResponse($returnMessage);
-}
+    return new JsonResponse($returnMessage);
+  }
 
   private function doesTagTextExistAlready(Request $request, string $theTagText){
 
     #Ensure the entry does not already exist
-    $existsSql = "SELECT * FROM HASHES_TAGS WHERE TAG_TEXT = ? ;";
+    $existsSql = "SELECT 1 AS X FROM HASHES_TAGS WHERE TAG_TEXT = ? ;";
 
     #Retrieve the existing record
-    $matchingTags = $this->fetchAll($existsSql,array($theTagText));
+    $matchingTags = $this->fetchAll($existsSql, [ $theTagText ]);
 
     #Check if there are 0 results
-    if(count($matchingTags) < 1){
-        return false;
-    }else{
-        return true;
-    }
-
+    return count($matchingTags) != 0;
   }
 
+  #[Route('/admin/tags/eventscreen/{hash_id}',
+    methods: ['GET'],
+    requirements: [
+      'hash_id' => '%app.pattern.hash_id%']
+  )]
+  public function showEventForTaggingPreAction(int $hash_id) {
 
+    #Define the SQL to execute
+    $eventTagListSQL = "
+      SELECT TAG_TEXT
+        FROM HASHES_TAGS HT
+        JOIN HASHES_TAG_JUNCTION HTJ
+          ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
+       WHERE HTJ.HASHES_KY = ?";
 
-    #Define action
-    public function showEventForTaggingPreAction(Request $request, int $hash_id){
+    #Execute the SQL statement; create an array of rows
+    $eventTagList = $this->fetchAll($eventTagListSQL, [ $hash_id ]);
 
+    # Declare the SQL used to retrieve this information
+    $sql = "
+      SELECT *, DATE_FORMAT(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, DATE_FORMAT(event_date, '%k:%i:%S') AS EVENT_DATE_TIME
+        FROM HASHES_TABLE
+        JOIN KENNELS
+          ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
+       WHERE HASH_KY = ?";
 
-      #Define the SQL to execute
-      $eventTagListSQL = "SELECT TAG_TEXT
-        FROM  HASHES_TAGS HT JOIN HASHES_TAG_JUNCTION HTJ ON HTJ.HASHES_TAGS_KY = HT.HASHES_TAGS_KY
-        WHERE HTJ.HASHES_KY = ?";
+    # Make a database call to obtain the hasher information
+    $hashValue = $this->fetchAssoc($sql, [ $hash_id ]);
 
-      #Execute the SQL statement; create an array of rows
-      $eventTagList = $this->fetchAll($eventTagListSQL, array((int) $hash_id));
+    return $this->render('show_hash_for_tagging.twig', [
+      'pageTitle' => 'Tag this hash event!',
+      'pageHeader' => '(really)',
+      'hashValue' => $hashValue,
+      'hashKey' => $hash_id,
+      'tagList' => $eventTagList,
+      'hashTypes' => $this->getHashTypes($hashValue['KENNEL_KY'], 0),
+      'csrf_token' => $this->getCsrfToken('tag') ]);
+  }
+
+  #[Route('/admin/tags/addtagtoevent',
+    methods: ['POST']
+  )]
+  public function addTagToEventJsonAction(Request $request) {
+
+    #Establish the return message
+    $returnMessage = "";
+
+    #Obtain the post values
+    $theTagText = trim($_POST['tag_text']);
+    $theEventKey = intval($_POST['event_key']);
+
+    $token = $_POST['csrf_token'];
+    $this->validateCsrfToken('tag', $token);
+
+    #Determine if the tag text is valid (as in, doesn't have sql injection in it)
+    $tagTextIsValid = $this->isTagTextValid($theTagText);
+
+    #Determine if the event key is valid
+    $eventKeyIsValid = $this->isEventKeyValid($theEventKey);
+
+    if($tagTextIsValid && $eventKeyIsValid ){
+
+      #If the tag doesn't already exist, create it
+      if(!($this->doesTagTextExistAlready($request,$theTagText))){
+        #Add the tag into the tags table
+        $this->addNewEventTagAfterDbChecking($request, $theTagText);
+      }
+
+      #Obtain the tag key
+      $tagKey = $this->getTagTextKey($theTagText);
+
+      #Add the event/tag pair into the junction table
+      $junctionInsertSql = "INSERT INTO HASHES_TAG_JUNCTION (HASHES_KY, HASHES_TAGS_KY, CREATED_BY) VALUES (?, ?, ?);";
+
+      #Get the user name
+      $username = $this->getUserName();
+
+      #Execute the sql insert statement
+      $this->getWriteConnection()->executeUpdate($junctionInsertSql, [ $theEventKey, $tagKey, $username ]);
 
       # Declare the SQL used to retrieve this information
-      $sql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
+      $hashValueSql = "
+        SELECT *, DATE_FORMAT(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, DATE_FORMAT(event_date, '%k:%i:%S') AS EVENT_DATE_TIME
+          FROM HASHES_TABLE
+          JOIN KENNELS
+            ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
+         WHERE HASH_KY = ?";
 
       # Make a database call to obtain the hasher information
-      $hashValue = $this->fetchAssoc($sql, array((int) $hash_id));
+      $hashValue = $this->fetchAssoc($hashValueSql, [ $theEventKey ]);
 
-      $returnValue = $this->render('show_hash_for_tagging.twig', array(
-        'pageTitle' => 'Tag this hash event!',
-        'pageHeader' => '(really)',
-        'hashValue' => $hashValue,
-        'hashKey' => $hash_id,
-        'tagList' => $eventTagList,
-        'hashTypes' => $this->getHashTypes($hashValue['KENNEL_KY'], 0),
-        'csrf_token' => $this->getCsrfToken('tag')
-      ));
+      #Audit the action
+      $kennelAbbreviation = $hashValue['KENNEL_ABBREVIATION'];
+      $kennelEventNumber = $hashValue['KENNEL_EVENT_NUMBER'];
+      $tempActionType = "Create Event Tagging";
+      $tempActionDescription = "Create event tagging: $theTagText on $kennelAbbreviation:$kennelEventNumber";
+      $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
-      #Return the return value
-      return $returnValue;
+      #Set the return message
+      $returnMessage = "Success! $theTagText has been added as a tag for this event.";
 
+    } else {
+      #Set the return message
+      $returnMessage =  "Something is up";
     }
 
+    return new JsonResponse($returnMessage);
+  }
 
+  #[Route('/admin/tags/removetagfromevent',
+    methods: ['POST']
+  )]
+  public function removeTagFromEventJsonAction(Request $request) {
 
+    $token = $_POST['csrf_token'];
+    $this->validateCsrfToken('tag', $token);
 
-    public function addTagToEventJsonAction(Request $request){
+    #Establish the return message
+    $returnMessage = "This has not been set yet...";
 
-      #Establish the return message
-      $returnMessage = "";
+    #Obtain the post values
+    $theTagText = trim($_POST['tag_text']);
+    $theEventKey = intval($_POST['event_key']);
 
-      #Obtain the post values
-      $theTagText = trim($request->request->get('tag_text'));
-      $theEventKey = intval($request->request->get('event_key'));
+    #Determine if the tag text is valid (as in, doesn't have sql injection in it)
+    $tagTextIsValid = $this->isTagTextValid($theTagText);
 
-      $token = $request->request->get('csrf_token');
-      $this->validateCsrfToken('tag', $token);
+    #Obtain the tag key
+    $tagKey = $tagTextIsValid ? ($this->getTagTextKey($theTagText)) : null;
 
-      #Determine if the tag text is valid (as in, doesn't have sql injection in it)
-      $tagTextIsValid = $this->isTagTextValid($theTagText);
+    #Determine if the event key is valid
+    $eventKeyIsValid = $this->isEventKeyValid($theEventKey);
 
-      #Determine if the event key is valid
-      $eventKeyIsValid = $this->isEventKeyValid($theEventKey);
+    if($tagTextIsValid && (!(is_null($tagKey))) && $eventKeyIsValid ) {
 
-      if($tagTextIsValid && $eventKeyIsValid ){
+      #Define the sql delete statement
+      $sql = "DELETE FROM HASHES_TAG_JUNCTION WHERE HASHES_KY= ? AND HASHES_TAGS_KY = ?;";
 
-        #If the tag doesn't already exist, create it
-        if(!($this->doesTagTextExistAlready($request,$theTagText))){
-          #Add the tag into the tags table
-          $this->addNewEventTagAfterDbChecking($request, $theTagText);
-        }
+      #Execute the sql insert statement
+      $this->getWriteConnection()->executeUpdate($sql, [ $theEventKey, $tagKey ]);
 
-        #Obtain the tag key
-        $tagKey = $this->getTagTextKey($theTagText);
+      # Declare the SQL used to retrieve this information
+      $hashValueSql = "
+        SELECT *, DATE_FORMAT(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, DATE_FORMAT(event_date, '%k:%i:%S') AS EVENT_DATE_TIME
+          FROM HASHES_TABLE
+          JOIN KENNELS
+            ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY
+         WHERE HASH_KY = ?";
 
-        #Add the event/tag pair into the junction table
-        $junctionInsertSql = "INSERT INTO HASHES_TAG_JUNCTION (HASHES_KY, HASHES_TAGS_KY, CREATED_BY) VALUES (?, ?, ?);";
+      # Make a database call to obtain the hasher information
+      $hashValue = $this->fetchAssoc($hashValueSql, [ $theEventKey ]);
 
-        #Get the user name
-        $username = $this->getUserName();
+      #Audit the action
+      $kennelAbbreviation = $hashValue['KENNEL_ABBREVIATION'];
+      $kennelEventNumber = $hashValue['KENNEL_EVENT_NUMBER'];
+      $tempActionType = "Delete Event Tagging";
+      $tempActionDescription = "Delete event tagging: $theTagText on $kennelAbbreviation:$kennelEventNumber";
+      $this->auditTheThings($request, $tempActionType, $tempActionDescription);
 
-        #Execute the sql insert statement
-        $this->dbw->executeUpdate($junctionInsertSql,array((int)$theEventKey,(int)$tagKey,$username));
+      #Set the return message
+      $returnMessage = "Success! $theTagText has been removed as a tag from this event.";
 
-        # Declare the SQL used to retrieve this information
-        $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
-
-        # Make a database call to obtain the hasher information
-        $hashValue = $this->fetchAssoc($hashValueSql, array((int) $theEventKey));
-
-        #Audit the action
-        $kennelAbbreviation = $hashValue['KENNEL_ABBREVIATION'];
-        $kennelEventNumber = $hashValue['KENNEL_EVENT_NUMBER'];
-        $tempActionType = "Create Event Tagging";
-        $tempActionDescription = "Create event tagging: $theTagText on $kennelAbbreviation:$kennelEventNumber";
-        $this->auditTheThings($request, $tempActionType, $tempActionDescription);
-
-        #Set the return message
-        $returnMessage = "Success! $theTagText has been added as a tag for this event.";
-
-      }else{
-        #Set the return message
-        $returnMessage =  "Something is up";
-      }
-
-      return new JsonResponse($returnMessage);
+    } else {
+      #Set the return message
+      $returnMessage =  "Something is up";
     }
 
+    return new JsonResponse($returnMessage);
+  }
 
+  private function isTagTextValid(string $tagText){
+    return ctype_alnum(trim(str_replace(' ','',$tagText)));
+  }
 
-    public function removeTagFromEventJsonAction(Request $request){
+  private function isEventKeyValid(int $eventKey) {
 
-            $token = $request->request->get('csrf_token');
-            $this->validateCsrfToken('tag', $token);
+    #Establish the return value
+    $returnValue = FALSE;
 
-            #Establish the return message
-            $returnMessage = "This has not been set yet...";
+    #Query the database for the event
+    $getEventValueSql = "SELECT * FROM HASHES_TABLE WHERE HASH_KY = ? ;";
+    $eventValues = $this->fetchAll($getEventValueSql, [ $eventKey ]);
 
-            #Obtain the post values
-            $theTagText = trim($request->request->get('tag_text'));
-            $theEventKey = intval($request->request->get('event_key'));
+    #Determine if the event exists
+    return count($eventValues) > 0;
+  }
 
-            #Determine if the tag text is valid (as in, doesn't have sql injection in it)
-            $tagTextIsValid = $this->isTagTextValid($theTagText);
+  private function getTagTextKey(string $tagText) {
 
-            #Obtain the tag key
-            $tagKey = $tagTextIsValid ? ($this->getTagTextKey($theTagText)) : null;
+    #Establish the return value
+    $returnValue = null;
 
-            #Determine if the event key is valid
-            $eventKeyIsValid = $this->isEventKeyValid($theEventKey);
+    #Set the return value
+    $getTagValueSql = "SELECT * FROM HASHES_TAGS WHERE TAG_TEXT = ? ;";
 
-            if($tagTextIsValid && (!(is_null($tagKey))) && $eventKeyIsValid ){
-
-              #Define the sql delete statement
-              $sql = "DELETE FROM HASHES_TAG_JUNCTION WHERE HASHES_KY= ? AND HASHES_TAGS_KY = ?;";
-
-              #Execute the sql insert statement
-              $this->dbw->executeUpdate($sql,array($theEventKey,$tagKey));
-
-              # Declare the SQL used to retrieve this information
-              $hashValueSql = "SELECT * ,date_format(event_date, '%Y-%m-%d' ) AS EVENT_DATE_DATE, date_format(event_date, '%k:%i:%S') AS EVENT_DATE_TIME FROM HASHES_TABLE JOIN KENNELS ON HASHES_TABLE.KENNEL_KY = KENNELS.KENNEL_KY WHERE HASH_KY = ?";
-
-              # Make a database call to obtain the hasher information
-              $hashValue = $this->fetchAssoc($hashValueSql, array((int) $theEventKey));
-
-              #Audit the action
-              $kennelAbbreviation = $hashValue['KENNEL_ABBREVIATION'];
-              $kennelEventNumber = $hashValue['KENNEL_EVENT_NUMBER'];
-              $tempActionType = "Delete Event Tagging";
-              $tempActionDescription = "Delete event tagging: $theTagText on $kennelAbbreviation:$kennelEventNumber";
-              $this->auditTheThings($request, $tempActionType, $tempActionDescription);
-
-              #Set the return message
-              $returnMessage = "Success! $theTagText has been removed as a tag from this event.";
-
-            }else{
-              #Set the return message
-              $returnMessage =  "Something is up";
-            }
-
-            return new JsonResponse($returnMessage);
+    #Retrieve the existing record
+    $matchingTagValue = $this->fetchAssoc($getTagValueSql, [ $tagText ]);
+    if(!(is_null($matchingTagValue))){
+      $returnValue = $matchingTagValue['HASHES_TAGS_KY'];
     }
 
-    private function isTagTextValid(string $tagText){
-
-      #Establish the return value
-      $returnValue = FALSE;
-
-      #Set the return value
-      $returnValue = (ctype_alnum(trim(str_replace(' ','',$tagText))));
-
-      #Return the return value
-      return $returnValue;
-    }
-
-    private function isEventKeyValid(int $eventKey){
-
-      #Establish the return value
-      $returnValue = FALSE;
-
-      #Query the database for the event
-      $getEventValueSql = "SELECT * FROM HASHES_TABLE WHERE HASH_KY = ? ;";
-      $eventValues = $this->fetchAll($getEventValueSql,array((int) $eventKey));
-
-      #Determine if the event exists
-      if(count($eventValues) > 0){
-        $returnValue = TRUE;
-      }
-
-      #Return the return value
-      return $returnValue;
-    }
-
-    private function getTagTextKey(string $tagText){
-
-      #Establish the return value
-      $returnValue = null;
-
-      #Set the return value
-      $getTagValueSql = "SELECT * FROM HASHES_TAGS WHERE TAG_TEXT = ? ;";
-      //$hashValue = $this->fetchAssoc($sql, array((int) $hash_id));
-
-      #Retrieve the existing record
-      $matchingTagValue = $this->fetchAssoc($getTagValueSql,array((string) $tagText));
-      if(!(is_null($matchingTagValue))){
-        $returnValue = $matchingTagValue['HASHES_TAGS_KY'];
-      }
-
-
-      #Return the return value
-      return $returnValue;
-    }
+    #Return the return value
+    return $returnValue;
+  }
 
   #[Route('/{kennel_abbreviation}/listhashes/byeventtag/{event_tag_ky}',
     methods: ['GET'],

@@ -1194,17 +1194,17 @@ get('/superadmin/export',                                     'SuperAdminControl
 #post('/admin/hash/manageparticipation2/{hash_id}',           'HashEventController::hashParticipationJsonPostAction');
 
 # Page to manage the event tags
-get('/admin/tags/manageeventtags',                            'TagController::manageEventTagsPreAction');
+#get('/admin/tags/manageeventtags',                            'TagController::manageEventTagsPreAction');
 get('/admin/tags/geteventtagswithcounts',                     'TagController::getEventTagsWithCountsJsonAction');
 get('/admin/tags/getalleventtags',                            'TagController::getAllEventTagsJsonAction');
-get('/admin/tags/getmatchingeventtags',                       'TagController::getMatchingEventTagsJsonAction');
+#get('/admin/tags/getmatchingeventtags',                       'TagController::getMatchingEventTagsJsonAction');
 #$post('/admin/tags/manageeventtags',                           'TagController::manageEventTagsJsonPostAction');
-post('/admin/tags/addneweventtag',                            'TagController::addNewEventTag');
+#post('/admin/tags/addneweventtag',                            'TagController::addNewEventTag');
 
 # Add or remove tags to events
-post('/admin/tags/addtagtoevent',                             'TagController::addTagToEventJsonAction');
-post('/admin/tags/removetagfromevent',                        'TagController::removeTagFromEventJsonAction');
-get('/admin/tags/eventscreen/{hash_id}',                      'TagController::showEventForTaggingPreAction');
+#post('/admin/tags/addtagtoevent',                             'TagController::addTagToEventJsonAction');
+#post('/admin/tags/removetagfromevent',                        'TagController::removeTagFromEventJsonAction');
+#get('/admin/tags/eventscreen/{hash_id}',                      'TagController::showEventForTaggingPreAction');
 
 # Functions to add and delete hounds and hares to the hashes
 #post('/admin/hash/addHasherToHash',                         'HashEventController::addHashParticipant');
