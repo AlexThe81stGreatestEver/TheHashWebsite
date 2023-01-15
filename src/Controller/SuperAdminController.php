@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Controller\BaseController;
+use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Ifsnop\Mysqldump\Mysqldump;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -11,8 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\User;
 
 class SuperAdminController extends BaseController {
 
@@ -972,34 +974,36 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function newUserAjaxPreAction(Request $request) {
+  #[Route('/superadmin/newuser/ajaxform',
+    methods: ['GET']
+  )]
+  public function newUserAjaxPreAction() {
 
     $userValue['username']='';
     $userValue['SUPERADMIN']=false;
 
-    $returnValue = $this->render('edit_user_form_ajax.twig', array(
+    return $this->render('edit_user_form_ajax.twig', [
       'pageTitle' => 'Add a User!',
       'userValue' => $userValue,
       'user_id' => -1,
-      'csrf_token' => $this->getCsrfToken('newUser')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('newUser') ]);
   }
 
-  public function newUserAjaxPostAction(Request $request) {
+  #[Route('/superadmin/newuser/ajaxform',
+    methods: ['POST']
+  )]
+  public function newUserAjaxPostAction(Request $request, UserPasswordHasherInterface $passwordHasher,
+      UserRepository $userRepository) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('newUser', $token);
 
-    $theUsername = trim(strip_tags($request->request->get('username')));
-    $thePassword = trim(strip_tags($request->request->get('password')));
-    $theSuperadmin = $request->request->get('superadmin');
+    $theUsername = trim(strip_tags($_POST['username']));
+    $thePassword = trim(strip_tags($_POST['password']));
+    $theSuperadmin = array_key_exists('superadmin', $_POST) ? $_POST['superadmin'] : null;
 
     // Establish a "passed validation" variable
-    $passedValidation = TRUE;
+    $passedValidation = FALSE;
 
     if($theSuperadmin == "1") {
       $roles="ROLE_ADMIN,ROLE_SUPERADMIN";
@@ -1013,28 +1017,21 @@ class SuperAdminController extends BaseController {
     if(strlen($thePassword) >= 8) {
 
       // compute the encoded password for the new password
-      $user = new User($theUsername, null, array("ROLE_USER"), true, true, true, true);
+      $user = new User();
+      $user->setUsername($theUsername);
+      $user->setRoles($roles);
+      
+      $encodedNewPassword = $passwordHasher->hashPassword($user, $thePassword);
+      $user->setPassword($encodedNewPassword);
 
-      // find the encoder for a UserInterface instance
-      $encoder = $this->container->get('security.encoder_factory')->getEncoder($user);
-
-      // compute the encoded password for the new password
-      $encodedPassword = $encoder->encodePassword($thePassword, $user->getSalt());
-
+      $passedValidation = TRUE;
     } else {
-      $passedValidation = FALSE;
       $returnMessage .= " |Failed validation on password";
     }
 
     if($passedValidation) {
 
-      $sql = "INSERT INTO USERS(username, roles, password)
-        VALUES(?, ?, ?)";
-
-      $this->dbw->executeUpdate($sql,array(
-        $theUsername,
-        $roles,
-        $encodedPassword));
+      $userRepository->save($user, true);
 
       #Audit this activity
       $actionType = "User Creation (Ajax)";

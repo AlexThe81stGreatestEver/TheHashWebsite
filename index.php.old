@@ -1128,8 +1128,8 @@ if (!$schema->tablesExist('USERS')) {
 #get('/admin/hello',                                         'AdminController::helloAction');
 
 #Superadmin section logon
-get('/logonscreen/sa',                                        'SuperAdminController::logonScreenAction');
-get('/superadmin/logoutaction',                               'SuperAdminController::logoutAction');
+#get('/logonscreen/sa',                                        'SuperAdminController::logonScreenAction');
+#get('/superadmin/logoutaction',                               'SuperAdminController::logoutAction');
 #get('/superadmin/hello',                                      'SuperAdminController::helloAction');
 get('/superadmin/integrity',                                  'SuperAdminController::integrityChecks');
 get('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',  'SuperAdminController::modifyKennelAjaxPreAction');
@@ -1151,8 +1151,8 @@ post('/superadmin/deletehashtype',                            'SuperAdminControl
 post('/superadmin/deleteharetype',                            'SuperAdminController::deleteHareType');
 get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController::newRidiculousAjaxPreAction');
 post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController::newRidiculousAjaxPostAction');
-get('/superadmin/newuser/ajaxform',                           'SuperAdminController::newUserAjaxPreAction');
-post('/superadmin/newuser/ajaxform',                          'SuperAdminController::newUserAjaxPostAction');
+#get('/superadmin/newuser/ajaxform',                           'SuperAdminController::newUserAjaxPreAction');
+#post('/superadmin/newuser/ajaxform',                          'SuperAdminController::newUserAjaxPostAction');
 get('/superadmin/newkennel/ajaxform',                         'SuperAdminController::newKennelAjaxPreAction');
 post('/superadmin/newkennel/ajaxform',                        'SuperAdminController::newKennelAjaxPostAction');
 get('/superadmin/newhashtype/ajaxform',                       'SuperAdminController::newHashTypeAjaxPreAction');
