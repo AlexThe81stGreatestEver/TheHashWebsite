@@ -44,8 +44,8 @@ function deleteHareType(id) {
 
     {% if is_granted('ROLE_SUPERADMIN') %}
         Role: ROLE_SUPERADMIN.<br>
-        User:{{ global.getUser() }}<br>
-        <a href="{{ path('superadmin_logoutaction') }}">Log out (Super Admin)</a><br>
+        User:{{ user.getUsername() }}<br>
+        <a href="{{ path('app_logout') }}">Log out (Super Admin)</a><br>
 
         <div><h3>
           <a href="/superadmin/integrity">Run Database Integrity Checks</a> |
@@ -69,7 +69,7 @@ function deleteHareType(id) {
                   <div class="col-md-5 hidden-xs"   style="background-color:{{bgcolor}};">{{item.roles}}</div>
                   <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
                     <a href="/superadmin/{{item.id}}/edituser/ajaxform">Modify</a>
-                    {% if global.getUser() != item.username %}
+                    {% if user.getUsername() != item.username %}
                     |
                     <a href="javascript:deleteUser({{item.id}})">
                     Delete
@@ -240,8 +240,7 @@ function deleteHareType(id) {
         </div>
 
     {% else %}
-        You seem not to be logged in.
-        <a href="{{ path('superadmin_logoutaction') }}">Log out (Admin)</a><br>
+        You seem not to be logged in.  How did you get here?
     {% endif %}
 
   <div>&nbsp;</div>

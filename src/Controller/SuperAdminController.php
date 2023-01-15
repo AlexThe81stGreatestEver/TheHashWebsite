@@ -1,29 +1,28 @@
 <?php
 
-namespace HASH\Controller;
+namespace App\Controller;
 
-use Symfony\Component\HttpFoundation\HeaderUtils;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\Security\Core\Encoder\EncoderFactory;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Security\Core\User\User;
-use Psr\Container\ContainerInterface;
+use App\Controller\BaseController;
+use Doctrine\Persistence\ManagerRegistry;
 use Ifsnop\Mysqldump\Mysqldump;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\User;
 
 class SuperAdminController extends BaseController {
 
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
+  public function __construct(ManagerRegistry $doctrine) {
+    parent::__construct($doctrine);
+  }
+
+  protected function render(string $template, array $args = [], Response $response = null) : Response {
+    $args['user'] = $this->getUser();
+    return parent::render($template, $args, $response);
   }
 
   public function exportDatabaseAction(Request $request) {
@@ -60,40 +59,59 @@ class SuperAdminController extends BaseController {
     return $mask;
   }
 
-  #Define the action
-  public function helloAction(Request $request){
+  #[Route('/superadmin/hello',
+    methods: ['GET']
+  )]
+  public function helloAction(Request $request) {
 
-      #Establish the list of admin users
-      $userList = $this->fetchAll("SELECT id, username, roles FROM USERS ORDER BY username ASC");
+    #Establish the list of admin users
+    $userList = $this->fetchAll("
+      SELECT id, username, roles
+        FROM USERS
+       ORDER BY username ASC");
 
-      #Establish the list of kennels
-      $kennelList = $this->fetchAll("SELECT KENNEL_NAME, KENNEL_DESCRIPTION,
-         KENNEL_ABBREVIATION, IN_RECORD_KEEPING, SITE_ADDRESS, KENNEL_KY,
-         EXISTS(SELECT 1 FROM HASHES WHERE HASHES.KENNEL_KY = KENNELS.KENNEL_KY) AS IN_USE
-         FROM KENNELS ORDER BY IN_RECORD_KEEPING DESC, SITE_ADDRESS DESC");
+    #Establish the list of kennels
+    $kennelList = $this->fetchAll("
+      SELECT KENNEL_NAME, KENNEL_DESCRIPTION, KENNEL_ABBREVIATION, IN_RECORD_KEEPING, SITE_ADDRESS, KENNEL_KY,
+             EXISTS(SELECT 1 FROM HASHES WHERE HASHES.KENNEL_KY = KENNELS.KENNEL_KY) AS IN_USE
+        FROM KENNELS
+       ORDER BY IN_RECORD_KEEPING DESC, SITE_ADDRESS DESC");
 
-      $hareTypes = $this->fetchAll("SELECT *,
-        EXISTS(SELECT 1 FROM HARINGS WHERE HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE) AS IN_USE
+    $hareTypes = $this->fetchAll("
+      SELECT *, EXISTS(SELECT 1
+                         FROM HARINGS
+                        WHERE HARINGS.HARE_TYPE & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE) AS IN_USE
         FROM HARE_TYPES ORDER BY SEQ");
 
-      $hashTypes = $this->fetchAll("SELECT *,
-        EXISTS(SELECT 1 FROM HASHES_TABLE WHERE HASHES_TABLE.HASH_TYPE & HASH_TYPES.HASH_TYPE = HASH_TYPES.HASH_TYPE) AS IN_USE
-        FROM HASH_TYPES ORDER BY SEQ");
+    $hashTypes = $this->fetchAll("
+      SELECT *, EXISTS(SELECT 1
+                         FROM HASHES_TABLE
+                        WHERE HASHES_TABLE.HASH_TYPE & HASH_TYPES.HASH_TYPE = HASH_TYPES.HASH_TYPE) AS IN_USE
+        FROM HASH_TYPES
+       ORDER BY SEQ");
 
-      $siteConfig = $this->fetchAll("SELECT NAME, VALUE FROM SITE_CONFIG WHERE DESCRIPTION IS NOT NULL ORDER BY NAME");
+    $siteConfig = $this->fetchAll("
+      SELECT NAME, VALUE
+        FROM SITE_CONFIG
+       WHERE DESCRIPTION IS NOT NULL
+       ORDER BY NAME");
 
-      $ridiculous = $this->fetchAll("SELECT NAME, VALUE FROM SITE_CONFIG WHERE NAME LIKE 'ridiculous%' ORDER BY NAME");
+    $ridiculous = $this->fetchAll("
+      SELECT NAME, VALUE
+        FROM SITE_CONFIG
+       WHERE NAME LIKE 'ridiculous%'
+       ORDER BY NAME");
 
-      return $this->render('superadmin_landing.twig', array (
-        'pageTitle' => 'This is the super admin landing screen',
-        'subTitle1' => 'This is the super admin landing screen',
-        'user_list' => $userList,
-        'kennel_list' => $kennelList,
-        'hare_types' => $hareTypes,
-        'hash_types' => $hashTypes,
-        'site_config' => $siteConfig,
-	'ridiculous' => $ridiculous,
-        'csrf_token' => $this->getCsrfToken('superadmin')));
+    return $this->render('superadmin_landing.twig', [
+      'pageTitle' => 'This is the super admin landing screen',
+      'subTitle1' => 'This is the super admin landing screen',
+      'user_list' => $userList,
+      'kennel_list' => $kennelList,
+      'hare_types' => $hareTypes,
+      'hash_types' => $hashTypes,
+      'site_config' => $siteConfig,
+      'ridiculous' => $ridiculous,
+      'csrf_token' => $this->getCsrfToken('superadmin') ]);
   }
 
   #Define the action

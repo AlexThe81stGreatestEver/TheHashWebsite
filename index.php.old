@@ -1130,7 +1130,7 @@ if (!$schema->tablesExist('USERS')) {
 #Superadmin section logon
 get('/logonscreen/sa',                                        'SuperAdminController::logonScreenAction');
 get('/superadmin/logoutaction',                               'SuperAdminController::logoutAction');
-get('/superadmin/hello',                                      'SuperAdminController::helloAction');
+#get('/superadmin/hello',                                      'SuperAdminController::helloAction');
 get('/superadmin/integrity',                                  'SuperAdminController::integrityChecks');
 get('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',  'SuperAdminController::modifyKennelAjaxPreAction');
 post('/superadmin/{kennel_abbreviation}/editkennel/ajaxform', 'SuperAdminController::modifyKennelAjaxPostAction');
