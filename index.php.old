@@ -1155,8 +1155,8 @@ post('/superadmin/newridiculous/ajaxform',                    'SuperAdminControl
 #post('/superadmin/newuser/ajaxform',                          'SuperAdminController::newUserAjaxPostAction');
 #get('/superadmin/newkennel/ajaxform',                         'SuperAdminController::newKennelAjaxPreAction');
 #post('/superadmin/newkennel/ajaxform',                        'SuperAdminController::newKennelAjaxPostAction');
-get('/superadmin/newhashtype/ajaxform',                       'SuperAdminController::newHashTypeAjaxPreAction');
-post('/superadmin/newhashtype/ajaxform',                      'SuperAdminController::newHashTypeAjaxPostAction');
+#get('/superadmin/newhashtype/ajaxform',                       'SuperAdminController::newHashTypeAjaxPreAction');
+#post('/superadmin/newhashtype/ajaxform',                      'SuperAdminController::newHashTypeAjaxPostAction');
 get('/superadmin/newharetype/ajaxform',                       'SuperAdminController::newHareTypeAjaxPreAction');
 post('/superadmin/newharetype/ajaxform',                      'SuperAdminController::newHareTypeAjaxPostAction');
 get('/superadmin/export',                                     'SuperAdminController::exportDatabaseAction');

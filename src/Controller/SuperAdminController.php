@@ -610,41 +610,42 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function newHashTypeAjaxPreAction(Request $request) {
+  #[Route('/superadmin/newhashtype/ajaxform',
+    methods: ['GET']
+  )]
+  public function newHashTypeAjaxPreAction() {
 
     $sql = "
       SELECT MAX(SEQ)+10 AS SEQ, NULL AS HASH_TYPE_NAME
         FROM HASH_TYPES";
 
     # Make a database call to obtain the hasher information
-    $hashTypeValue = $this->fetchAssoc($sql, array());
+    $hashTypeValue = $this->fetchAssoc($sql, []);
 
     $hareTypes = $this->fetchAll("
       SELECT *, false AS SELECTED
         FROM HARE_TYPES
-       ORDER BY SEQ", array());
+       ORDER BY SEQ", []);
 
-    $returnValue = $this->render('edit_hash_type_form_ajax.twig', array(
+    return $this->render('edit_hash_type_form_ajax.twig', [
       'pageTitle' => 'Create a Hash Type!',
       'hashTypeValue' => $hashTypeValue,
       'hash_type' => -1,
       'hare_types' => $hareTypes,
-      'csrf_token' => $this->getCsrfToken('hash_type')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('hash_type') ]);
   }
 
+  #[Route('/superadmin/newhashtype/ajaxform',
+    methods: ['POST']
+  )]
   public function newHashTypeAjaxPostAction(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('hash_type', $token);
 
-    $theHashTypeName = trim(strip_tags($request->request->get('hashTypeName')));
-    $theSequence = trim(strip_tags($request->request->get('sequence')));
-    $theHareTypes = $request->request->get('hareTypes');
+    $theHashTypeName = trim(strip_tags($_POST['hashTypeName']));
+    $theSequence = (int) trim(strip_tags($_POST['sequence']));
+    $theHareTypes = $_POST['hareTypes'];
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -664,7 +665,7 @@ class SuperAdminController extends BaseController {
       $hash_type = 1;
       $sql = "SELECT HASH_TYPE FROM HASH_TYPES WHERE HASH_TYPE = ?";
       while(true) {
-        if(!$this->fetchOne($sql, array($hash_type))) break;
+        if(!$this->fetchOne($sql, [ $hash_type ])) break;
         $hash_type *= 2;
       }
 
@@ -672,11 +673,8 @@ class SuperAdminController extends BaseController {
         INSERT INTO HASH_TYPES(HASH_TYPE, HASH_TYPE_NAME, SEQ, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?)";
 
-        $this->dbw->executeUpdate($sql,array(
-          $hash_type,
-          $theHashTypeName,
-          (int) $theSequence,
-          $theHareTypeMask));
+        $this->getWriteConnection()->executeUpdate($sql, [
+          $hash_type, $theHashTypeName, $theSequence, $theHareTypeMask ]);
 
       #Audit this activity
       $actionType = "Hash Type Creation (Ajax)";
