@@ -825,31 +825,36 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function modifyRidiculousAjaxPreAction(Request $request, string $ridiculous) {
+  #[Route('/superadmin/{ridiculous}/editridiculous/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'ridiculous' => '%app.pattern.ridiculous%']
+  )]
+  public function modifyRidiculousAjaxPreAction(string $ridiculous) {
 
     # Declare the SQL used to retrieve this information
     $sql = "SELECT NAME, VALUE FROM SITE_CONFIG WHERE NAME = ?";
 
     # Make a database call to obtain the hasher information
-    $item = $this->fetchAssoc($sql, array($ridiculous));
+    $item = $this->fetchAssoc($sql, [ $ridiculous ]);
 
-    $returnValue = $this->render('edit_ridiculous_form_ajax.twig', array(
+    return $this->render('edit_ridiculous_form_ajax.twig', [
       'pageTitle' => 'Edit Ridiculous Stat',
       'item' => $item,
-      'csrf_token' => $this->getCsrfToken('mod_'.$item['NAME'])
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('mod_'.$item['NAME']) ]);
   }
 
+  #[Route('/superadmin/{ridiculous}/editridiculous/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'ridiculous' => '%app.pattern.ridiculous%']
+  )]
   public function modifyRidiculousAjaxPostAction(Request $request, string $ridiculous) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('mod_'.$ridiculous, $token);
 
-    $theValue = trim($request->request->get('value'));
+    $theValue = trim($_POST['value']);
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -870,9 +875,8 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NULL";
 
-      $this->dbw->executeUpdate($sql,array(
-        $theValue,
-        $ridiculous));
+      $this->getWriteConnection()->executeUpdate($sql, [ $theValue,
+        $ridiculous ]);
 
       #Audit this activity
       $actionType = "SITE CONFIG Modification (Ajax)";
