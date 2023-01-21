@@ -459,8 +459,10 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function newHareTypeAjaxPreAction(Request $request) {
+  #[Route('/superadmin/newharetype/ajaxform',
+    methods: ['GET']
+  )]
+  public function newHareTypeAjaxPreAction() {
 
     # Declare the SQL used to retrieve this information
     $sql = "
@@ -468,27 +470,26 @@ class SuperAdminController extends BaseController {
         FROM HARE_TYPES";
 
     # Make a database call to obtain the hasher information
-    $hareTypeValue = $this->fetchAssoc($sql, array());
+    $hareTypeValue = $this->fetchAssoc($sql, []);
 
-    $returnValue = $this->render('edit_hare_type_form_ajax.twig', array(
+    return $this->render('edit_hare_type_form_ajax.twig', [
       'pageTitle' => 'Create a Hare Type!',
       'hareTypeValue' => $hareTypeValue,
       'hare_type' => -1,
-      'csrf_token' => $this->getCsrfToken('hare_type')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('hare_type') ]);
   }
 
+  #[Route('/superadmin/newharetype/ajaxform',
+    methods: ['POST']
+  )]
   public function newHareTypeAjaxPostAction(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('hare_type', $token);
 
-    $theHareTypeName = trim(strip_tags($request->request->get('hareTypeName')));
-    $theSequence = trim(strip_tags($request->request->get('sequence')));
-    $theChartColor = trim(strip_tags($request->request->get('chartColor')));
+    $theHareTypeName = trim(strip_tags($_POST['hareTypeName']));
+    $theSequence = (int) trim(strip_tags($_POST['sequence']));
+    $theChartColor = trim(strip_tags($_POST['chartColor']));
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -501,19 +502,16 @@ class SuperAdminController extends BaseController {
       $hare_type = 1;
       $sql = "SELECT HARE_TYPE FROM HARE_TYPES WHERE HARE_TYPE = ?";
       while(true) {
-        if(!$this->fetchOne($sql, array($hare_type))) break;
+        if(!$this->fetchOne($sql, [ $hare_type ])) break;
         $hare_type *= 2;
       }
 
       $sql = "
         INSERT INTO HARE_TYPES(HARE_TYPE_NAME, SEQ, CHART_COLOR, HARE_TYPE)
-         VALUES(?, ?, ?, ?)";
+        VALUES(?, ?, ?, ?)";
 
-        $this->dbw->executeUpdate($sql,array(
-          $theHareTypeName,
-          (int) $theSequence,
-          $theChartColor,
-          $hare_type));
+        $this->getWriteConnection()->executeUpdate($sql, [ $theHareTypeName,
+          $theSequence, $theChartColor, $hare_type ]);
 
       #Audit this activity
       $actionType = "Hare Type Creation (Ajax)";
