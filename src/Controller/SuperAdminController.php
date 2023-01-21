@@ -295,8 +295,10 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function newKennelAjaxPreAction(Request $request) {
+  #[Route('/superadmin/newkennel/ajaxform',
+    methods: ['GET']
+  )]
+  public function newKennelAjaxPreAction() {
 
     $kennelValue['KENNEL_NAME'] = "";
     $kennelValue['KENNEL_ABBREVIATION'] = "";
@@ -309,14 +311,14 @@ class SuperAdminController extends BaseController {
     $hareTypes = $this->fetchAll("
       SELECT *, false AS SELECTED
         FROM HARE_TYPES
-       ORDER BY SEQ", array());
+       ORDER BY SEQ", []);
 
     $hashTypes = $this->fetchAll("
       SELECT *, false AS SELECTED
         FROM HASH_TYPES
-       ORDER BY SEQ", array());
+       ORDER BY SEQ", []);
 
-    $returnValue = $this->render('edit_kennel_form_ajax.twig', array(
+    return $this->render('edit_kennel_form_ajax.twig', [
       'pageTitle' => 'Add a Kennel!',
       'kennel_abbreviation' => '_none',
       'kennelValue' => $kennelValue,
@@ -324,26 +326,26 @@ class SuperAdminController extends BaseController {
       'hare_types' => $hareTypes,
       'hash_types' => $hashTypes,
       'showAwardsPage' => $this->showAwardsPage(),
-      'csrf_token' => $this->getCsrfToken('kennel')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('kennel') ]);
   }
 
+  #[Route('/superadmin/newkennel/ajaxform',
+    methods: ['POST']
+  )]
   public function newKennelAjaxPostAction(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('kennel', $token);
 
-    $theKennelName = trim(strip_tags($request->request->get('kennelName')));
-    $theKennelAbbreviation = trim(strip_tags($request->request->get('kennelAbbreviation')));
-    $theKennelDescription = trim(strip_tags($request->request->get('kennelDescription')));
-    $theSiteAddress = trim(strip_tags($request->request->get('siteAddress')));
-    $theInRecordKeeping = (int) trim(strip_tags($request->request->get('inRecordKeeping')));
-    $theAwardLevels = str_replace(' ', '', trim(strip_tags($request->request->get('awardLevels'))));
-    $theHashTypes = $request->request->get('hashTypes');
-    $theHareTypes = $request->request->get('hareTypes');
+    $theKennelName = trim(strip_tags($_POST['kennelName']));
+    $theKennelAbbreviation = trim(strip_tags($_POST['kennelAbbreviation']));
+    $theKennelDescription = trim(strip_tags($_POST['kennelDescription']));
+    $theSiteAddress = trim(strip_tags($_POST['siteAddress']));
+    $theInRecordKeeping = array_key_exists('inRecordKeeping', $_POST) ?
+        (int) trim(strip_tags($_POST['inRecordKeeping'])) : 0;
+    $theAwardLevels = str_replace(' ', '', trim(strip_tags($_POST['awardLevels'])));
+    $theHashTypes = $_POST['hashTypes'];
+    $theHareTypes = $_POST['hareTypes'];
 
     if($theSiteAddress == "") {
       $theSiteAddress = null;
@@ -367,17 +369,13 @@ class SuperAdminController extends BaseController {
 
       $sql = "
         INSERT INTO KENNELS(KENNEL_NAME, KENNEL_ABBREVIATION, KENNEL_DESCRIPTION,
-            SITE_ADDRESS, IN_RECORD_KEEPING, HASH_TYPE_MASK, HARE_TYPE_MASK)
+                            SITE_ADDRESS, IN_RECORD_KEEPING, HASH_TYPE_MASK, HARE_TYPE_MASK)
         VALUES(?, ?, ?, ?, ?, ?, ?)";
 
-      $this->dbw->executeUpdate($sql,array(
-        $theKennelName,
-        $theKennelAbbreviation,
-        $theKennelDescription,
-        $theSiteAddress,
-        $theInRecordKeeping,
-        $theHashTypeMask,
-        $theHareTypeMask));
+      $this->getWriteConnection()->executeUpdate($sql, [
+        $theKennelName, $theKennelAbbreviation, $theKennelDescription,
+        $theSiteAddress, $theInRecordKeeping, $theHashTypeMask,
+        $theHareTypeMask ]);
 
       $sql = "
         INSERT INTO AWARD_LEVELS(KENNEL_KY, AWARD_LEVEL)
@@ -386,7 +384,7 @@ class SuperAdminController extends BaseController {
       $kennelAwards = preg_split("/,/", $theAwardLevels);
 
       foreach($kennelAwards as $kennelAward) {
-        $this->dbw->executeUpdate($sql,array($theKennelAbbreviation, (int) $kennelAward));
+        $this->getWriteConnection()->executeUpdate($sql, [ $theKennelAbbreviation, (int) $kennelAward ]);
       }
 
       #Audit this activity
