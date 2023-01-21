@@ -527,8 +527,12 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function modifyHashTypeAjaxPreAction(Request $request, int $hash_type) {
+  #[Route('/superadmin/{hash_type}/edithashtype/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'hash_type' => '%app.pattern.hash_type%']
+  )]
+  public function modifyHashTypeAjaxPreAction(int $hash_type) {
 
     # Declare the SQL used to retrieve this information
     $sql = "
@@ -537,36 +541,36 @@ class SuperAdminController extends BaseController {
        WHERE HASH_TYPE = ?";
 
     # Make a database call to obtain the hasher information
-    $hashTypeValue = $this->fetchAssoc($sql, array($hash_type));
+    $hashTypeValue = $this->fetchAssoc($sql, [ $hash_type ]);
 
     $hareTypes = $this->fetchAll("
-      SELECT *, (
-        COALESCE((SELECT true
-          FROM HASH_TYPES
-         WHERE HASH_TYPE = ?
-           AND HASH_TYPES.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE), false)) AS SELECTED
+      SELECT *, (COALESCE((SELECT true
+                             FROM HASH_TYPES
+                            WHERE HASH_TYPE = ?
+                              AND HASH_TYPES.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE), false)) AS SELECTED
         FROM HARE_TYPES
-       ORDER BY SEQ", array($hash_type));
+       ORDER BY SEQ",  [ $hash_type ]);
 
-    $returnValue = $this->render('edit_hash_type_form_ajax.twig', array(
+    return $this->render('edit_hash_type_form_ajax.twig', [
       'pageTitle' => 'Modify a Hash Type!',
       'hashTypeValue' => $hashTypeValue,
       'hash_type' => $hash_type,
       'hare_types' => $hareTypes,
-      'csrf_token' => $this->getCsrfToken('mod_hash_type'.$hash_type)
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('mod_hash_type'.$hash_type) ]);
   }
 
+  #[Route('/superadmin/{hash_type}/edithashtype/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'hash_type' => '%app.pattern.hash_type%']
+  )]
   public function modifyHashTypeAjaxPostAction(Request $request, int $hash_type) {
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('mod_hash_type'.$hash_type, $token);
 
-    $theHashTypeName = trim(strip_tags($request->request->get('hashTypeName')));
-    $theSequence = trim(strip_tags($request->request->get('sequence')));
-    $theHareTypes = $request->request->get('hareTypes');
+    $theHashTypeName = trim(strip_tags($_POST['hashTypeName']));
+    $theSequence = (int) trim(strip_tags($_POST['sequence']));
+    $theHareTypes = $_POST['hareTypes'];
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -585,18 +589,11 @@ class SuperAdminController extends BaseController {
 
       $sql = "
         UPDATE HASH_TYPES
-          SET
-            HASH_TYPE_NAME = ?,
-            SEQ = ?,
-            HARE_TYPE_MASK = ?
+           SET HASH_TYPE_NAME = ?, SEQ = ?, HARE_TYPE_MASK = ?
          WHERE HASH_TYPE = ?";
 
-        $this->dbw->executeUpdate($sql,array(
-          $theHashTypeName,
-          (int) $theSequence,
-          $theHareTypeMask,
-          $hash_type
-        ));
+        $this->getWriteConnection()->executeUpdate($sql, [ $theHashTypeName, $theSequence,
+          $theHareTypeMask, $hash_type ]);
 
       #Audit this activity
       $actionType = "Hash Type Modification (Ajax)";

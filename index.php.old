@@ -1136,8 +1136,8 @@ if (!$schema->tablesExist('USERS')) {
 #post('/superadmin/{kennel_abbreviation}/editkennel/ajaxform', 'SuperAdminController::modifyKennelAjaxPostAction');
 get('/superadmin/{hare_type}/editharetype/ajaxform',          'SuperAdminController::modifyHareTypeAjaxPreAction');
 post('/superadmin/{hare_type}/editharetype/ajaxform',         'SuperAdminController::modifyHareTypeAjaxPostAction');
-get('/superadmin/{hash_type}/edithashtype/ajaxform',          'SuperAdminController::modifyHashTypeAjaxPreAction');
-post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController::modifyHashTypeAjaxPostAction');
+#get('/superadmin/{hash_type}/edithashtype/ajaxform',          'SuperAdminController::modifyHashTypeAjaxPreAction');
+#post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController::modifyHashTypeAjaxPostAction');
 #get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController::modifyUserAjaxPreAction');
 #post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController::modifyUserAjaxPostAction');
 get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController::modifySiteConfigAjaxPreAction');
