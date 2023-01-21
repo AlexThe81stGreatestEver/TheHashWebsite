@@ -1148,7 +1148,7 @@ post('/superadmin/deleteridiculous',                          'SuperAdminControl
 #post('/superadmin/deleteuser',                                'SuperAdminController::deleteUser');
 #post('/superadmin/deletekennel',                              'SuperAdminController::deleteKennel');
 #post('/superadmin/deletehashtype',                            'SuperAdminController::deleteHashType');
-post('/superadmin/deleteharetype',                            'SuperAdminController::deleteHareType');
+#post('/superadmin/deleteharetype',                            'SuperAdminController::deleteHareType');
 get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController::newRidiculousAjaxPreAction');
 post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController::newRidiculousAjaxPostAction');
 #get('/superadmin/newuser/ajaxform',                           'SuperAdminController::newUserAjaxPreAction');

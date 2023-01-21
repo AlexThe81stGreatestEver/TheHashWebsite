@@ -1110,22 +1110,28 @@ class SuperAdminController extends BaseController {
     return new JsonResponse("");
   }
 
+  #[Route('/superadmin/deleteharetype',
+    methods: ['POST']
+  )]
   public function deleteHareType(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('superadmin', $token);
 
-    $hare_type = $request->request->get('id');
+    $hare_type = $_POST['id'];
 
-    $sql = "SELECT EXISTS(SELECT 1 FROM HARINGS WHERE HARINGS.HARE_TYPE & ? = HARINGS.HARE_TYPE) AS IN_USE";
-    $in_use = $this->fetchOne($sql, array($hare_type));
+    $sql = "
+      SELECT EXISTS(SELECT 1
+                      FROM HARINGS
+                     WHERE HARINGS.HARE_TYPE & ? = HARINGS.HARE_TYPE) AS IN_USE";
+    $in_use = $this->fetchOne($sql, [ $hare_type ]);
 
     if(!$in_use) {
       $sql = "SELECT HARE_TYPE_NAME FROM HARE_TYPES WHERE HARE_TYPE = ?";
-      $hare_type_name = $this->fetchOne($sql, array($hare_type));
+      $hare_type_name = $this->fetchOne($sql, [ $hare_type ]);
 
       $sql = "DELETE FROM HARE_TYPES WHERE HARE_TYPE = ?";
-      $this->dbw->executeUpdate($sql,array($hare_type));
+      $this->getWriteConnection()->executeUpdate($sql, [ $hare_type ]);
 
       $actionType = "Hare Type Deletion (Ajax)";
       $actionDescription = "Deleted hare type $hare_type_name";
