@@ -1149,8 +1149,8 @@ post('/superadmin/deleteridiculous',                          'SuperAdminControl
 #post('/superadmin/deletekennel',                              'SuperAdminController::deleteKennel');
 #post('/superadmin/deletehashtype',                            'SuperAdminController::deleteHashType');
 #post('/superadmin/deleteharetype',                            'SuperAdminController::deleteHareType');
-get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController::newRidiculousAjaxPreAction');
-post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController::newRidiculousAjaxPostAction');
+#get('/superadmin/newridiculous/ajaxform',                     'SuperAdminController::newRidiculousAjaxPreAction');
+#post('/superadmin/newridiculous/ajaxform',                    'SuperAdminController::newRidiculousAjaxPostAction');
 #get('/superadmin/newuser/ajaxform',                           'SuperAdminController::newUserAjaxPreAction');
 #post('/superadmin/newuser/ajaxform',                          'SuperAdminController::newUserAjaxPostAction');
 #get('/superadmin/newkennel/ajaxform',                         'SuperAdminController::newKennelAjaxPreAction');

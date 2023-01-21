@@ -886,28 +886,29 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function newRidiculousAjaxPreAction(Request $request) {
+  #[Route('/superadmin/newridiculous/ajaxform',
+    methods: ['GET']
+  )]
+  public function newRidiculousAjaxPreAction() {
 
     $item['NAME']='new';
     $item['VALUE']="";
 
-    $returnValue = $this->render('edit_ridiculous_form_ajax.twig', array(
+    return $this->render('edit_ridiculous_form_ajax.twig', [
       'pageTitle' => 'Create New Ridiculous Stat',
       'item' => $item,
-      'csrf_token' => $this->getCsrfToken('ridic')
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('ridic') ]);
   }
 
+  #[Route('/superadmin/newridiculous/ajaxform',
+    methods: ['POST']
+  )]
   public function newRidiculousAjaxPostAction(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('ridic', $token);
 
-    $theValue = trim($request->request->get('value'));
+    $theValue = trim($_POST['value']);
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -922,7 +923,7 @@ class SuperAdminController extends BaseController {
       for($i=0; $i<999; $i++) {
         try {
           $name = "ridiculous".$i;
-          $this->dbw->executeUpdate($sql,array($name, $theValue));
+          $this->getWriteConnection()->executeUpdate($sql, [ $name, $theValue ]);
         } catch(\Exception $e) {
           continue;
         }
