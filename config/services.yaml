@@ -24,6 +24,11 @@ parameters:
     app.pattern.name: '^[a-z_]+$'
     app.pattern.ridiculous: '^ridiculous\d+$'
     app.pattern.award_type: '^(all|pending)$'
+    app.db_user: '%env(DB_USER)%'
+    app.db_password: '%env(DB_PASSWORD)%'
+    app.db_host: '%env(DB_HOST)%'
+    app.db_port: '%env(DB_PORT)%'
+    app.db_name: '%env(DB_NAME)%'
 
 services:
     # default configuration for services in *this* file

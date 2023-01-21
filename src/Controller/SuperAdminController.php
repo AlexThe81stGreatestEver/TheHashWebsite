@@ -27,12 +27,15 @@ class SuperAdminController extends BaseController {
     return parent::render($template, $args, $response);
   }
 
+  #[Route('/superadmin/export',
+    methods: ['GET']
+  )]
   public function exportDatabaseAction(Request $request) {
-    $username = DB_USER;
-    $password = DB_PASSWORD;
-    $host = DB_HOST;
-    $port = DB_PORT;
-    $dbname = DB_NAME;
+    $username = $this->getParameter('app.db_user');
+    $password = $this->getParameter('app.db_password');
+    $host = $this->getParameter('app.db_host');
+    $port = $this->getParameter('app.db_port');
+    $dbname = $this->getParameter('app.db_name');
 
     $tmpfilebasename = $dbname."_backup.".date(DATE_ATOM);
     $tmpfile = tempnam("/tmp", $tmpfilebasename);

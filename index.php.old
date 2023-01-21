@@ -1159,7 +1159,7 @@ if (!$schema->tablesExist('USERS')) {
 #post('/superadmin/newhashtype/ajaxform',                      'SuperAdminController::newHashTypeAjaxPostAction');
 #get('/superadmin/newharetype/ajaxform',                       'SuperAdminController::newHareTypeAjaxPreAction');
 #post('/superadmin/newharetype/ajaxform',                      'SuperAdminController::newHareTypeAjaxPostAction');
-get('/superadmin/export',                                     'SuperAdminController::exportDatabaseAction');
+#get('/superadmin/export',                                     'SuperAdminController::exportDatabaseAction');
 
 #get('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPreAction');
 #post('/admin/{kennel_abbreviation}/newhash/ajaxform', 'HashEventController::adminCreateHashAjaxPostAction');
