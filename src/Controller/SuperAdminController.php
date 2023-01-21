@@ -392,8 +392,12 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function modifyHareTypeAjaxPreAction(Request $request, int $hare_type) {
+  #[Route('/superadmin/{hare_type}/editharetype/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
+  public function modifyHareTypeAjaxPreAction(int $hare_type) {
 
     # Declare the SQL used to retrieve this information
     $sql = "
@@ -402,27 +406,28 @@ class SuperAdminController extends BaseController {
        WHERE HARE_TYPE = ?";
 
     # Make a database call to obtain the hasher information
-    $hareTypeValue = $this->fetchAssoc($sql, array($hare_type));
+    $hareTypeValue = $this->fetchAssoc($sql, [ $hare_type ]);
 
-    $returnValue = $this->render('edit_hare_type_form_ajax.twig', array(
+    return $this->render('edit_hare_type_form_ajax.twig', [
       'pageTitle' => 'Modify a Hare Type!',
       'hareTypeValue' => $hareTypeValue,
       'hare_type' => $hare_type,
-      'csrf_token' => $this->getCsrfToken('mod_hare_type'.$hare_type)
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('mod_hare_type'.$hare_type) ]);
   }
 
+  #[Route('/superadmin/{hare_type}/editharetype/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'hare_type' => '%app.pattern.hare_type%']
+  )]
   public function modifyHareTypeAjaxPostAction(Request $request, int $hare_type) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('mod_hare_type'.$hare_type, $token);
 
-    $theHareTypeName = trim(strip_tags($request->request->get('hareTypeName')));
-    $theSequence = trim(strip_tags($request->request->get('sequence')));
-    $theChartColor = trim(strip_tags($request->request->get('chartColor')));
+    $theHareTypeName = trim(strip_tags($_POST['hareTypeName']));
+    $theSequence = (int) trim(strip_tags($_POST['sequence']));
+    $theChartColor = trim(strip_tags($_POST['chartColor']));
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -434,18 +439,11 @@ class SuperAdminController extends BaseController {
 
       $sql = "
         UPDATE HARE_TYPES
-          SET
-            HARE_TYPE_NAME = ?,
-            SEQ = ?,
-            CHART_COLOR = ?
+           SET HARE_TYPE_NAME = ?, SEQ = ?, CHART_COLOR = ?
          WHERE HARE_TYPE = ?";
 
-        $this->dbw->executeUpdate($sql,array(
-          $theHareTypeName,
-          (int) $theSequence,
-          $theChartColor,
-          $hare_type
-        ));
+        $this->getWriteConnection()->executeUpdate($sql, [ $theHareTypeName,
+          $theSequence, $theChartColor, $hare_type ]);
 
       #Audit this activity
       $actionType = "Hare Type Modification (Ajax)";
