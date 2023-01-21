@@ -1063,18 +1063,21 @@ class SuperAdminController extends BaseController {
     return new JsonResponse("");
   }
 
+  #[Route('/superadmin/deletekennel',
+    methods: ['POST']
+  )]
   public function deleteKennel(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('superadmin', $token);
 
-    $kennel_ky = $request->request->get('id');
+    $kennel_ky = (int) $_POST['id'];
 
     $sql = "SELECT KENNEL_ABBREVIATION FROM KENNELS WHERE KENNEL_KY = ?";
-    $kennel = $this->fetchOne($sql, array($kennel_ky));
+    $kennel = $this->fetchOne($sql, [ $kennel_ky ]);
 
     $sql = "DELETE FROM KENNELS WHERE KENNEL_KY = ?";
-    $this->dbw->executeUpdate($sql,array($kennel_ky));
+    $this->getWriteConnection()->executeUpdate($sql, [ $kennel_ky ]);
 
     $actionType = "Kennel Deletion (Ajax)";
     $actionDescription = "Deleted kennel $kennel";
