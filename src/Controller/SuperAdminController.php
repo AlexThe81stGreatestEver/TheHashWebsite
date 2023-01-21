@@ -149,8 +149,12 @@ class SuperAdminController extends BaseController {
     return new RedirectResponse('/');
   }
 
-  #Define action
-  public function modifyKennelAjaxPreAction(Request $request, string $kennel_abbreviation) {
+  #[Route('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
+  public function modifyKennelAjaxPreAction(string $kennel_abbreviation) {
 
     # Declare the SQL used to retrieve this information
     $sql = "
@@ -158,8 +162,8 @@ class SuperAdminController extends BaseController {
         FROM KENNELS
        WHERE KENNEL_ABBREVIATION = ?";
 
-    # Make a database call to obtain the hasher information
-    $kennelValue = $this->fetchAssoc($sql, array($kennel_abbreviation));
+    # Make a database call to obtain the information
+    $kennelValue = $this->fetchAssoc($sql, [ $kennel_abbreviation ]);
 
     $sql = "
       SELECT GROUP_CONCAT(AWARD_LEVEL ORDER BY AWARD_LEVEL)
@@ -169,27 +173,25 @@ class SuperAdminController extends BaseController {
                             FROM KENNELS
                            WHERE KENNEL_ABBREVIATION = ?)";
 
-    $awardLevels = $this->fetchOne($sql, array($kennel_abbreviation));
+    $awardLevels = $this->fetchOne($sql, [ $kennel_abbreviation ]);
 
     $hareTypes = $this->fetchAll("
-      SELECT *, (
-        COALESCE((SELECT true
-          FROM KENNELS
-         WHERE KENNEL_ABBREVIATION = ?
-           AND KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE), false)) AS SELECTED
+      SELECT *, (COALESCE((SELECT true
+                             FROM KENNELS
+                            WHERE KENNEL_ABBREVIATION = ?
+                              AND KENNELS.HARE_TYPE_MASK & HARE_TYPES.HARE_TYPE = HARE_TYPES.HARE_TYPE), false)) AS SELECTED
         FROM HARE_TYPES
-       ORDER BY SEQ", array($kennel_abbreviation));
+       ORDER BY SEQ", [ $kennel_abbreviation ]);
 
     $hashTypes = $this->fetchAll("
-      SELECT *, (
-        COALESCE((SELECT true
-          FROM KENNELS
-         WHERE KENNEL_ABBREVIATION = ?
-           AND KENNELS.HASH_TYPE_MASK & HASH_TYPES.HASH_TYPE = HASH_TYPES.HASH_TYPE), false)) AS SELECTED
+      SELECT *, (COALESCE((SELECT true
+                             FROM KENNELS
+                            WHERE KENNEL_ABBREVIATION = ?
+                              AND KENNELS.HASH_TYPE_MASK & HASH_TYPES.HASH_TYPE = HASH_TYPES.HASH_TYPE), false)) AS SELECTED
         FROM HASH_TYPES
-       ORDER BY SEQ", array($kennel_abbreviation));
+       ORDER BY SEQ", [ $kennel_abbreviation ]);
 
-    $returnValue = $this->render('edit_kennel_form_ajax.twig', array(
+    return $this->render('edit_kennel_form_ajax.twig', [
       'pageTitle' => 'Modify a Kennel!',
       'kennel_abbreviation' => $kennel_abbreviation,
       'kennelValue' => $kennelValue,
@@ -197,27 +199,29 @@ class SuperAdminController extends BaseController {
       'hare_types' => $hareTypes,
       'hash_types' => $hashTypes,
       'showAwardsPage' => $this->showAwardsPage(),
-      'csrf_token' => $this->getCsrfToken('kennel'.$kennel_abbreviation)
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('kennel'.$kennel_abbreviation) ]);
   }
 
+  #[Route('/superadmin/{kennel_abbreviation}/editkennel/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
+  )]
   public function modifyKennelAjaxPostAction(Request $request, string $kennel_abbreviation) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('kennel'.$kennel_abbreviation, $token);
 
-    $theKennelName = trim(strip_tags($request->request->get('kennelName')));
-    $theKennelAbbreviation = trim(strip_tags($request->request->get('kennelAbbreviation')));
-    $theKennelDescription = trim(strip_tags($request->request->get('kennelDescription')));
-    $theSiteAddress = trim(strip_tags($request->request->get('siteAddress')));
-    $theInRecordKeeping = (int) trim(strip_tags($request->request->get('inRecordKeeping')));
-    $theAwardLevels = str_replace(' ', '', trim(strip_tags($request->request->get('awardLevels'))));
-    $theOrigAwardLevels = trim(strip_tags($request->request->get('origAwardLevels')));
-    $theHashTypes = $request->request->get('hashTypes');
-    $theHareTypes = $request->request->get('hareTypes');
+    $theKennelName = trim(strip_tags($_POST['kennelName']));
+    $theKennelAbbreviation = trim(strip_tags($_POST['kennelAbbreviation']));
+    $theKennelDescription = trim(strip_tags($_POST['kennelDescription']));
+    $theSiteAddress = trim(strip_tags($_POST['siteAddress']));
+    $theInRecordKeeping = array_key_exists('inRecordKeeping', $_POST) ?
+      (int) trim(strip_tags($_POST['inRecordKeeping'])) : 0;
+    $theAwardLevels = str_replace(' ', '', trim(strip_tags($_POST['awardLevels'])));
+    $theOrigAwardLevels = trim(strip_tags($_POST['origAwardLevels']));
+    $theHashTypes = $_POST['hashTypes'];
+    $theHareTypes = $_POST['hareTypes'];
 
     if($theSiteAddress == "") {
       $theSiteAddress = null;
@@ -241,36 +245,25 @@ class SuperAdminController extends BaseController {
 
       $sql = "
         UPDATE KENNELS
-          SET
-            KENNEL_NAME = ?,
-            KENNEL_ABBREVIATION = ?,
-            KENNEL_DESCRIPTION = ?,
-            SITE_ADDRESS = ?,
-            IN_RECORD_KEEPING = ?,
-            HASH_TYPE_MASK = ?,
-            HARE_TYPE_MASK = ?
+           SET KENNEL_NAME = ?, KENNEL_ABBREVIATION = ?, KENNEL_DESCRIPTION = ?,
+               SITE_ADDRESS = ?, IN_RECORD_KEEPING = ?, HASH_TYPE_MASK = ?,
+               HARE_TYPE_MASK = ?
          WHERE KENNEL_ABBREVIATION = ?";
 
-        $this->dbw->executeUpdate($sql,array(
-          $theKennelName,
-          $theKennelAbbreviation,
-          $theKennelDescription,
-          $theSiteAddress,
-          $theInRecordKeeping,
-          $theHashTypeMask,
-          $theHareTypeMask,
-          $kennel_abbreviation,
-        ));
+        $this->getWriteConnection()->executeUpdate($sql, [
+          $theKennelName, $theKennelAbbreviation, $theKennelDescription,
+          $theSiteAddress, $theInRecordKeeping, $theHashTypeMask,
+          $theHareTypeMask, $kennel_abbreviation ]);
 
       if($theAwardLevels != $theOrigAwardLevels) {
         $sql = "
-          DELETE FROM AWARD_LEVELS
-           WHERE KENNEL_KY = (
-          SELECT KENNEL_KY
-            FROM KENNELS
-           WHERE KENNEL_ABBREVIATION = ?)";
+          DELETE
+            FROM AWARD_LEVELS
+           WHERE KENNEL_KY = (SELECT KENNEL_KY
+                                FROM KENNELS
+                               WHERE KENNEL_ABBREVIATION = ?)";
 
-        $this->dbw->executeUpdate($sql,array($kennel_abbreviation));
+        $this->dbw->executeUpdate($sql, [ $kennel_abbreviation ]);
 
         $sql = "
           INSERT INTO AWARD_LEVELS(KENNEL_KY, AWARD_LEVEL)
@@ -279,7 +272,7 @@ class SuperAdminController extends BaseController {
         $kennelAwards = preg_split("/,/", $theAwardLevels);
 
         foreach($kennelAwards as $kennelAward) {
-          $this->dbw->executeUpdate($sql,array($kennel_abbreviation, (int) $kennelAward));
+          $this->getWriteConnection()->executeUpdate($sql, [ $kennel_abbreviation, (int) $kennelAward ]);
         }
       }
 
