@@ -1082,22 +1082,28 @@ class SuperAdminController extends BaseController {
     return new JsonResponse("");
   }
 
+  #[Route('/superadmin/deletehashtype',
+    methods: ['POST']
+  )]
   public function deleteHashType(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('superadmin', $token);
 
-    $hash_type = $request->request->get('id');
+    $hash_type = $_POST['id'];
 
-    $sql = "SELECT EXISTS(SELECT 1 FROM HASHES_TABLE WHERE HASHES_TABLE.HASH_TYPE & ? = HASHES_TABLE.HASH_TYPE) AS IN_USE";
-    $in_use = $this->fetchOne($sql, array($hash_type));
+    $sql = "
+      SELECT EXISTS(SELECT 1
+                      FROM HASHES_TABLE
+                     WHERE HASHES_TABLE.HASH_TYPE & ? = HASHES_TABLE.HASH_TYPE) AS IN_USE";
+    $in_use = $this->fetchOne($sql, [ $hash_type ]);
 
     if(!$in_use) {
       $sql = "SELECT HASH_TYPE_NAME FROM HASH_TYPES WHERE HASH_TYPE = ?";
-      $hash_type_name = $this->fetchOne($sql, array($hash_type));
+      $hash_type_name = $this->fetchOne($sql, [ $hash_type ]);
 
       $sql = "DELETE FROM HASH_TYPES WHERE HASH_TYPE = ?";
-      $this->dbw->executeUpdate($sql,array($hash_type));
+      $this->getWriteConnection()->executeUpdate($sql, [ $hash_type ]);
 
       $actionType = "Hash Type Deletion (Ajax)";
       $actionDescription = "Deleted hash type $hash_type_name";
