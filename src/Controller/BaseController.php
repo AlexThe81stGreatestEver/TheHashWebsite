@@ -18,21 +18,18 @@ class BaseController extends AbstractController {
 
   protected function __construct(ManagerRegistry $doctrine) {
     $this->doctrine = $doctrine;
-    //check database version before calling database updater???
-    //prevents unnecessary creation of write connection
-    //new \DatabaseUpdater($this->getWriteConnection(), DB_NAME);
   }
 
   private function getConnection(string $connectionName) {
     return $this->doctrine->getConnection($connectionName);
   }
 
-  protected function getReadConnection() {
+  public function getReadConnection() {
     if($this->readConnection != null) return $this->readConnection;
     return $this->readConnection = $this->getConnection('STATS_READ');
   }
 
-  protected function getWriteConnection() {
+  public function getWriteConnection() {
     if($this->writeConnection != null) return $this->writeConnection;
     return $this->writeConnection = $this->getConnection('STATS_WRITE');
   }

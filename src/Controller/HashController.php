@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Controller\BaseController;
-use App\SqlQueries;
+use App\DatabaseUpdater;
 use App\Helper;
+use App\SqlQueries;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -94,6 +95,7 @@ class HashController extends BaseController
       'kennel_abbreviation' => '%app.pattern.kennel_abbreviation%']
   )]
   public function slashKennelAction2(string $kennel_abbreviation) {
+    new DatabaseUpdater($this, $this->getParameter('app.db_name'));
     return $this->render('slash2.twig', $this->getSlashTwigArgs($kennel_abbreviation));
   }
 
