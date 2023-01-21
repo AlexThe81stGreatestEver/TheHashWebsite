@@ -763,32 +763,39 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
-  #Define action
-  public function modifySiteConfigAjaxPreAction(Request $request, string $name) {
+  #[Route('/superadmin/{name}/editsiteconfig/ajaxform',
+    methods: ['GET'],
+    requirements: [
+      'name' => '%app.pattern.name%']
+  )]
+  public function modifySiteConfigAjaxPreAction(string $name) {
 
     # Declare the SQL used to retrieve this information
     $sql = "
-      SELECT * FROM SITE_CONFIG WHERE NAME = ?";
+      SELECT *
+        FROM SITE_CONFIG
+       WHERE NAME = ?";
 
     # Make a database call to obtain the hasher information
-    $item = $this->fetchAssoc($sql, array($name));
+    $item = $this->fetchAssoc($sql, [ $name ]);
 
-    $returnValue = $this->render('edit_site_config_form_ajax.twig', array(
+    return $this->render('edit_site_config_form_ajax.twig', [
       'pageTitle' => 'Modify a Configuration Variable: '.$name,
       'item' => $item,
-      'csrf_token' => $this->getCsrfToken('mod_'.$name)
-    ));
-
-    #Return the return value
-    return $returnValue;
+      'csrf_token' => $this->getCsrfToken('mod_'.$name) ]);
   }
 
+  #[Route('/superadmin/{name}/editsiteconfig/ajaxform',
+    methods: ['POST'],
+    requirements: [
+      'name' => '%app.pattern.name%']
+  )]
   public function modifySiteConfigAjaxPostAction(Request $request, string $name) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('mod_'.$name, $token);
 
-    $theValue = trim($request->request->get('value'));
+    $theValue = trim($_POST['value']);
 
     // Establish a "passed validation" variable
     $passedValidation = TRUE;
@@ -804,9 +811,7 @@ class SuperAdminController extends BaseController {
          WHERE NAME = ?
            AND DESCRIPTION IS NOT NULL";
 
-      $this->dbw->executeUpdate($sql,array(
-        $theValue,
-        $name));
+      $this->getWriteConnection()->executeUpdate($sql, [ $theValue, $name ]);
 
       #Audit this activity
       $actionType = "SITE CONFIG Modification (Ajax)";

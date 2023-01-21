@@ -1140,8 +1140,8 @@ if (!$schema->tablesExist('USERS')) {
 #post('/superadmin/{hash_type}/edithashtype/ajaxform',         'SuperAdminController::modifyHashTypeAjaxPostAction');
 #get('/superadmin/{user_id}/edituser/ajaxform',                'SuperAdminController::modifyUserAjaxPreAction');
 #post('/superadmin/{user_id}/edituser/ajaxform',               'SuperAdminController::modifyUserAjaxPostAction');
-get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController::modifySiteConfigAjaxPreAction');
-post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController::modifySiteConfigAjaxPostAction');
+#get('/superadmin/{name}/editsiteconfig/ajaxform',             'SuperAdminController::modifySiteConfigAjaxPreAction');
+#post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController::modifySiteConfigAjaxPostAction');
 get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController::modifyRidiculousAjaxPreAction');
 post('/superadmin/{ridiculous}/editridiculous/ajaxform',      'SuperAdminController::modifyRidiculousAjaxPostAction');
 post('/superadmin/deleteridiculous',                          'SuperAdminController::deleteRidiculous');
