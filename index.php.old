@@ -1144,7 +1144,7 @@ if (!$schema->tablesExist('USERS')) {
 #post('/superadmin/{name}/editsiteconfig/ajaxform',            'SuperAdminController::modifySiteConfigAjaxPostAction');
 #get('/superadmin/{ridiculous}/editridiculous/ajaxform',       'SuperAdminController::modifyRidiculousAjaxPreAction');
 #post('/superadmin/{ridiculous}/editridiculous/ajaxform',      'SuperAdminController::modifyRidiculousAjaxPostAction');
-post('/superadmin/deleteridiculous',                          'SuperAdminController::deleteRidiculous');
+#post('/superadmin/deleteridiculous',                          'SuperAdminController::deleteRidiculous');
 #post('/superadmin/deleteuser',                                'SuperAdminController::deleteUser');
 #post('/superadmin/deletekennel',                              'SuperAdminController::deleteKennel');
 #post('/superadmin/deletehashtype',                            'SuperAdminController::deleteHashType');

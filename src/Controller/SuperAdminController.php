@@ -1017,16 +1017,19 @@ class SuperAdminController extends BaseController {
     return new JsonResponse($returnMessage);
   }
 
+  #[Route('/superadmin/deleteridiculous',
+    methods: ['POST']
+  )]
   public function deleteRidiculous(Request $request) {
 
-    $token = $request->request->get('csrf_token');
+    $token = $_POST['csrf_token'];
     $this->validateCsrfToken('superadmin', $token);
 
-    $ridiculous = $request->request->get('id');
+    $ridiculous = $_POST['id'];
     if(substr($ridiculous, 0, strlen("ridiculous")) == "ridiculous") {
 
       $sql = "DELETE FROM SITE_CONFIG WHERE NAME = ?";
-      $this->dbw->executeUpdate($sql,array($ridiculous));
+      $this->getWriteConnection()->executeUpdate($sql, [ $ridiculous ]);
 
       $actionType = "Site Config Deletion (Ajax)";
       $actionDescription = "Deleted site config key $ridiculous";
