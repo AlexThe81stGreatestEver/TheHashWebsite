@@ -10,12 +10,12 @@
     {% set losing = "#f2d7d5" %}
     {% set tying = "#fcf3cf" %}
 
-    <div class="row">
-      <div class="col-xs-12 col-md-3 hidden-xs" style="background-color:#d3d3d3;"></div>
-      <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Hashes Missed</div>
-      <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Days Absent</div>
-      <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Last Hash</div>
-      <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:#d3d3d3;">Last Hash Date</div>
+    <div class="row" style="background-color:#d3d3d3;">
+      <div class="col-xs-12 col-md-3 hidden-xs"></div>
+      <div class="col-xs-4 col-md-2 hidden-xs">Hashes Missed</div>
+      <div class="col-xs-4 col-md-2 hidden-xs">Days Absent</div>
+      <div class="col-xs-4 col-md-2 hidden-xs">Last Hash</div>
+      <div class="col-xs-4 col-md-3 hidden-xs">Last Hash Date</div>
     </div>
 
     {% for item in theList %}
@@ -46,39 +46,38 @@
 
 
 
-      <div class="row">
-        <div class="col-xs-12 col-md-3"   style="background-color:#d3d3d3;">
+      <div class="row" style="background-color:{{bgcolor}};">
+        <div class="col-xs-12 col-md-3" style="background-color:#d3d3d3;">
           <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">
             {{item.HASHER_NAME}}
           </a>
         </div>
-        <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Hashes Missed</div>
-        <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">{{item.THE_NUMBER_OF_MISSED_HASHES}}</div>
-        <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Days Absent</div>
-        <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+        <div class="col-xs-8 visible-xs">Hashes Missed</div>
+        <div class="col-xs-4 col-md-2">{{item.THE_NUMBER_OF_MISSED_HASHES}}</div>
+        <div class="col-xs-8 visible-xs">Days Absent</div>
+        <div class="col-xs-4 col-md-2">
           {% if item.DAYS_SINCE_LAST_EVENT is null %}
             1st Hash
           {% else %}
             {{item.DAYS_SINCE_LAST_EVENT}}
           {% endif %}
         </div>
-        <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Last Hash</div>
-        <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+        <div class="col-xs-8 visible-xs">Last Hash</div>
+        <div class="col-xs-4 col-md-2">
           {% if item.PREVIOUS_EVENT_NUMBER is null %}
             NA
           {% else %}
             <a href='/{{kennel_abbreviation}}/hashes/{{item.PREVIOUS_HASH_KEY}}'>#{{item.PREVIOUS_EVENT_NUMBER}}</a>
           {% endif %}
         </div>
-        <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Last Hash Date</div>
-        <div class="col-xs-4 col-md-3"    style="background-color:{{bgcolor}};">
+        <div class="col-xs-8 visible-xs">Last Hash Date</div>
+        <div class="col-xs-4 col-md-3">
           {% if item.PREVIOUS_EVENT_DATE is null %}
             NA
           {% else %}
             {{item.PREVIOUS_EVENT_DATE is empty ? "" : item.PREVIOUS_EVENT_DATE|date("m/d/Y")}}
           {% endif %}
         </div>
-        <div class="col-xs-12 visible-xs"></br></div>
       </div>
 
     {% endfor %}

@@ -37,11 +37,11 @@
           {{item.statName}}
         </div>
 
-        <div class="col-xs-8 visible-xs" style="background-color:{{t1bgcolor}};">
+        <div class="col-xs-6 visible-xs" style="background-color:{{t1bgcolor}};">
           {{hasherName1}}
         </div>
 
-        <div class="col-xs-4 col-md-4" style="background-color:{{t1bgcolor}};">
+        <div class="col-xs-6 col-md-4" style="background-color:{{t1bgcolor}};">
           {% if item.dataType == "float" %}
             {{(item.val1 * 100) | number_format(0,'.',',')}} %
           {% elseif item.dataType == "int" %}
@@ -55,10 +55,10 @@
           {% endif %}
         </div>
 
-        <div class="col-xs-8 visible-xs" style="background-color:{{t2bgcolor}};">
+        <div class="col-xs-6 visible-xs" style="background-color:{{t2bgcolor}};">
           {{hasherName2}}
         </div>
-        <div class="col-xs-4 col-md-4" style="background-color:{{t2bgcolor}};">
+        <div class="col-xs-6 col-md-4" style="background-color:{{t2bgcolor}};">
           {% if item.dataType == "float" %}
             {{(item.val2 * 100) | number_format(0,'.',',')}} %
           {% elseif item.dataType == "int" %}
@@ -72,11 +72,11 @@
           {% endif %}
          </div>
 
-         <div class="col-xs-8 visible-xs " style="background-color:{{winning}};">
+         <div class="col-xs-6 visible-xs " style="background-color:{{winning}};">
             {{winnerText}}
          </div>
 
-         <div class="col-xs-4 visible-xs" style="background-color:{{winning}};">
+         <div class="col-xs-6 visible-xs" style="background-color:{{winning}};">
             wins!
          </div>
 

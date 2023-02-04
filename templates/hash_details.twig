@@ -1,6 +1,9 @@
 {% extends "fullwidth.twig" %}
 
 {% block content %}
+    <style type="text/css">
+      .gray { background-color: #d3d3d3; }
+    </style>
     <h1>{{pageTitle}}</h1>
     {% set bgcolor = "white" %}
 
@@ -16,50 +19,43 @@
           </div>
           <div class="panel-body">
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Event Number</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{kennel_abbreviation}} #{{hashValue.KENNEL_EVENT_NUMBER}}</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Event Number</b></div>
+              <div class="col-xs-12 col-md-8">{{kennel_abbreviation}} #{{hashValue.KENNEL_EVENT_NUMBER}}</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Date</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.EVENT_DATE|date('m/d/Y')}}</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Date</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_DATE|date('m/d/Y')}}</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Time</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.EVENT_DATE|date('h:i A')}}</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Time</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_DATE|date('h:i A')}}</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Description</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.SPECIAL_EVENT_DESCRIPTION}}</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Description</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.SPECIAL_EVENT_DESCRIPTION}}</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hash Type</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.HASH_TYPE_NAME}}</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hash Type</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.HASH_TYPE_NAME}}</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hounds</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hounds</b></div>
+              <div class="col-xs-12 col-md-8">
                 <a href='/{{kennel_abbreviation}}/listhashers/byhash/{{hashValue.HASH_KY}}'>{{theHoundCount}}</a>
               </div>
-              <div class="col-xs-12 visible-xs"></br></div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Hares</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hares</b></div>
+              <div class="col-xs-12 col-md-8">
                 <a href='/{{kennel_abbreviation}}/listhares/byhash/{{hashValue.HASH_KY}}'>{{theHareCount}}</a>
               </div>
-              <div class="col-xs-12 visible-xs"></br></div>
             </div>
 
             <div class="row">
@@ -146,76 +142,64 @@
           </div>
           <div class="panel-body">
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Location</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.EVENT_LOCATION}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Location</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_LOCATION}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Formatted Address</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.FORMATTED_ADDRESS}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Formatted Address</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.FORMATTED_ADDRESS}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Street Number</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.STREET_NUMBER}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Street Number</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.STREET_NUMBER}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Route</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.ROUTE}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Route</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.ROUTE}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>City</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.EVENT_CITY}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>City</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_CITY}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>State</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.EVENT_STATE}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>State</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_STATE}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Postal Code</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.POSTAL_CODE}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Postal Code</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.POSTAL_CODE}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Neighborhood</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.NEIGHBORHOOD}}  &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Neighborhood</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.NEIGHBORHOOD}}  &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>County</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.COUNTY}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>County</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.COUNTY}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Country</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.COUNTRY}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Country</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.COUNTRY}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Lat</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.LAT}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Lat</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.LAT}} &nbsp</div>
             </div>
 
-            <div class="row">
-              <div class="col-xs-12 col-md-4"   style="background-color:#d3d3d3;"><b>Long</b></div>
-              <div class="col-xs-12 col-md-8"   style="background-color:#d3d3d3;">{{hashValue.LNG}} &nbsp</div>
-              <div class="col-xs-12 visible-xs"></br></div>
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Long</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.LNG}} &nbsp</div>
             </div>
 
           </div>

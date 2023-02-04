@@ -24,17 +24,16 @@
               {% set headerbgcolor = "#d3d3d3" %}
               {% set databgcolor = "#80CBC4" %}
 
-              <div class="row">
-                <div class="col-xs-12 col-md-6 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
-                <div class="col-xs-6 col-md-6 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
+              <div class="row" style="background-color:{{headerbgcolor}};">
+                <div class="col-xs-12 col-md-6 hidden-xs"></div>
+                <div class="col-xs-6 col-md-6 hidden-xs">Count</div>
               </div>
 
               {% for item in houndAnalversaryList %}
-                <div class="row">
-                  <div class="col-xs-12 col-md-6"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
-                  <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
-                  <div class="col-xs-6 col-md-6"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
-                  <div class="col-xs-12 visible-xs"></br></div>
+                <div class="row" style="background-color:{{databgcolor}};">
+                  <div class="col-xs-12 col-md-6" style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
+                  <div class="col-xs-6 visible-xs">Count</div>
+                  <div class="col-xs-6 col-md-6">{{item.THE_COUNT}}</div>
                 </div>
               {% endfor %}
             {% endif %}
@@ -57,20 +56,19 @@
                   {% else %}
                     {% set headerbgcolor = "#d3d3d3" %}
                     {% set databgcolor = "#CE93D8" %}
-                    <div class="row">
-                      <div class="col-xs-12 col-md-4 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
-                      <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
-                      <div class="col-xs-4 col-md-4 hidden-xs"  style="background-color:{{headerbgcolor}};">Type</div>
+                    <div class="row" style="background-color:{{headerbgcolor}};">
+                      <div class="col-xs-12 col-md-4 hidden-xs"></div>
+                      <div class="col-xs-4 col-md-4 hidden-xs">Count</div>
+                      <div class="col-xs-4 col-md-4 hidden-xs">Type</div>
                     </div>
 
                     {% for item in consolidatedHareAnalversaryList %}
-                      <div class="row">
-                        <div class="col-xs-12 col-md-4"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
-                        <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
-                        <div class="col-xs-6 col-md-4"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
-                        <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Type</div>
-                        <div class="col-xs-6 col-md-4"    style="background-color:{{databgcolor}};">{{item.HARING_TYPE}}</div>
-                        <div class="col-xs-12 visible-xs"></br></div>
+                      <div class="row" style="background-color:{{databgcolor}};">
+                        <div class="col-xs-12 col-md-4" style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
+                        <div class="col-xs-6 visible-xs">Count</div>
+                        <div class="col-xs-6 col-md-4">{{item.THE_COUNT}}</div>
+                        <div class="col-xs-6 visible-xs">Type</div>
+                        <div class="col-xs-6 col-md-4">{{item.HARING_TYPE}}</div>
                       </div>
                     {% endfor %}
                   {% endif %}
@@ -94,29 +92,28 @@
                   {% else %}
                     {% set headerbgcolor = "#d3d3d3" %}
                     {% set databgcolor = "#C5E1A5" %}
-                    <div class="row">
-                      <div class="col-xs-12 col-md-3 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
-                      <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
-                      <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Type</div>
-                      <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Value</div>
+                    <div class="row" style="background-color:{{headerbgcolor}};">
+                      <div class="col-xs-12 col-md-3 hidden-xs"></div>
+                      <div class="col-xs-3 col-md-3 hidden-xs">Count</div>
+                      <div class="col-xs-3 col-md-3 hidden-xs">Type</div>
+                      <div class="col-xs-3 col-md-3 hidden-xs">Value</div>
                     </div>
 
                     {% for item in geolocationHoundAnalversaryList %}
-                      <div class="row">
-                        <div class="col-xs-12 col-md-3"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
-                        <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
-                        <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
-                        <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Type</div>
-                        <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">{{item.ANV_TYPE}}</div>
-                        <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Value</div>
-                        <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">
+                      <div class="row" style="background-color:{{databgcolor}};">
+                        <div class="col-xs-12 col-md-3" style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
+                        <div class="col-xs-6 visible-xs">Count</div>
+                        <div class="col-xs-6 col-md-3">{{item.THE_COUNT}}</div>
+                        <div class="col-xs-6 visible-xs">Type</div>
+                        <div class="col-xs-6 col-md-3">{{item.ANV_TYPE}}</div>
+                        <div class="col-xs-6 visible-xs">Value</div>
+                        <div class="col-xs-6 col-md-3">
                           {% if(item.ANV_VALUE is empty)%}
                             Unknown
                           {% else %}
                             {{item.ANV_VALUE}}
                           {% endif %}
                         </div>
-                        <div class="col-xs-12 visible-xs"></br></div>
                       </div>
                     {% endfor %}
                   {% endif %}
@@ -140,29 +137,28 @@
                               {% else %}
                                 {% set headerbgcolor = "#d3d3d3" %}
                                 {% set databgcolor = "#FFCC80" %}
-                                <div class="row">
-                                  <div class="col-xs-12 col-md-3 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
-                                  <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
-                                  <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Type</div>
-                                  <div class="col-xs-3 col-md-3 hidden-xs"  style="background-color:{{headerbgcolor}};">Value</div>
+                                <div class="row" style="background-color:{{headerbgcolor}};">
+                                  <div class="col-xs-12 col-md-3 hidden-xs"></div>
+                                  <div class="col-xs-3 col-md-3 hidden-xs">Count</div>
+                                  <div class="col-xs-3 col-md-3 hidden-xs">Type</div>
+                                  <div class="col-xs-3 col-md-3 hidden-xs">Value</div>
                                 </div>
 
                                 {% for item in dateHoundAnalversaryList %}
-                                  <div class="row">
+                                  <div class="row" style="background-color:{{databgcolor}};">
                                     <div class="col-xs-12 col-md-3"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
-                                    <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
-                                    <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
-                                    <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Type</div>
-                                    <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">{{item.ANV_TYPE}}</div>
-                                    <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Value</div>
-                                    <div class="col-xs-6 col-md-3"    style="background-color:{{databgcolor}};">
+                                    <div class="col-xs-6 visible-xs">Count</div>
+                                    <div class="col-xs-6 col-md-3">{{item.THE_COUNT}}</div>
+                                    <div class="col-xs-6 visible-xs">Type</div>
+                                    <div class="col-xs-6 col-md-3">{{item.ANV_TYPE}}</div>
+                                    <div class="col-xs-6 visible-xs">Value</div>
+                                    <div class="col-xs-6 col-md-3">
                                       {% if(item.ANV_VALUE is empty)%}
                                         Unknown
                                       {% else %}
                                         {{item.ANV_VALUE}}
                                       {% endif %}
                                     </div>
-                                    <div class="col-xs-12 visible-xs"></br></div>
                                   </div>
                                 {% endfor %}
                               {% endif %}
@@ -188,11 +184,11 @@
                           {% set losing = "#f2d7d5" %}
                           {% set tying = "#fcf3cf" %}
 
-                          <div class="row">
-                            <div class="col-xs-12 col-md-3 hidden-xs" style="background-color:#d3d3d3;"></div>
-                            <div class="col-xs-4 col-md-3 hidden-xs" style="background-color:#d3d3d3;">Consecutive Hashes</div>
-                            <div class="col-xs-4 col-md-3 hidden-xs" style="background-color:#d3d3d3;">Consecutive Days</div>
-                            <div class="col-xs-4 col-md-3 hidden-xs" style="background-color:#d3d3d3;">Last Missed Hash</div>
+                          <div class="row" style="background-color:#d3d3d3;">
+                            <div class="col-xs-12 col-md-3 hidden-xs"></div>
+                            <div class="col-xs-4 col-md-3 hidden-xs">Consecutive Hashes</div>
+                            <div class="col-xs-4 col-md-3 hidden-xs">Consecutive Days</div>
+                            <div class="col-xs-4 col-md-3 hidden-xs">Last Missed Hash</div>
                           </div>
 
                           {% for item in theStreakersList %}
@@ -205,15 +201,14 @@
                               {% set t1bgcolor = winning %}
                             {% endif %}
 
-                            <div class="row">
+                            <div class="row" style="background-color:{{t1bgcolor}};">
                               <div class="col-xs-12 col-md-3" style="background-color:#d3d3d3;"><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_HASHER_KY}}">{{item.THE_HASHER_NAME}}</a></div>
-                              <div class="col-xs-8 visible-xs" style="background-color:{{t1bgcolor}};">Consecutive Hashes</div>
-                              <div class="col-xs-4 col-md-3" style="background-color:{{t1bgcolor}};">{{item.THE_STREAK_IN_EVENTS}}</div>
-                              <div class="col-xs-8 visible-xs" style="background-color:{{t1bgcolor}};">Consecutive Days</div>
-                              <div class="col-xs-4 col-md-3" style="background-color:{{t1bgcolor}};">{{item.THE_STREAK_IN_DAYS}}</div>
-                              <div class="col-xs-8 visible-xs " style="background-color:{{t1bgcolor}};">Last Missed Hash</div>
-                              <div class="col-xs-4 col-md-3" style="background-color:{{t1bgcolor}};">{{item.LAST_MISSED_EVENT}}</div>
-                              <div class="col-xs-12 visible-xs"></br></div>
+                              <div class="col-xs-8 visible-xs">Consecutive Hashes</div>
+                              <div class="col-xs-4 col-md-3">{{item.THE_STREAK_IN_EVENTS}}</div>
+                              <div class="col-xs-8 visible-xs">Consecutive Days</div>
+                              <div class="col-xs-4 col-md-3">{{item.THE_STREAK_IN_DAYS}}</div>
+                              <div class="col-xs-8 visible-xs">Last Missed Hash</div>
+                              <div class="col-xs-4 col-md-3">{{item.LAST_MISSED_EVENT}}</div>
                             </div>
 
                           {% endfor %}
@@ -240,12 +235,12 @@
                         {% set losing = "#f2d7d5" %}
                         {% set tying = "#fcf3cf" %}
 
-                        <div class="row">
-                          <div class="col-xs-12 col-md-3 hidden-xs" style="background-color:#d3d3d3;"></div>
-                          <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Hashes Missed</div>
-                          <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Days Absent</div>
-                          <div class="col-xs-4 col-md-2 hidden-xs"  style="background-color:#d3d3d3;">Last Hash</div>
-                          <div class="col-xs-4 col-md-3 hidden-xs"  style="background-color:#d3d3d3;">Last Hash Date</div>
+                        <div class="row" style="background-color:#d3d3d3;">
+                          <div class="col-xs-12 col-md-3 hidden-xs"></div>
+                          <div class="col-xs-4 col-md-2 hidden-xs">Hashes Missed</div>
+                          <div class="col-xs-4 col-md-2 hidden-xs">Days Absent</div>
+                          <div class="col-xs-4 col-md-2 hidden-xs">Last Hash</div>
+                          <div class="col-xs-4 col-md-3 hidden-xs">Last Hash Date</div>
                         </div>
 
                         {% for item in theBackslidersList %}
@@ -274,41 +269,38 @@
                             {% set bgcolor = "#fdedec" %}
                           {% endif %}
 
-
-
-                          <div class="row">
-                            <div class="col-xs-12 col-md-3"   style="background-color:#d3d3d3;">
+                          <div class="row" style="background-color:{{bgcolor}};">
+                            <div class="col-xs-12 col-md-3" style="background-color:#d3d3d3;">
                               <a href="/{{kennel_abbreviation}}/hashers/{{item.HASHER_KY}}">
                                 {{item.HASHER_NAME}}
                               </a>
                             </div>
-                            <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Hashes Missed</div>
-                            <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">{{item.THE_NUMBER_OF_MISSED_HASHES}}</div>
-                            <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Days Absent</div>
-                            <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                            <div class="col-xs-8 visible-xs">Hashes Missed</div>
+                            <div class="col-xs-4 col-md-2">{{item.THE_NUMBER_OF_MISSED_HASHES}}</div>
+                            <div class="col-xs-8 visible-xs">Days Absent</div>
+                            <div class="col-xs-4 col-md-2">
                               {% if item.DAYS_SINCE_LAST_EVENT is null %}
                                 1st Hash
                               {% else %}
                                 {{item.DAYS_SINCE_LAST_EVENT}}
                               {% endif %}
                             </div>
-                            <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Last Hash</div>
-                            <div class="col-xs-4 col-md-2"    style="background-color:{{bgcolor}};">
+                            <div class="col-xs-8 visible-xs">Last Hash</div>
+                            <div class="col-xs-4 col-md-2">
                               {% if item.PREVIOUS_EVENT_NUMBER is null %}
                                 NA
                               {% else %}
                                 <a href='/{{kennel_abbreviation}}/hashes/{{item.PREVIOUS_HASH_KEY}}'>#{{item.PREVIOUS_EVENT_NUMBER}}</a>
                               {% endif %}
                             </div>
-                            <div class="col-xs-8 visible-xs"  style="background-color:{{bgcolor}};">Last Hash Date</div>
-                            <div class="col-xs-4 col-md-3"    style="background-color:{{bgcolor}};">
+                            <div class="col-xs-8 visible-xs">Last Hash Date</div>
+                            <div class="col-xs-4 col-md-3">
                               {% if item.PREVIOUS_EVENT_DATE is null %}
                                 NA
                               {% else %}
                                 {{item.PREVIOUS_EVENT_DATE is empty ? "" : item.PREVIOUS_EVENT_DATE|date("m/d/Y")}}
                               {% endif %}
                             </div>
-                            <div class="col-xs-12 visible-xs"></br></div>
                           </div>
 
                         {% endfor %}
@@ -333,17 +325,16 @@
               {% set headerbgcolor = "#d3d3d3" %}
               {% set databgcolor = "#80CBC4" %}
 
-              <div class="row">
-                <div class="col-xs-12 col-md-6 hidden-xs" style="background-color:{{headerbgcolor}};"></div>
-                <div class="col-xs-6 col-md-6 hidden-xs"  style="background-color:{{headerbgcolor}};">Count</div>
+              <div class="row" style="background-color:{{headerbgcolor}};">
+                <div class="col-xs-12 col-md-6 hidden-xs"></div>
+                <div class="col-xs-6 col-md-6 hidden-xs">Count</div>
               </div>
 
               {% for item in centurionAlertList %}
-                <div class="row">
-                  <div class="col-xs-12 col-md-6"   style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
-                  <div class="col-xs-6 visible-xs"  style="background-color:{{databgcolor}};">Count</div>
-                  <div class="col-xs-6 col-md-6"    style="background-color:{{databgcolor}};">{{item.THE_COUNT}}</div>
-                  <div class="col-xs-12 visible-xs"></br></div>
+                <div class="row" style="background-color:{{databgcolor}};">
+                  <div class="col-xs-12 col-md-6" style="background-color:{{headerbgcolor}};">{{item.HASHER_NAME}}</div>
+                  <div class="col-xs-6 visible-xs">Count</div>
+                  <div class="col-xs-6 col-md-6">{{item.THE_COUNT}}</div>
                 </div>
               {% endfor %}
           </div>
