@@ -6,11 +6,10 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/public"
     schedule:
       interval: "daily"
     commit-message:
-      # Prefix all commit messages with "npm"
       prefix: "npm"
       include: "scope"
 
@@ -20,8 +19,6 @@ updates:
       interval: "daily"
     ignore:
       - dependency-name: "twbs/bootstrap"
-    # Prefix all commit messages with "Composer"
-    # include a list of updated dependencies
     commit-message:
       prefix: "Composer"
       include: "scope"
