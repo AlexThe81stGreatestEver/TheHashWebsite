@@ -9,6 +9,8 @@ updates:
     directory: "/public"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "bootstrap"
     commit-message:
       prefix: "npm"
       include: "scope"
