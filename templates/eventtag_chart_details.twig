@@ -1,0 +1,326 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+   <style type="text/css">
+      h4 { text-align: center; }
+   </style>
+
+    <script src="/node_modules/chart.js/dist/chart.umd.js"></script>
+    <script type = "text/javascript" src = "/node_modules/wordcloud/src/wordcloud2.js"></script>
+
+    <div class="container">
+      <h1>{{pageTitle}}</h1>
+
+      <div class="row">
+
+        <div class="col-sm-6" style="background-color:lime;">
+          <h3>Event Tag Details</h3>
+          <dl class="dl-horizontal">
+              {% autoescape %}
+                <dt>Tag Name</dt><dd> {{tag_value.TAG_TEXT}}</dd>
+              {% endautoescape %}
+          </dl>
+          <dl class="dl-horizontal">
+            <dt>The Events</td><dd><a href='/{{kennel_abbreviation}}/listhashes/byeventtag/{{tag_value.HASHES_TAGS_KY}}'>Click Here</a></dd>
+          </dl>
+        </div>
+
+        <div class="col-sm-6">
+          <canvas id="myChart" width="50" height="50"></canvas>
+          <script>
+          var ctx = document.getElementById("myChart");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [
+                    {% for individualValue in hashes_by_year_list %}
+                      {{individualValue.THE_VALUE}},
+                    {% endfor %}
+                  ],
+                  datasets: [{
+                      label: '# of Hashes',
+                      data: [
+                        {% for individualValue in hashes_by_year_list %}
+                          {{individualValue.THE_COUNT}},
+                        {% endfor %}
+
+                      ],
+                      fillColor:'rgba(75, 192, 192, 0.2)',
+                      backgroundColor:'rgba(54, 162, 235, 0.2)',
+                      borderColor:'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  },
+                  title: {
+                    display: true,
+                    text: 'Events Per Year'
+                  }
+              }
+          });
+          </script>
+        </div>
+
+      </div>
+
+
+<!--  ------------------------------------------------------------------------->
+      <div class="row">
+        <div id = "div_one" class="col-sm-6" style="height:600px">
+          <h4>Hasher Counts</h4>
+          <canvas id="my_canvas" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
+        </div>
+        <div id = "div_two" class="col-sm-6" style="height:600px">
+          <h4>Hare Counts</h4>
+          <canvas id="my_canvas2" class="wordcloud" style="width: 100%; display: block; margin-left: auto; margin-right: auto;"></canvas>
+        </div>
+      </div>
+
+      <script type = "text/javascript" language = "javascript">
+          var canvas = document.getElementById("my_canvas");
+          var parent = document.getElementById("div_one");
+          canvas.width = parent.offsetWidth;
+          canvas.height = parent.offsetHeight;
+
+          canvas = document.getElementById("my_canvas2");
+          parent = document.getElementById("div_two");
+          canvas.width = parent.offsetWidth;
+          canvas.height = parent.offsetHeight;
+
+            var options = {
+              list: [
+                {% for item in hasher_count_list %}
+                    [
+                    "{% autoescape 'js' %}{{item.THE_VALUE}}{% endautoescape %}"
+                    ,
+                    "{{min(80,item.THE_COUNT * 5)}}"],
+                {% endfor %}
+              ],
+              drawMask: false,
+              shape: "circle",
+              gridSize: 5
+            };
+            WordCloud(document.getElementById('my_canvas'), options );
+
+            options = {
+              list: [
+                {% for item in hare_count_list %}
+                    [
+                    "{% autoescape 'js' %}{{item.THE_VALUE}}{% endautoescape %}"
+                    ,
+                    "{{min(80,item.THE_COUNT * 10)}}"],
+                {% endfor %}
+              ],
+              drawMask: false,
+              shape: "circle",
+              gridSize: 5
+            };
+            WordCloud(document.getElementById('my_canvas2'), options );
+      </script>
+
+    <div class="row"><h2>Event Map</h2>
+      <div id="TheMap1" class="col-sm-10"></div>
+        <style>
+        #TheMap1{
+          height: 600px;
+        }
+        </style>
+    </div>
+
+    <br><br><br><br><br><br><br>
+
+
+      <script>
+
+        var map1;
+        function initMap1(){
+          map1 = new google.maps.Map(document.getElementById('TheMap1'),{
+            zoom: 10,
+            center: new google.maps.LatLng( {{avg_lat}}, {{avg_lng}} )
+            //mapTypeId: 'terrain'
+          });
+
+
+          {% for hashEventValue in the_hashes %}
+            var event_num = "#{{hashEventValue.KENNEL_EVENT_NUMBER | escape('html')}}";
+            var event_description = "{{hashEventValue.SPECIAL_EVENT_DESCRIPTION | escape('html')}}";
+            var event_location = "{{hashEventValue.EVENT_LOCATION | escape('html')}}";
+            var event_date = "{{hashEventValue.EVENT_DATE | date("m/d/Y" ) | escape('html')}}";
+
+            var textValue = "{{kennel_abbreviation}}"+ event_num +":" + event_description + " at " + event_location + " on " + event_date;
+            var eventLink = "/{{kennel_abbreviation}}/hashes/{{hashEventValue.HASH_KY}}";
+            var marker = new google.maps.Marker({
+              position: {lat: {{hashEventValue.LAT}}, lng:{{hashEventValue.LNG}}},
+              map: map1,
+              title: textValue,
+              url: eventLink
+            });
+            google.maps.event.addListener(marker,'click', function(){
+              window.open(this.url);
+            });
+          {% endfor %}
+        }
+
+      </script>
+
+
+
+      <!--  ------------------------------------------------------------------------->
+
+
+
+      <div class="row"><h2>Heat Map</h2>
+        <div id="TheMap2" class="col-sm-10"></div>
+          <style>
+          #TheMap2{
+            height: 600px;
+          }
+          </style>
+      </div>
+
+      <br><br><br><br><br><br><br>
+
+
+      <script>
+        var map2,heatmap;
+        function initMap2(){
+          map2 = new google.maps.Map(document.getElementById('TheMap2'),{
+            zoom: 11,
+            center: new google.maps.LatLng( {{avg_lat}}, {{avg_lng}} ),
+            mapTypeId: 'terrain'
+          });
+
+          heatmap = new google.maps.visualization.HeatmapLayer({
+            data: getPoints2(),
+            map: map2
+          });
+
+          changeGradient();
+          changeRadius();
+        }
+
+        function getPoints2() {
+          return [
+            {% for hashEventValue in the_hashes %}
+            new google.maps.LatLng(
+              {{hashEventValue.LAT}}, {{hashEventValue.LNG}}
+            ),
+            {% endfor %}
+          ];
+        }
+
+        function toggleHeatmap() {
+          heatmap.setMap(heatmap.getMap() ? null : map2);
+        }
+
+        function changeGradient() {
+          var gradient = [
+            'rgba(0, 255, 255, 0)',
+            'rgba(0, 255, 255, 1)',
+            'rgba(0, 191, 255, 1)',
+            'rgba(0, 127, 255, 1)',
+            'rgba(0, 63, 255, 1)',
+            'rgba(0, 0, 255, 1)',
+            'rgba(0, 0, 223, 1)',
+            'rgba(0, 0, 191, 1)',
+            'rgba(0, 0, 159, 1)',
+            'rgba(0, 0, 127, 1)',
+            'rgba(63, 0, 91, 1)',
+            'rgba(127, 0, 63, 1)',
+            'rgba(191, 0, 31, 1)',
+            'rgba(255, 0, 0, 1)'
+          ]
+          heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+        }
+
+        function changeRadius() {
+          heatmap.set('radius', heatmap.get('radius') ? null : 30);
+        }
+
+        function changeOpacity() {
+          heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+        }
+      </script>
+
+
+      <!--  ------------------------------------------------------------------------->
+
+        <div class="row"><h2>Cluster Map</h2>
+          <div id="TheMap3" class="col-sm-10"></div>
+            <style>
+            #TheMap3{
+              height: 600px;
+            }
+            </style>
+        </div>
+
+        <br><br><br><br><br><br><br>
+
+        <script>
+          var locations3 = getPoints3();
+
+          function getPoints3() {
+            return [
+              {% for hashEventValue in the_hashes %}
+                { lat:{{hashEventValue.LAT}}, lng:{{hashEventValue.LNG}} },
+              {% endfor %}
+            ];
+          }
+
+          var map3;
+          function initMap3(){
+
+            var map3 = new google.maps.Map(document.getElementById('TheMap3'), {
+              zoom: 9,
+              center: {lat:  {{avg_lat}}, lng: {{avg_lng}}}
+            });
+
+            var markers3 = locations3.map(function(location, i) {
+             return new google.maps.Marker({
+               position: location
+             });
+            });
+
+            // Add a marker clusterer to manage the markers.
+            var markerCluster = new MarkerClusterer(
+              map3,
+              markers3,
+              //{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}
+              {imagePath: '/web/images/google_map_cluster_map/m'}
+            );
+
+          }
+        </script>
+
+
+
+
+        <script src="/web/javascript/markerclusterer/markerclusterer.js"></script>
+
+        <script>
+          function initMapX(){
+            initMap1();
+            initMap2();
+            initMap3();
+          }
+        </script>
+
+
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{geocode_api_value}}&callback=initMapX&libraries=visualization">
+        </script>
+
+
+
+
+
+    </div>
+
+{% endblock %}

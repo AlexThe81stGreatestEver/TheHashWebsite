@@ -1,0 +1,58 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+  <style type="text/css">
+    table.dataTable tbody tr.attended { background-color: #00C851; }
+    table.dataTable tbody tr.missed { background-color: #ffbb33; }
+  </style>
+
+<script type = "text/javascript" language = "javascript">
+
+  //Call these functions upon page load
+  $(document).ready(function() {
+    //Convert the main table into a data table
+    $('#the_main_table').DataTable({
+      "paging":   false,
+      "aaSorting": []
+    });
+
+  });
+</script>
+
+
+  <h1>{{pageTitle}}</h1>
+  <h3>{{pageSubTitle}}</h3>
+  <div class="table-responsive">
+  <table class="table table-condensed table-hover" id="the_main_table">
+    <caption>{{tableCaption}}</caption>
+    <thead>
+      <tr>
+        <th>Hash Number</th>
+        <td>Attended ? </td>
+        <td>Type</td>
+        <td>Location</td>
+        <td>Description</td>
+        <td>Date</td>
+        <td>City</td>
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in theList %}
+          <tr {% if item.ATTENDED == 'YES' %} class="attended" {% else %} class="missed" {% endif %}>
+          <td><a href='/{{kennel_abbreviation}}/hashes/{{item.HASH_KY}}'>{{item.KENNEL_EVENT_NUMBER}}</a></td>
+          <td>{{item.ATTENDED}}</td>
+          <td>{{item.HASH_TYPE_NAME}}</td>
+          <td>{{item.EVENT_LOCATION}}</td>
+          <td>{{item.SPECIAL_EVENT_DESCRIPTION}}</td>
+          <td nowrap="nowrap">{{item.EVENT_DATE|date("Y/m/d H:i (D)", false)}}</td>
+          {#<td>{{item.EVENT_DAY_NAME}}</td>#}
+          <td>{{item.EVENT_CITY}}</td>
+
+
+        </tr>
+      {% endfor %}
+  </table>
+  </div>
+{% endblock %}

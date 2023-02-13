@@ -1,0 +1,737 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+<style type="text/css">
+  @media (min-width: 768px) {
+    .dl-horizontal dt { width: 180px; }
+    .dl-horizontal dd { margin-left: 200px; }
+  }
+</style>
+
+<script type="text/javascript" src="/node_modules/chart.js/dist/chart.umd.js"></script>
+<script type="text/javascript" src="/node_modules/echarts/dist/echarts.js" type="module"></script>
+
+<script type = "text/javascript" language = "javascript">
+    //Function to get hares for the event
+    function getVirginHash(hasher_id){
+     var formData = {hasher_id:hasher_id};
+     $.ajax({
+         url : "/{{kennel_abbreviation}}/statistics/hasher/firstHash",
+         type: "POST",
+         data : formData,
+         dataType : 'json',
+         success: function(data, textStatus, jqXHR){
+
+          var virginHashEventNumber = "<a href=/{{kennel_abbreviation}}/hashes/" +data.HASH_KY+ ">" + data.KENNEL_EVENT_NUMBER + "</a>";
+          $('#virgin_hash_hash_number').empty();
+          $('#virgin_hash_hash_number').append(virginHashEventNumber);
+          //$('#virgin_hash_hash_number').listview('refresh');
+
+          var virginHashEventDate = data.EVENT_DATE_FORMATTED;
+          $('#virgin_hash_event_date').empty();
+          $('#virgin_hash_event_date').append(virginHashEventDate);
+
+          var virgin_hash_location = data.EVENT_LOCATION;
+          $('#virgin_hash_location').empty();
+          $('#virgin_hash_location').append(virgin_hash_location);
+
+
+          var years_elapsed = data.YEARS_SINCE_EVENT;
+          var months_elapsed = data.MONTHS_SINCE_EVENT;
+          var days_elapsed = data.DAYS_SINCE_EVENT;
+          var time_elapsed = years_elapsed + " year" + ( years_elapsed != 1 ? "s" : "") + ", " + months_elapsed + " month" + ( months_elapsed != 1 ? "s" : "") + ", " + days_elapsed + " day" + ( days_elapsed != 1 ? "s" : "");
+          $('#virgin_hashing_elapsed_time').empty();
+          $('#virgin_hashing_elapsed_time').append(time_elapsed);
+
+         },
+         error: function (jqXHR, textStatus, errorThrown){
+              console.log(errorThrown);
+         }
+     });
+   }
+
+   //Function to get hares for the event
+   function getMostRecentHash(hasher_id){
+    var formData = {hasher_id:hasher_id};
+    $.ajax({
+        url : "/{{kennel_abbreviation}}/statistics/hasher/mostRecentHash",
+        type: "POST",
+        data : formData,
+        dataType : 'json',
+        success: function(data, textStatus, jqXHR){
+
+         var latestHashEventNumber = "<a href=/{{kennel_abbreviation}}/hashes/" +data.HASH_KY+ ">" + data.KENNEL_EVENT_NUMBER + "</a>";
+         $('#latest_hash_hash_number').empty();
+         $('#latest_hash_hash_number').append(latestHashEventNumber);
+         //$('#virgin_hash_hash_number').listview('refresh');
+
+         var latestHashEventDate = data.EVENT_DATE_FORMATTED;
+         $('#latest_hash_event_date').empty();
+         $('#latest_hash_event_date').append(latestHashEventDate);
+
+         var latest_hash_location = data.EVENT_LOCATION;
+         $('#latest_hash_location').empty();
+         $('#latest_hash_location').append(latest_hash_location);
+
+         var years_elapsed = data.YEARS_SINCE_EVENT;
+         var months_elapsed = data.MONTHS_SINCE_EVENT;
+         var days_elapsed = data.DAYS_SINCE_EVENT;
+         var time_elapsed = years_elapsed + " year" + ( years_elapsed != 1 ? "s" : "") + ", " + months_elapsed + " month" + ( months_elapsed != 1 ? "s" : "") + ", " + days_elapsed + " day" + ( days_elapsed != 1 ? "s" : "");
+         $('#latest_hashing_elapsed_time').empty();
+         $('#latest_hashing_elapsed_time').append(time_elapsed);
+
+        },
+        error: function (jqXHR, textStatus, errorThrown){
+             console.log(errorThrown);
+        }
+    });
+  }
+
+//Generic function to retrieve data
+function getListData(hasher_id,url_value,div_value, column_one_header, column_two_header){
+ var formData = {hasher_id:hasher_id};
+ $.ajax({
+     url : url_value,
+     type: "POST",
+     data : formData,
+     dataType : 'json',
+     success: function(data, textStatus, jqXHR){
+       $(div_value).empty();
+
+       $(div_value).append('<table class="table table-condensed">');
+       $(div_value).append('<thead>');
+       $(div_value).append('<tr><td><b>' +column_one_header+'</b></td><td>&nbsp;' +column_two_header+'</td></tr>');
+       $(div_value).append('</thead>');
+
+       $.each(data, function(key,row) {
+         $(div_value).append('<tr>');
+         $(div_value).append('<td><b>'+ row.THE_VALUE + '</b></td>');
+         $(div_value).append('<td>&nbsp;'+ row.THE_COUNT + '</td>');
+         $(div_value).append('</tr>');
+       });
+
+       $(div_value).append('</table>');
+
+     },
+     error: function (jqXHR, textStatus, errorThrown){
+          console.log(errorThrown);
+     }
+ });
+}
+
+  function  loadQuarterMonthSunburst(){
+    var chart = document.getElementById('quartermonthsunburst');
+    var myChart = echarts.init(chart);
+
+    var data = {{quarter_month_formatted_data|raw}};
+
+    var option = {
+      series: {
+          type: 'sunburst',
+          // highlightPolicy: 'ancestor',
+          data: data,
+          radius: [0, '90%'],
+          label: {
+              rotate: 'radial'
+          }
+      }
+    };
+
+    // use configuration item and data specified to show chart
+    myChart.setOption(option);
+  }
+
+  function loadHelloWorldSunburst(){
+    var chart = document.getElementById('locationsunburst');
+    var myChart = echarts.init(chart);
+
+    var data = {{sunburst_formatted_data|raw}};
+
+    // specify chart configuration item and data
+    var option = {
+      title: {
+          text: 'Location Sunburst Chart',
+          subtext: 'State|County|City Breakdown',
+          textStyle: {
+              fontSize: 14,
+              align: 'center'
+          },
+          subtextStyle: {
+              align: 'center'
+          },
+          sublink: ''
+      },
+      series: {
+          type: 'sunburst',
+          highlightPolicy: 'ancestor',
+          data: data,
+          radius: [0, '95%'],
+          sort: null,
+          levels: [{}, {
+              r0: '15%',
+              r: '35%',
+              itemStyle: {
+                  borderWidth: 2
+              },
+              label: {
+                  rotate: 'tangential'
+              }
+          }, {
+              r0: '35%',
+              r: '70%',
+              label: {
+                  align: 'right'
+              }
+          }, {
+              r0: '70%',
+              r: '72%',
+              label: {
+                  position: 'outside',
+                  padding: 3,
+                  silent: false
+              },
+              itemStyle: {
+                  borderWidth: 3
+              }
+          }]
+      }
+    };
+
+    // use configuration item and data specified to show chart
+    myChart.setOption(option);
+  }
+
+  function loadCountyChart(){
+    // based on prepared DOM, initialize echarts instance
+    var chart = document.getElementById('county');
+    var myChart = echarts.init(chart);
+
+    // specify chart configuration item and data
+    var option = {
+      title: {
+          text: 'County Breakdown',
+          subtext: 'Because of course',
+          textStyle: {
+              fontSize: 14,
+              align: 'center'
+          },
+          subtextStyle: {
+              align: 'center'
+          },
+      },
+      tooltip: {
+          formatter: '{b}'
+      },
+      series: [{
+          type: 'treemap',
+          nodeClick: false,
+          roam: false,
+          breadcrumb: { show: false },
+          data: [
+            {% for individualValue in hashes_by_county_list %}
+              {
+                name: '{{individualValue.THE_VALUE}}',
+                value: {{individualValue.THE_COUNT}},
+              },
+            {% endfor %}
+          ]
+      }]
+    };
+
+    // use configuration item and data specified to show chart
+    myChart.setOption(option);
+  }
+
+  function loadPostalCodeChart(){
+    // based on prepared DOM, initialize echarts instance
+    var chart = document.getElementById('postalcode');
+    var myChart = echarts.init(chart);
+
+    // specify chart configuration item and data
+    var option = {
+      title: {
+          text: 'Zip Code Breakdown',
+          subtext: 'Because of course',
+          textStyle: {
+              fontSize: 14,
+              align: 'center'
+          },
+          subtextStyle: {
+              align: 'center'
+          },
+      },
+      tooltip: {
+	  formatter: '{b}'
+      },
+      series: [{
+          type: 'treemap',
+          nodeClick: false,
+          roam: false,
+          breadcrumb: { show: false },
+          data: [
+            {% for individualValue in hashes_by_postal_code_list %}
+              {
+                name: '{{individualValue.THE_VALUE}}',
+                value: {{individualValue.THE_COUNT}},
+              },
+            {% endfor %}
+          ]
+      }]
+    };
+
+    // use configuration item and data specified to show chart
+    myChart.setOption(option);
+
+  }
+
+     //Call these functions upon page load
+     $(document).ready(function() {
+        loadPostalCodeChart();
+        loadCountyChart();
+        loadHelloWorldSunburst();
+        loadQuarterMonthSunburst();
+        getVirginHash({{hasherValue.HASHER_KY}});
+        getMostRecentHash({{hasherValue.HASHER_KY}});
+        //getListData({{hasherValue.HASHER_KY}},"/{{kennel_abbreviation}}/statistics/hasher/hashes/by/city","#hasherHashesByCity-list","City","Count");
+
+      });
+
+   </script>
+
+    <div class="container">
+      <h1>{{pageTitle}}</h1>
+      {% if hareCount > 0 %}
+      <h5>
+        Hound Details |
+        {% for hare_type in hare_types %}
+	  {% for harings in hareCounts %}
+          {% if harings.type == hare_type.HARE_TYPE_NAME %}
+          {% if harings.total > 0 %}
+          {% if google_analytics_id != 'none' %}
+            <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+          {% else %}
+            <i><a href='/{{kennel_abbreviation}}/hares/{{hare_type.HARE_TYPE}}/{{hasherValue.HASHER_KY}}'>{{hare_type.HARE_TYPE_NAME}} Hare Details</a></i> |
+          {% endif %}
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+        {% endfor %}
+        {% if google_analytics_id != 'none' %}
+          <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}?name={{hasherValue.HASHER_NAME|url_encode}}'>{{overall_hare_details}}</a></i>
+        {% else %}
+          <i><a href='/{{kennel_abbreviation}}/hares/overall/{{hasherValue.HASHER_KY}}'>{{overall_hare_details}}</a></i>
+        {% endif %}
+      </h5>
+      {% endif %}
+
+      <div class="row marketing">
+        <div class="col-xs-12 col-md-6" style="background-color:lime;">
+          <h3>Basic Details</h3>
+          <dl class="dl-horizontal">
+              {% autoescape %}
+                <dt>Hasher Name</dt><dd> {{hasherValue.HASHER_NAME}}</dd>
+                <dt>Hasher Abbreviation</dt><dd> {{hasherValue.HASHER_ABBREVIATION}} </dd>
+                <dt>Last Name</dt><dd> {{hasherValue.LAST_NAME|first}}{% for i in 2..hasherValue.LAST_NAME|length%}{{'*'}}{% endfor %} </dd>
+                <dt>First Name</dt><dd> {{hasherValue.FIRST_NAME|first}}{% for i in 2..hasherValue.FIRST_NAME|length%}{{'*'}}{% endfor %}</dd>
+                {% if hasherValue.DECEASED == "0000000001" %}
+                  <dt>Deceased</dt><dd> Sadly, yes.</dd>
+                {% endif %}
+                <dt>Hashing Count</dt><dd> {{hashCount}}</dd>
+                <dt>Haring Count</dt><dd> {{hareCount}}</dd>
+                <dt>Longest Streak</dt><dd>{{longest_streak}}</dd>
+              {% endautoescape %}
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:silver;">
+          <h3>Their hashings</h3>
+          <dl class="dl-horizontal">
+            {% if legacy_run_count != 0 %}
+              Number of runs before electronic record keeping: {{legacy_run_count}}<br/>
+            {% endif %}
+            <a href='/{{kennel_abbreviation}}/listhashes/byhasher/{{hasherValue.HASHER_KY}}'>Their hashings</a><br>
+            <a href='/{{kennel_abbreviation}}/getHasherAnalversaries/{{hasherValue.HASHER_KY}}'>Their hashing analversaries</a><br>
+            <a href='/{{kennel_abbreviation}}/getProjectedHasherAnalversaries/{{hasherValue.HASHER_KY}}'>Their *predicted* hashing analversaries</a><br>
+            <a href='/{{kennel_abbreviation}}/hashedWith/{{hasherValue.HASHER_KY}}'>Hounds who have hashed with them<br>
+            <a href='/{{kennel_abbreviation}}/attendanceRecordForHasher/{{hasherValue.HASHER_KY}}'>Attendance Record</a>
+            <span class="hidden-sm hidden-xs">
+            {% if legacy_run_count == 0 %}
+              &nbsp;<br/>
+            {% endif %}
+            &nbsp;<br/>
+            &nbsp;<br/>
+            </span>
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:yellow">
+          <h3>Their first hashing</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="virgin_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+                <div data-role="content" id="virgin_hashing_elapsed_time"></div>
+            </dd>
+          </dl>
+        </div>
+
+        <div class="col-xs-12 col-md-6" style="background-color:#ee8888">
+          <h3>Their latest hashing</h3>
+          <dl class="dl-horizontal">
+            <dt>Hash Number</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_hash_number"></div>
+            </dd>
+            <dt>Hash Date</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_event_date"></div>
+            </dd>
+            <dt>Hash Location</dt>
+            <dd>
+              <div data-role="content" id="latest_hash_location"></div>
+            </dd>
+            <dt>Time Elapsed</dt>
+            <dd>
+              <div data-role="content" id="latest_hashing_elapsed_time"></div>
+            </dd>
+          </dl>
+        </div>
+      </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+
+            <canvas id="chartXX" width="50" height="50"></canvas>
+	      <script>
+	      var ctx = document.getElementById("chartXX");
+	      new Chart(ctx, {
+		  type: 'bar',
+		  data: {
+		      labels: [
+			{% for individualValue in hashes_by_year_list %}
+			  "{{individualValue.THE_VALUE}}",
+			{% endfor %}
+		      ],
+		      datasets: [{
+			  label: '# of Hashes',
+			  data: [
+			    {% for individualValue in hashes_by_year_list %}
+			      {{individualValue.THE_COUNT}},
+			    {% endfor %}
+
+			  ],
+			  fillColor:'rgba(75, 192, 192, 0.2)',
+			  backgroundColor:'rgba(0, 0, 200, 0.2)',
+			  borderColor:'rgba(0, 0, 200, 1)',
+			  borderWidth: 1
+		      }]
+		  },
+		  options: {
+		      scales: {
+			  y: {
+				beginAtZero:true
+			  }
+		      },
+		      title: {
+			display: true,
+			text: 'Hashes By Year'
+		      }
+		  }
+	      });
+	      </script>
+
+          </div>
+        </div>
+
+
+
+
+
+        <div class="row">
+          <div class="col-sm-8">
+            <div id="d3_div">
+            </div>
+          </div>
+        </div>
+
+        <br><br><br>
+        <div class="row">
+          <div class="col-sm-12">
+            <div id="locationsunburst" style="width: 95%; min-height:900px;">
+            </div>
+          </div>
+        </div>
+
+        <br><br>
+        <div class="row">
+          <div class="col-sm-12">
+            <div id="quartermonthsunburst" style="width: 95%; min-height:900px;">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-6">
+            <div id="county" style="width: 100%; min-height:400px;">
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div id="postalcode" style="width: 100%; min-height:400px;">
+            </div>
+          </div>
+
+          <script>
+            $(window).on('resize', function(){
+              if(county != null && chart != undefined){
+                chart.resize();
+              }
+            });
+          </script>
+        </div>
+
+
+
+
+
+        <div class="row">
+
+          <div class="col-sm-6">
+            <canvas id="chartBB" width="50" height="50"></canvas>
+            <script>
+	      var ctx = document.getElementById("chartBB");
+	      new Chart(ctx, {
+		  type: 'pie',
+		  data: {
+		      labels: [
+			{% for individualValue in hashes_by_state_list %}
+			  "{{individualValue.THE_VALUE}}",
+			{% endfor %}
+		      ],
+		      datasets: [{
+			  label: '# of Hashes',
+			  data: [
+			    {% for individualValue in hashes_by_state_list %}
+			      {{individualValue.THE_COUNT}},
+			    {% endfor %}
+
+			  ],
+			  borderWidth: 1
+		      }]
+		  },
+		  options: {
+		      title: {
+			display: true,
+			text: 'Hashes By State'
+		      }
+		  }
+	      });
+
+            </script>
+
+          </div>
+
+          <div class="col-sm-6">
+            <canvas id="myChart6" width="50" height="50"></canvas>
+            <script>
+            var ctx = document.getElementById("myChart6");
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                      {% for individualValue in hashes_by_day_name_list %}
+                        "{{individualValue.THE_VALUE}}",
+                      {% endfor %}
+                    ],
+                    datasets: [{
+                        label: '# of Hashes',
+                        data: [
+                          {% for individualValue in hashes_by_day_name_list %}
+                            {{individualValue.THE_COUNT}},
+                          {% endfor %}
+
+                        ],
+                        fillColor:'rgba(75, 192, 192, 0.2)',
+                        backgroundColor:'rgba(239, 127, 15, 0.2)',
+                        borderColor:'rgba(239, 127, 15, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+			    beginAtZero:true
+                        }
+                    },
+                    title: {
+                      display: true,
+                      text: 'Hashes By Day Name'
+                    }
+                }
+            });
+            </script>
+
+          </div>
+        </div>
+
+
+
+
+
+
+  <!--  ------------------------------------------------------------------------->
+
+      <div class="row"><h2>Event Map</h2>
+        <div id="TheMap1" class="col-sm-10"></div>
+          <style>
+          #TheMap1{
+            height: 600px;
+          }
+          </style>
+      </div>
+      <br><br><br><br><br><br><br>
+
+        <script>
+
+          var map1;
+          function initMap1(){
+            map1 = new google.maps.Map(document.getElementById('TheMap1'),{
+              zoom: 10,
+              center: new google.maps.LatLng( {{avg_lat}}, {{avg_lng}} )
+              //mapTypeId: 'terrain'
+            });
+
+
+            {% for hashEventValue in the_hashes %}
+              var event_num = "#{{hashEventValue.KENNEL_EVENT_NUMBER | escape('html')}}";
+              var event_description = "{{hashEventValue.SPECIAL_EVENT_DESCRIPTION | escape('html')}}";
+              var event_location = "{{hashEventValue.EVENT_LOCATION | escape('html')}}";
+              var event_date = "{{hashEventValue.EVENT_DATE | date("m/d/Y" ) | escape('html')}}";
+
+              var textValue = "{{kennel_abbreviation}}"+ event_num +":" + event_description + " at " + event_location + " on " + event_date;
+              var eventLink = "/{{kennel_abbreviation}}/hashes/{{hashEventValue.HASH_KY}}";
+              var marker = new google.maps.Marker({
+                position: {lat: {{hashEventValue.LAT}}, lng:{{hashEventValue.LNG}}},
+                map: map1,
+                title: textValue,
+                url: eventLink
+              });
+              google.maps.event.addListener(marker,'click', function(){
+                window.open(this.url);
+              });
+            {% endfor %}
+          }
+
+        </script>
+
+
+        <!--  ------------------------------------------------------------------------->
+
+
+
+        <div class="row"><h2>Heat Map</h2>
+          <div id="TheMap2" class="col-sm-10"></div>
+            <style>
+            #TheMap2{
+              height: 600px;
+            }
+            </style>
+        </div>
+        <br><br><br><br><br><br><br>
+
+        <script>
+          var map2,heatmap;
+          function initMap2(){
+            map2 = new google.maps.Map(document.getElementById('TheMap2'),{
+              zoom: 11,
+              center: new google.maps.LatLng( {{avg_lat}}, {{avg_lng}} ),
+              mapTypeId: 'terrain'
+            });
+
+            heatmap = new google.maps.visualization.HeatmapLayer({
+              data: getPoints2(),
+              map: map2
+            });
+
+            changeGradient();
+            changeRadius();
+          }
+
+          function getPoints2() {
+            return [
+              {% for hashEventValue in the_hashes %}
+              new google.maps.LatLng(
+                {{hashEventValue.LAT}}, {{hashEventValue.LNG}}
+              ),
+              {% endfor %}
+            ];
+          }
+
+          function toggleHeatmap() {
+            heatmap.setMap(heatmap.getMap() ? null : map2);
+          }
+
+          function changeGradient() {
+            var gradient = [
+              'rgba(0, 255, 255, 0)',
+              'rgba(0, 255, 255, 1)',
+              'rgba(0, 191, 255, 1)',
+              'rgba(0, 127, 255, 1)',
+              'rgba(0, 63, 255, 1)',
+              'rgba(0, 0, 255, 1)',
+              'rgba(0, 0, 223, 1)',
+              'rgba(0, 0, 191, 1)',
+              'rgba(0, 0, 159, 1)',
+              'rgba(0, 0, 127, 1)',
+              'rgba(63, 0, 91, 1)',
+              'rgba(127, 0, 63, 1)',
+              'rgba(191, 0, 31, 1)',
+              'rgba(255, 0, 0, 1)'
+            ]
+            heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+          }
+
+          function changeRadius() {
+            heatmap.set('radius', heatmap.get('radius') ? null : 30);
+          }
+
+          function changeOpacity() {
+            heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+          }
+        </script>
+
+
+        <!--  ------------------------------------------------------------------------->
+
+
+
+          <script src="/web/javascript/markerclusterer/markerclusterer.js"></script>
+
+          <script>
+            function initMapX(){
+              initMap1();
+              initMap2();
+              //initMap3();
+            }
+          </script>
+          <script async defer src="https://maps.googleapis.com/maps/api/js?key={{geocode_api_value}}&callback=initMapX&libraries=visualization">
+          </script>
+
+
+
+
+      </div>
+
+  {% endblock %}
