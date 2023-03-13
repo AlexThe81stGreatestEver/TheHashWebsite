@@ -3,7 +3,7 @@
     "bootstrap": "^3.4",
     "bootstrap-growl-ifightcrime": "1.1.0",
     "chart.js": "^4.1.1",
-    "datatables.net": "^1.10",
+    "datatables.net": "^1.13",
     "datatables.net-bs": "^1.10",
     "datatables.net-responsive": "^2.4.0",
     "datatables.net-responsive-dt": "^2.4.0",
