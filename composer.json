@@ -20,7 +20,7 @@
         "sixlive/dotenv-editor": "^2.0",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "6.2.*",
-        "symfony/console": "6.2.*",
+        "symfony/console": "6.4.*",
         "symfony/doctrine-messenger": "6.2.*",
         "symfony/dotenv": "6.2.*",
         "symfony/expression-language": "6.2.*",
