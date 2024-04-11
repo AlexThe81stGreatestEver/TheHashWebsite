@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce7641fa47d255f459064d2fd8c0f8f8",
+    "content-hash": "e488bab59919e2a2839e49b1ab789ce1",
     "packages": [
         {
             "name": "components/jquery",
@@ -7196,16 +7196,16 @@
         },
         {
             "name": "symfony/web-link",
-            "version": "v6.2.7",
+            "version": "v6.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/web-link.git",
-                "reference": "410aac2034608ac661cdca1968e3c56d4164abc8"
+                "reference": "1722ee157388aaf2f312954addf5b9665e4b7ee9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/web-link/zipball/410aac2034608ac661cdca1968e3c56d4164abc8",
-                "reference": "410aac2034608ac661cdca1968e3c56d4164abc8",
+                "url": "https://api.github.com/repos/symfony/web-link/zipball/1722ee157388aaf2f312954addf5b9665e4b7ee9",
+                "reference": "1722ee157388aaf2f312954addf5b9665e4b7ee9",
                 "shasum": ""
             },
             "require": {
@@ -7219,10 +7219,7 @@
                 "psr/link-implementation": "1.0|2.0"
             },
             "require-dev": {
-                "symfony/http-kernel": "^5.4|^6.0"
-            },
-            "suggest": {
-                "symfony/http-kernel": ""
+                "symfony/http-kernel": "^5.4|^6.0|^7.0"
             },
             "type": "library",
             "autoload": {
@@ -7262,7 +7259,7 @@
                 "push"
             ],
             "support": {
-                "source": "https://github.com/symfony/web-link/tree/v6.2.7"
+                "source": "https://github.com/symfony/web-link/tree/v6.4.3"
             },
             "funding": [
                 {
@@ -7278,7 +7275,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-14T08:44:56+00:00"
+            "time": "2024-01-23T14:51:35+00:00"
         },
         {
             "name": "symfony/yaml",
