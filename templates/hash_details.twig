@@ -1,0 +1,250 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+    <style type="text/css">
+      .gray { background-color: #d3d3d3; }
+    </style>
+    <h1>{{pageTitle}}</h1>
+    {% set bgcolor = "white" %}
+
+
+    <div class="row">
+
+
+
+      <div class="col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            Basic Info
+          </div>
+          <div class="panel-body">
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Event Number</b></div>
+              <div class="col-xs-12 col-md-8">{{kennel_abbreviation}} #{{hashValue.KENNEL_EVENT_NUMBER}}</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Date</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_DATE|date('m/d/Y')}}</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Time</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_DATE|date('h:i A')}}</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Description</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.SPECIAL_EVENT_DESCRIPTION}}</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hash Type</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.HASH_TYPE_NAME}}</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hounds</b></div>
+              <div class="col-xs-12 col-md-8">
+                <a href='/{{kennel_abbreviation}}/listhashers/byhash/{{hashValue.HASH_KY}}'>{{theHoundCount}}</a>
+              </div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Hares</b></div>
+              <div class="col-xs-12 col-md-8">
+                <a href='/{{kennel_abbreviation}}/listhares/byhash/{{hashValue.HASH_KY}}'>{{theHareCount}}</a>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-12 "></br></div>
+              <div class="col-xs-12 col-md-12" align="center">
+                <b>
+                  {% if previousHashId != null %}
+                    <a href="{{previousHashId}}">
+                  {% endif %}
+                  Previous Event
+                  {% if previousHashId != null %}
+                    </a>
+                  {% endif %} |
+                  {% if nextHashId != null %}
+                    <a href="{{nextHashId}}">
+                  {% endif %}
+                  Next Event
+                {% if nextHashId != null %}
+                  </a>
+                {% endif %}
+                </b>
+              </div>
+            </div>
+
+
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6">
+        <a href="#" class="list-group-item active">Analversaries, Streakers, and Backsliders</a>
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/consolidatedEventAnalversaries/{{hashValue.HASH_KY}}'>Consolidated Analversaries</a>
+        {% if showOmniAnalversaryPage %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/omniAnalversariesForEvent/{{hashValue.HASH_KY}}'>OmniAnalversary List</a>
+        {% endif %}
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/listStreakers/byhash/{{hashValue.HASH_KY}}'>Streakers By Events, Days, and Date</a>
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/backSlidersForEventV2/{{hashValue.HASH_KY}}'>Backsliders</a>
+        <br>
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+    <div class="row">
+      <div class="col-sm-6">
+        <a href="#" class="list-group-item active">
+          Hound Counts (Overall and Overly Broken Down)
+        </a>
+        <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEvent/{{hashValue.HASH_KY}}'>Hound Counts For This Event</a>
+
+        {% if showStateCountList == true %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEventState/{{hashValue.HASH_KY}}'>Hound Counts For This Event's State ({{hashValue.EVENT_STATE}})</a>
+        {% endif %}
+
+        {% if showCityCountList == true %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEventCity/{{hashValue.HASH_KY}}'>Hound Counts For This Event's City ({{hashValue.EVENT_CITY}})</a>
+        {% endif %}
+
+        {% if showNeighborhoodCountList == true %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEventNeighborhood/{{hashValue.HASH_KY}}'>Hound Counts For This Event's Neighborhood ({{hashValue.NEIGHBORHOOD}})</a>
+        {% endif %}
+
+        {% if showCountyCountList == true %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEventCounty/{{hashValue.HASH_KY}}'>Hound Counts For This Event's County ({{hashValue.COUNTY}})</a>
+        {% endif %}
+
+        {% if showPostalCodeCountList == true %}
+          <a class="list-group-item" href='/{{kennel_abbreviation}}/hasherCountsForEventPostalCode/{{hashValue.HASH_KY}}'>Hound Counts For This Event's Postal Code ({{hashValue.POSTAL_CODE}})</a>
+        {% endif %}
+        <br>
+
+      </div>
+
+      <div class="col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            Location Data
+          </div>
+          <div class="panel-body">
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Location</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_LOCATION}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Formatted Address</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.FORMATTED_ADDRESS}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Street Number</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.STREET_NUMBER}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Route</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.ROUTE}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>City</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_CITY}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>State</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.EVENT_STATE}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Postal Code</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.POSTAL_CODE}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Neighborhood</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.NEIGHBORHOOD}}  &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>County</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.COUNTY}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Country</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.COUNTRY}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Lat</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.LAT}} &nbsp</div>
+            </div>
+
+            <div class="row gray">
+              <div class="col-xs-12 col-md-4"><b>Long</b></div>
+              <div class="col-xs-12 col-md-8">{{hashValue.LNG}} &nbsp</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+
+
+    </div>
+
+    <div class="row">
+
+
+
+      <div class="col-sm-6">
+        <style>
+        #map{
+          height: 80%;
+        }
+        </style>
+        <div id="map"></div>
+        <script>
+          function initMap(){
+            var myLatLng = {lat: {{hashValue.LAT}}, lng:{{hashValue.LNG}}};
+
+            var map = new google.maps.Map(document.getElementById('map'),{
+              zoom:12,
+              center:myLatLng
+            });
+
+            var marker = new google.maps.Marker({
+              position: myLatLng,
+              map: map,
+              title: 'Hello Computer'
+            });
+          }
+        </script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{geocode_api_value}}&callback=initMap">
+        </script>
+      </div>
+    </div>
+
+  <br><br><br>
+    <br><br><br>
+
+
+{% endblock %}

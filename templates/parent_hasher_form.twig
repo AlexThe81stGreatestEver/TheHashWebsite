@@ -1,0 +1,35 @@
+{% extends "admin_base.twig" %}
+
+{% block extrahead %}
+<style type="text/css">
+dl { display: table; }
+dl div { display: table-row; }
+dl div label { padding: 0.5em; display: table-cell;}
+dl div input { display: table-cell;}
+</style>
+{% endblock %}
+
+{% block template %}
+  <h1>{{pageTitle}}</h1>
+  <h6>{{pageHeader}}</h6>
+
+  {% for alert in [ 'info', 'success', 'warning', 'danger'] %}
+    {% for message in app.flashes(alert) %}
+        <div class="alert alert-{{ alert }} alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          {{ message }}
+        </div>
+    {% endfor %}
+  {% endfor %}
+
+  <dl class="dl-horizontal">
+    {{ form_start(form) }}
+      {{ form_errors(form) }}
+
+      {% block formContent %}{% endblock %}
+
+    <button type="submit" class="btn btn-info">Send</button>
+    {{ form_end(form, {'render_rest': false}) }}
+  </dl>
+
+{% endblock %}

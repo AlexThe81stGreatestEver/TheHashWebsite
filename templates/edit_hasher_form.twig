@@ -1,0 +1,22 @@
+{% extends "parent_hasher_form.twig" %}
+
+{% block formContent %}
+
+  <br>
+  <a href="/admin/deleteHasher/{{ hasher_ky }}">Delete this jerk</a>
+  <br>
+
+  {{ form_row(form.hasherName) }}
+  {{ form_row(form.hasherAbbreviation) }}
+  {{ form_row(form.lastName) }}
+  {{ form_row(form.firstName) }}
+  {{ form_row(form.homeKennel) }}
+  {{ form_row(form.deceased) }}
+  {{ form_row(form.banned) }}
+  {{ form_row(form._token) }}
+
+  <p>
+  Hashers marked as banned will not appear in the list of hashers that can be added to an event.  There will be no change in the way they appear on public pages.
+  </p>
+
+{% endblock %}

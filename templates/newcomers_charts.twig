@@ -1,0 +1,211 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+    <script src="/node_modules/chart.js/dist/chart.umd.js"></script>
+    <script type = "text/javascript" language = "javascript"></script>
+
+
+
+
+    <div class="container">
+      <h1>{{kennel_abbreviation}} {{pageTitle}}</h1>
+      <h3>Only hashers who have done {{Min_Hash_Count}} hashes are considered</h3>
+
+
+      <div class="row">
+        <div class="col-sm-6">
+
+          <canvas id="myChart" width="50" height="25"></canvas>
+          <script>
+          var ctx = document.getElementById("myChart");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [
+                    {% for individualEntry in New_Comers_By_Year_List %}
+                      {{individualEntry.THE_VALUE}},
+                    {% endfor %}
+                  ],
+                  datasets: [{
+                      label: 'Total Number of New Comers',
+                      data: [
+                        {% for individualEntry in New_Comers_By_Year_List %}
+                          {{individualEntry.THE_COUNT}},
+                        {% endfor %}
+
+                      ],
+                      fillColor:'rgba(75, 192, 192, 0.2)',
+                      backgroundColor:'rgba(54, 162, 235, 0.2)',
+                      borderColor:'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  },
+                  title: {
+                    display: true,
+                    text: 'New Comers Per Year'
+                  }
+              }
+          });
+          </script>
+        </div>
+
+        <div class="col-sm-6">
+
+          <canvas id="myChart4" width="50" height="25"></canvas>
+          <script>
+          var ctx = document.getElementById("myChart4");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [
+                    {% for individualEntry in New_Comers_By_Month_List %}
+                      "{{individualEntry.THE_VALUE}}",
+                    {% endfor %}
+                  ],
+                  datasets: [{
+                      label: 'New Comers By Month',
+                      data: [
+                        {% for individualEntry in New_Comers_By_Month_List %}
+                          {{individualEntry.THE_COUNT}},
+                        {% endfor %}
+
+                      ],
+                      fillColor:'rgba(75, 192, 192, 0.2)',
+                      backgroundColor:'rgba(54, 162, 235, 0.2)',
+                      borderColor:'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  },
+                  title: {
+                    display: true,
+                    text: 'New Comers By Month'
+                  }
+              }
+          });
+          </script>
+        </div>
+
+      </div>
+
+
+      <div class="row">
+        <div class="col-sm-12">
+
+          <canvas id="myChart2" width="50" height="25"></canvas>
+          <script>
+          var ctx = document.getElementById("myChart2");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [
+                    {% for individualEntry in New_Comers_By_YearQuarter_List %}
+                      "{{individualEntry.THE_VALUE}}",
+                    {% endfor %}
+                  ],
+                  datasets: [{
+                      label: 'New Comers by Year/Quarter',
+                      data: [
+                        {% for individualEntry in New_Comers_By_YearQuarter_List %}
+                          {{individualEntry.THE_COUNT}},
+                        {% endfor %}
+
+                      ],
+                      fillColor:'rgba(75, 192, 192, 0.2)',
+                      backgroundColor:'rgba(54, 162, 235, 0.2)',
+                      borderColor:'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  },
+                  title: {
+                    display: true,
+                    text: 'New Comers by Year/Quarter'
+                  }
+              }
+          });
+          </script>
+        </div>
+      </div>
+
+
+
+      <div class="row">
+        <div class="col-sm-12">
+
+          <canvas id="myChart3" width="50" height="25"></canvas>
+          <script>
+          var ctx = document.getElementById("myChart3");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: [
+                    {% for individualEntry in New_Comers_By_YearMonth_List %}
+                      "{{individualEntry.THE_VALUE}}",
+                    {% endfor %}
+                  ],
+                  datasets: [{
+                      label: 'New Comers by Year/Month',
+                      data: [
+                        {% for individualEntry in New_Comers_By_YearMonth_List %}
+                          {{individualEntry.THE_COUNT}},
+                        {% endfor %}
+
+                      ],
+                      fillColor:'rgba(75, 192, 192, 0.2)',
+                      backgroundColor:'rgba(54, 162, 235, 0.2)',
+                      borderColor:'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  },
+                  title: {
+                    display: true,
+                    text: 'New Comers by Year/Month'
+                  }
+              }
+          });
+          </script>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+    </div>
+
+{% endblock %}
