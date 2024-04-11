@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce7641fa47d255f459064d2fd8c0f8f8",
+    "content-hash": "fbe4602c5adbf85b1d942c7372d93ff8",
     "packages": [
         {
             "name": "components/jquery",
@@ -5553,16 +5553,16 @@
         },
         {
             "name": "symfony/property-info",
-            "version": "v6.2.11",
+            "version": "v6.3.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/property-info.git",
-                "reference": "ee0a0de5a6866c15af8495b2534d650b388bdeca"
+                "reference": "ad9640f115b090503d52e8c8d5029e6041a40ccb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/property-info/zipball/ee0a0de5a6866c15af8495b2534d650b388bdeca",
-                "reference": "ee0a0de5a6866c15af8495b2534d650b388bdeca",
+                "url": "https://api.github.com/repos/symfony/property-info/zipball/ad9640f115b090503d52e8c8d5029e6041a40ccb",
+                "reference": "ad9640f115b090503d52e8c8d5029e6041a40ccb",
                 "shasum": ""
             },
             "require": {
@@ -5581,12 +5581,6 @@
                 "symfony/cache": "^5.4|^6.0",
                 "symfony/dependency-injection": "^5.4|^6.0",
                 "symfony/serializer": "^5.4|^6.0"
-            },
-            "suggest": {
-                "phpdocumentor/reflection-docblock": "To use the PHPDoc",
-                "psr/cache-implementation": "To cache results",
-                "symfony/doctrine-bridge": "To use Doctrine metadata",
-                "symfony/serializer": "To use Serializer metadata"
             },
             "type": "library",
             "autoload": {
@@ -5622,7 +5616,7 @@
                 "validator"
             ],
             "support": {
-                "source": "https://github.com/symfony/property-info/tree/v6.2.11"
+                "source": "https://github.com/symfony/property-info/tree/v6.3.12"
             },
             "funding": [
                 {
@@ -5638,7 +5632,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-19T07:42:48+00:00"
+            "time": "2024-01-23T16:21:43+00:00"
         },
         {
             "name": "symfony/requirements-checker",
