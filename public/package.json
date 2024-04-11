@@ -15,6 +15,6 @@
     "jquery-ui-dist": "^1.13.2",
     "jquery-validation": "^1.19.5",
     "wordcloud": "^1.2.2",
-    "zrender": "^5.4.3"
+    "zrender": "^5.5.0"
   }
 }
