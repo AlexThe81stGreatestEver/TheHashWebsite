@@ -1,0 +1,97 @@
+{% extends "fullwidth.twig" %}
+
+{% block content %}
+
+<script>
+  function getSearchParams(k) {
+    var p={};
+    location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v});
+    return k?p[k]:p;
+  }
+
+  function writeCheckbox(name, label) {
+
+    var checked = "";
+
+    if(!(getSearchParams(name) === "false")) {
+      checked=" checked='checked'";
+    }
+
+    document.write("<input onchange='reload()' name='" + name + "' type='checkbox'" + checked + "></input> " + label + " ");
+  }
+
+  function getState(qs, name) {
+    if(!$("input[name=" + name + "]").prop("checked")) {
+      if(qs === "") {
+	qs += "?";
+      } else {
+	qs += "&";
+      }
+      qs += name + "=false";
+    }
+    return qs;
+  }
+
+  function reload() {
+    var qs = "";
+    qs = getState(qs, "active");
+    qs = getState(qs, "inactive");
+    qs = getState(qs, "deceased");
+    location.replace(location.href.split('?')[0] + qs);
+  }
+
+  $().ready(function() {
+    //Convert the main table into a data table
+    $('#the_main_table').DataTable({
+      "paging":   true,
+      "pageLength": 50,
+      "lengthMenu": [ [50, 100, 500, -1], [50, 100, 500, "All"]],
+      "aaSorting": [],
+      "responsive": true,
+      "autoWidth": false,
+      "processing": true,
+      "initComplete" : function(settings, json) {
+        $('#loading').hide();
+        $('#the_main_table').css("visibility", "visible");
+      }
+    });
+  });
+</script>
+
+<h1>{{pageTitle}}</h1>
+<h2 id="loading">Loading...</h2>
+<table id="the_main_table" style="visibility: hidden;" class="table table-condensed table-hover">
+  <caption>{{tableCaption}}</caption>
+  <thead>
+    <tr>
+      <td colspan="3">Filters:
+	<script>
+	  writeCheckbox("active", "Active");
+	  writeCheckbox("inactive", "Inactive");
+	  writeCheckbox("deceased", "Deceased");
+	</script>
+      </td>
+    </tr>
+    <tr>
+      <th>{{columnOneName}}</th>
+      <th>{{columnTwoName}}</th>
+      <th>{{columnThreeName}}</th>
+      <th>{{columnFourName}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in theList %}
+      <tr>
+	{% if google_analytics_id != 'none' %}
+	  <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}?name={{item.HASHER_NAME}}&src={{pageTracking}}">{{item.HASHER_NAME}}</a>{{item.STATUS}}</td>
+	{% else %}
+	  <td><a href="/{{kennel_abbreviation}}/hashers/{{item.THE_KEY}}">{{item.HASHER_NAME}}</a>{{item.STATUS}}</td>
+	{% endif %}
+        <td>{{item.HASH_COUNT}}</td>
+        <td>{{item.HARING_COUNT}}</td>
+        <td>{{item.HARE_PERCENTAGE}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
