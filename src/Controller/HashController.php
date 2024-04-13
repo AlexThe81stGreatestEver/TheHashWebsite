@@ -2588,7 +2588,7 @@ class HashController extends BaseController
   public function haringPercentageAllHashesAction(string $kennel_abbreviation) {
 
     # Declare the SQL used to retrieve this information
-    $sql = $this->getHaringPercentageAllHashesQuery();
+    $sql = $this->addHasherStatusToQuery($this->getHaringPercentageAllHashesQuery());
 
     #Obtain the kennel key
     $kennelKy = $this->obtainKennelKeyFromKennelAbbreviation($kennel_abbreviation);
@@ -2597,16 +2597,17 @@ class HashController extends BaseController
     $minHashCount = 0;
 
     #Execute the SQL statement; create an array of rows
-    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy,(int) $minHashCount ]);
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $kennelKy,(int) $minHashCount ]);
 
     # Establish the return value
-    return $this->render('percentage_list.twig', [
+    return $this->render('percentage_list_filtered.twig', [
       'pageTitle' => 'Haring Percentage List',
       'tableCaption' => 'Percentage of harings per hashings for each hasher',
       'columnOneName' => 'Hasher Name',
       'columnTwoName' => 'Hashing Count',
       'columnThreeName' => 'Haring Count',
       'columnFourName' => 'Haring Percentage',
+      'pageTracking' => 'haringPercentageAll',
       'theList' => $hasherList,
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
@@ -2620,7 +2621,7 @@ class HashController extends BaseController
   public function haringPercentageAction(int $hare_type, string $kennel_abbreviation) {
 
     # Declare the SQL used to retrieve this information
-    $sql = $this->getHaringPercentageByHareTypeQuery();
+    $sql = $this->addHasherStatusToQuery($this->getHaringPercentageByHareTypeQuery());
 
     $hare_type_name = $this->getHareTypeName($hare_type);
 
@@ -2631,10 +2632,10 @@ class HashController extends BaseController
     $minHashCount = 0;
 
     #Execute the SQL statement; create an array of rows
-    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $hare_type, $minHashCount ]);
+    $hasherList = $this->fetchAll($sql, [ $kennelKy, $kennelKy, $kennelKy, $hare_type, $minHashCount ]);
 
     # Establish the return value
-    return $this->render('percentage_list.twig', [
+    return $this->render('percentage_list_filtered.twig', [
       'pageTitle' => $hare_type_name . ' Haring Percentage List',
       'tableCaption' => 'Percentage Of ' . $hare_type_name . ' Harings Per Hashings For Each Hasher',
       'columnOneName' => 'Hasher Name',
@@ -2642,6 +2643,7 @@ class HashController extends BaseController
       'columnThreeName' => 'Haring Count',
       'columnFourName' => 'Haring Percentage',
       'theList' => $hasherList,
+      'pageTracking' => 'haringPercentage',
       'kennel_abbreviation' => $kennel_abbreviation ]);
   }
 
