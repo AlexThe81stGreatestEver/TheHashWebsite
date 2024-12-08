@@ -7,7 +7,7 @@
     "datatables.net-bs": "^1.10",
     "datatables.net-responsive": "^2.4.1",
     "datatables.net-responsive-dt": "^3.0.1",
-    "echarts": "^5.4.1",
+    "echarts": "^5.5.0",
     "echarts-gl": "^2.0.8",
     "jquery-tags-input": "^1.3.5",
     "jquery-timepicker": "^1.3.3",
